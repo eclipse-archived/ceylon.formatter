@@ -7,6 +7,7 @@ import java.util.List;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenStream;
 
+import com.redhat.ceylon.compiler.typechecker.parser.CeylonLexer;
 import com.redhat.ceylon.compiler.typechecker.tree.NaturalVisitor;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.AnyMethod;
@@ -38,6 +39,9 @@ public class FormattingVisitor extends Visitor implements NaturalVisitor {
 	public FormattingVisitor(TokenStream tokens, Writer output) {
 		this.tokens = tokens;
 		this.out = output;
+
+		// initialize TokenStream
+		tokens.LA(1);
 	}
 
 	@Override
@@ -81,7 +85,7 @@ public class FormattingVisitor extends Visitor implements NaturalVisitor {
 		try {
 			if (needsWhitespace)
 				out.write(" ");
-			out.write(that.getMainToken().getText()); // "void"
+			writeOut(that.getMainToken()); // "void"
 			needsWhitespace = true;
 		}
 		catch (IOException e) {
@@ -94,7 +98,7 @@ public class FormattingVisitor extends Visitor implements NaturalVisitor {
 		try {
 			if (needsWhitespace)
 				out.write(" ");
-			out.write(that.getMainToken().getText());
+			writeOut(that.getMainToken());
 			needsWhitespace = true;
 		}
 		catch (IOException e) {
@@ -105,7 +109,7 @@ public class FormattingVisitor extends Visitor implements NaturalVisitor {
 	@Override
 	public void visit(ParameterList that) {
 		try {
-			out.write(that.getMainToken().getText()); // "("
+			writeOut(that.getMainToken()); // "("
 			needsWhitespace = false;
 			List<Parameter> parameters = that.getParameters();
 			int i = 0;
@@ -118,7 +122,7 @@ public class FormattingVisitor extends Visitor implements NaturalVisitor {
 					parameters.get(i).visit(this);
 				}
 			}
-			out.write(that.getMainEndToken().getText()); // ")"
+			writeOut(that.getMainEndToken()); // ")"
 			needsWhitespace = true; // doesn't "need", but looks prettier - obviously, this model won't be kept
 		}
 		catch (IOException e) {
@@ -131,20 +135,20 @@ public class FormattingVisitor extends Visitor implements NaturalVisitor {
 		try {
 			if (needsWhitespace)
 				out.write(" "); // doesn't "need", but looks prettier
-			out.write(that.getMainToken().getText()); // "{"
-			out.write("\n");
+			writeOut(that.getMainToken()); // "{"
+			nextLine();
 			indent += "\t";
 			for (Statement statement : that.getStatements()) {
 				out.write(indent);
 				needsWhitespace = false;
 				statement.visit(this);
-				out.write("\n");
+				nextLine();
 			}
 			indent = indent.substring(0, indent.length() - 1);
 			out.write(indent);
-			out.write(that.getMainEndToken().getText()); // "}"
-			out.write("\n");
-			needsWhitespace = false;
+			writeOut(that.getMainEndToken()); // "}"
+			needsWhitespace = true; // again, doesn't strictly "need"
+			nextLine();
 		}
 		catch (IOException e) {
 			this.handleException(e, that);
@@ -153,13 +157,8 @@ public class FormattingVisitor extends Visitor implements NaturalVisitor {
 
 	@Override
 	public void visit(Statement that) {
-		try {
-			that.visitChildren(this);
-			out.write(that.getMainEndToken().getText()); // ";"
-		}
-		catch (IOException e) {
-			this.handleException(e, that);
-		}
+		that.visitChildren(this);
+		writeOut(that.getMainEndToken()); // ";"
 	}
 
 	@Override
@@ -174,7 +173,7 @@ public class FormattingVisitor extends Visitor implements NaturalVisitor {
 	@Override
 	public void visit(PositionalArgumentList that) {
 		try {
-			out.write(that.getMainToken().getText()); // "("
+			writeOut(that.getMainToken()); // "("
 			needsWhitespace = false;
 			List<PositionalArgument> arguments = that.getPositionalArguments();
 			int i = 0;
@@ -187,7 +186,7 @@ public class FormattingVisitor extends Visitor implements NaturalVisitor {
 					arguments.get(i).visit(this);
 				}
 			}
-			out.write(that.getMainEndToken().getText()); // ")"
+			writeOut(that.getMainEndToken()); // ")"
 		}
 		catch (IOException e) {
 			this.handleException(e, that);
@@ -199,7 +198,7 @@ public class FormattingVisitor extends Visitor implements NaturalVisitor {
 		try {
 			if (needsWhitespace)
 				out.write(" ");
-			out.write(that.getText()); // "literal"
+			writeOut(that.getMainToken());
 			needsWhitespace = true;
 			if (that.getMainEndToken() != null)
 				throw new Error("Literal has end token! Investigate"); // breakpoint here
@@ -220,5 +219,90 @@ public class FormattingVisitor extends Visitor implements NaturalVisitor {
 			System.err.println();
 		}
 		super.visitAny(that);
+	}
+
+	/**
+	 * Fast-forward the token stream until the specified token is reached, writing out any comment tokens, then write
+	 * the specified token.
+	 * <p>
+	 * This method should always be used to write any tokens.
+	 * 
+	 * @param token
+	 *            The next token to write.
+	 */
+	public void writeOut(Token token) {
+		try {
+			for (int i = tokens.index(); i < token.getTokenIndex(); i++) {
+				Token current = tokens.get(i);
+				switch (current.getType()) {
+					case CeylonLexer.LINE_COMMENT:
+					case CeylonLexer.MULTI_COMMENT: {
+						if (needsWhitespace)
+							out.write(" ");
+						out.write(current.getText());
+						break;
+					}
+					case CeylonLexer.WS:
+						break;
+					default: {
+						throw new Error("Unexpected token \"" + current.getText());
+					}
+				}
+				tokens.consume();
+				if (current.getType() == CeylonLexer.MULTI_COMMENT)
+					nextLine();
+			}
+			out.write(token.getText());
+			tokens.consume();
+		}
+		catch (IOException e) {
+			this.handleException(e, null); // TODO add argument "that" to signature to be able to pass here?
+		}
+	}
+
+	/**
+	 * Fast-forward the token stream until the next token contains a line break or isn't hidden, writing out any comment
+	 * tokens, then write a line break.
+	 * <p>
+	 * This is needed to keep a line comment at the end of a line instead of putting it into the next line.
+	 */
+	public void nextLine() {
+		try {
+			Token current;
+			boolean wroteLastToken;
+			loop: for (int i = tokens.index(); true; i++) { // condition comes later
+				wroteLastToken = false;
+				current = tokens.get(i);
+				switch (current.getType()) {
+					case CeylonLexer.LINE_COMMENT:
+					case CeylonLexer.MULTI_COMMENT: {
+						if (needsWhitespace)
+							out.write(" ");
+						out.write(current.getText());
+						tokens.consume();
+						wroteLastToken = true;
+					}
+					//$FALL-THROUGH$ intentional - LINE_COMMENTs contain the terminating line break
+					case CeylonLexer.WS: {
+						if (current.getText().contains("\n"))
+							break loop;
+						break;
+					}
+					default: {
+						// This happens if there's no newline where one should be (e.g., two statements in one line,
+						// closing brace after statement, etc.)
+						break loop;
+					}
+				}
+				tokens.consume();
+			}
+			if (!current.getText().endsWith("\n") || !wroteLastToken) // LINE_COMMENTs contain the terminating line
+																		// break
+				out.write("\n");
+			needsWhitespace = false;
+		}
+		catch (IOException e) {
+			this.handleException(e, null); // TODO add argument "that" to signature to be able to pass here?
+		}
 	}
 }

@@ -48,8 +48,15 @@ public class TestSamples {
 			byte[] encoded = Files.readAllBytes(Paths.get(filename + ".formatted"));
 			String expected = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(encoded)).toString();
 
+			// mild reformatting of expected and actual:
+			// * newline goodness
 			expected = expected.replaceAll("\r\n", "\n").replaceAll("\r", "\n");
 			actual = actual.replaceAll("\r\n", "\n").replaceAll("\r", "\n");
+			// * trailing newline
+			if (expected.endsWith("\n"))
+				expected = expected.substring(0, expected.length() - 1);
+			if (actual.endsWith("\n"))
+				actual = actual.substring(0, actual.length() - 1);
 			Assert.assertEquals(expected, actual);
 		}
 		catch (IOException e) {
@@ -64,5 +71,10 @@ public class TestSamples {
 	@Test
 	public void helloWorld() {
 		testFile("helloWorld");
+	}
+
+	@Test
+	public void helloWorldCommented() {
+		testFile("helloWorldCommented");
 	}
 }
