@@ -17,6 +17,8 @@ import com.redhat.ceylon.compiler.typechecker.tree.Tree.CompilationUnit;
 
 public class Main {
 	public static void main(String[] args) {
+		long t1 = 0, t2 = 0;
+
 		String fileName = "../ceylon-walkthrough/source/en/01basics.ceylon";
 		Writer output = new OutputStreamWriter(System.out);
 		if (args.length >= 1) {
@@ -34,9 +36,11 @@ public class Main {
 			CeylonLexer lexer = new CeylonLexer(new ANTLRFileStream(fileName));
 			CompilationUnit cu = new CeylonParser(new CommonTokenStream(lexer)).compilationUnit();
 			lexer.reset(); // FormattingVisitor needs to read the tokens again
+			t1 = System.currentTimeMillis();
 			cu.visit(new FormattingVisitor(new BufferedTokenStream(lexer), // can't use CommonTokenStream, we don't want
 																			// to skip comments
 					output));
+			t2 = System.currentTimeMillis();
 		}
 		catch (IOException | RecognitionException e) {
 			System.err.println("FATAL: Couldn't process file!");
@@ -52,5 +56,6 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
+		System.err.println(t2 - t1 + " ms");
 	}
 }
