@@ -13,10 +13,18 @@ When I'm comfortable with the architecture, all there's left to do is implementi
 Running
 -------
 
-The `test` subdirectory contains JUnit test cases, most notably `TestSamples`, which tests sample files and compares the output to a given formatted version of the file.
+The formatter is being developed inside a [ceylon-ide-eclipse](https://github.com/ceylon/ceylon-ide-eclipse) which is itself ran from source, with the following modifications made:
+
+    * Add the ANTLR runtime as dependency to the Ceylon typechecker, as outlined by Gavin King [here](https://github.com/ceylon/ceylon-ide-eclipse/issues/385#issuecomment-26142986)
+    * Update the `typechecker` binary of the IDE `defaultRepository` (located in `ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui/defaultRepository`) to a version built from source to include `VisitorAdaptor`
+      (This step will be obsolete as soon as the binaries are updated again upstream, which will hopefully be soon)
+
+It might very well be possible to compile and run the formatter using a different setup, but I'm happy with my current setup and don't want to risk breaking it :D If you succeed, contact me!
+
+The `test-source` subdirectory contains Ceylon test cases, most notably `testSamples`, which tests sample files (located in `test-samples`) and compares the output to a given formatted version of the file.
 You can look at these sample files to get an idea of what the formatter is currently capable of doing.
 
-You can also directly run `Main.main` from `src` with the path to a ceylon file as the first argument.
+You can also directly run `run` from `source` with the path to a ceylon file as the first argument.
 (The second argument can specify an output file, but I recommend strongly against this: The formatter isn't ready for such use yet.
 If this argument is omitted, the output is just printed to `stdout`, which is safe.)
 
