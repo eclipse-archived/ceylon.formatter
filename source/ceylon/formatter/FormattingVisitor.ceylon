@@ -1,9 +1,9 @@
-import com.redhat.ceylon.compiler.typechecker.tree { Tree { ... }, Visitor, Node, VisitorAdaptor }
+import com.redhat.ceylon.compiler.typechecker.tree { Tree { ... }, Node, VisitorAdaptor }
 import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer { lineComment=\iLINE_COMMENT, multiComment=\iMULTI_COMMENT, ws=\iWS } }
-import java.io { Writer }
 import org.antlr.runtime { TokenStream { la=\iLA }, Token }
+import java.io { Writer }
 import java.lang { Error, System { syserr=err }, Exception }
-import ceylon.interop.java { ... }
+import ceylon.interop.java { CeylonIterable }
 
 shared class FormattingVisitor(TokenStream tokens, Writer writer) extends VisitorAdaptor() {
     
@@ -95,7 +95,9 @@ shared class FormattingVisitor(TokenStream tokens, Writer writer) extends Visito
             statement.visit(this);
             nextLine();
         }
-        indent = indent.initial(indent.size - 1); // TODO check if indent.reversed.rest.reversed is faster
+        // remove one character from indent
+        variable Boolean b = true;
+        indent = indent.trimTrailing(function(Character c) { if (b) { b = false; return true; } return false; });
         writer.write(indent);
         writeOut(that.mainEndToken); // "}"
         needsWhitespace = true; // again, doesn't strictly "need"

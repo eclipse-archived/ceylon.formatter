@@ -1,4 +1,3 @@
-import java.lang.annotation { inherited }
 module ceylon.formatter "1.0.0" {
 	shared import java.base "7";
 	shared import com.redhat.ceylon.typechecker "1.0.0";

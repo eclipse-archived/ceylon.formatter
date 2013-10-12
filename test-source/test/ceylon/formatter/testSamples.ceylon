@@ -1,11 +1,10 @@
-import ceylon.test { assertEquals }
+import ceylon.test { assertEquals, fail }
 import ceylon.file { ... }
 import java.io { StringWriter }
 import com.redhat.ceylon.compiler.typechecker.tree { Tree { CompilationUnit } }
 import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer, CeylonParser }
 import org.antlr.runtime { ANTLRFileStream, CommonTokenStream, BufferedTokenStream }
 import ceylon.formatter { FormattingVisitor }
-import java.lang { Error }
 
 "Tests that the formatter transforms `test-samples/<filename>.ceylon`
  into `test-samples/<filename>.ceylon.formatted`."
@@ -29,20 +28,17 @@ void testFile(String filename) {
 			expected += "\n";
 		}
 		reader.destroy();
-		// mild reformatting of expected and actual:
+		// mild reformatting of actual:
 		// * newline goodness
 		actual = actual.replace("\r\n", "\n").replace("\r", "\n");
 		// * trailing newline
-		if (!expected.endsWith("\n")) {
-			expected += "\n";
-		}
 		if (!actual.endsWith("\n")) {
 			actual += "\n";
 		}
 		// now test that they're equal
 		assertEquals(expected, actual);
 	} else {
-		throw Error("File ``parsePath(fullFilename).absolutePath.string`` not found!");
+		fail("File ``parsePath(fullFilename).absolutePath.string`` not found!");
 	}
 }
 
