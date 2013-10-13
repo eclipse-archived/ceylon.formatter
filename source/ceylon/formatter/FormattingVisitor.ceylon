@@ -6,7 +6,17 @@ import java.lang { Error, System { syserr=err }, Exception }
 import ceylon.interop.java { CeylonIterable }
 import ceylon.formatter.options { FormattingOptions }
 
-shared class FormattingVisitor(TokenStream tokens, Writer writer, FormattingOptions options) extends VisitorAdaptor() {
+"A [[com.redhat.ceylon.compiler.typechecker.tree::Visitor]] that writes a formatted version of the
+ element (typically a [[com.redhat.ceylon.compiler.typechecker.tree::Tree.CompilationUnit]]) to a
+ [[java.io::Writer]]."
+shared class FormattingVisitor(
+	"The [[TokenStream]] from which the element was parsed;
+	 this is mainly needed to preserve comments, as they're not present in the AST."
+	TokenStream tokens,
+	"The writer to which the subject is written."
+	Writer writer,
+	"The options for the formatter that control the format of the written code."
+	FormattingOptions options) extends VisitorAdaptor() {
     
     variable Boolean needsWhitespace = false;
     variable String indent = "";
