@@ -8,7 +8,7 @@ import ceylon.formatter.options { defaultOptions }
 
 "Run the module `ceylon.formatter`."
 shared void run() {
-	String fileName = process.arguments[0] else "../ceylon-walkthrough/source/en/01basics.ceylon";
+    String fileName = process.arguments[0] else "../ceylon-walkthrough/source/en/01basics.ceylon";
     Writer output;
     if (exists outFile = process.arguments[1]) {
         output = FileWriter(outFile);

@@ -205,12 +205,12 @@ shared class FormattingVisitor(
             current = tokens.get(i);
             if (current.type == lineComment || current.type == multiComment || current.type == ws) {
                 if (current.type != ws) {
-                	if (needsWhitespace) {
-                    	writer.write(" ");
-                	}
-                	writer.write(current.text);
-                	tokens.consume();
-                	wroteLastToken = true;
+                    if (needsWhitespace) {
+                        writer.write(" ");
+                    }
+                    writer.write(current.text);
+                    tokens.consume();
+                    wroteLastToken = true;
                 }
                 if (current.text.contains("\n")) {
                     break;

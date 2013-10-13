@@ -4,9 +4,9 @@
  `SparseFormattingOptions` on top of it using [[CombinedOptions]]; this way, they don't have
  to specify every option each time that they need to provide `FormattingOptions` somewhere."
 shared abstract class SparseFormattingOptions() {
-	
-	"The indentation mode of the formatter."
-	shared formal IndentMode? indentMode;
+    
+    "The indentation mode of the formatter."
+    shared formal IndentMode? indentMode;
 }
 
 "A bundle of options for the formatter that control how the code should be formatted.
@@ -16,8 +16,8 @@ shared abstract class SparseFormattingOptions() {
 // This class should do nothing more than narrow down all the parameters of
 // SparseFormattingOptions to non-optional types. 
 shared abstract class FormattingOptions() extends SparseFormattingOptions() {
-	
-	shared actual formal IndentMode indentMode;
+    
+    shared actual formal IndentMode indentMode;
 }
 
 "A combination of several [[FormattingOptions]], of which some may be [[Sparse|SparseFormattingOptions]].
@@ -34,19 +34,19 @@ shared abstract class FormattingOptions() extends SparseFormattingOptions() {
              // ....
          }));"
 shared class CombinedOptions(FormattingOptions foundation, SparseFormattingOptions+ decoration) extends FormattingOptions() {
-	
-	shared actual IndentMode indentMode {
-		for (options in decoration) {
-			if (exists indentMode = options.indentMode) {
-				return indentMode;
-			}
-		}
-		return foundation.indentMode;
-	}
+    
+    shared actual IndentMode indentMode {
+        for (options in decoration) {
+            if (exists indentMode = options.indentMode) {
+                return indentMode;
+            }
+        }
+        return foundation.indentMode;
+    }
 }
 
 "The default formatting options, as used in the `ceylon.language` module and the Ceylon SDK."
 shared object defaultOptions extends FormattingOptions() {
-	
-	indentMode = Spaces(4);
+    
+    indentMode = Spaces(4);
 }
