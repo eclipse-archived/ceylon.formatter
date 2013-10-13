@@ -10,16 +10,16 @@ import ceylon.formatter.options { FormattingOptions }
  element (typically a [[com.redhat.ceylon.compiler.typechecker.tree::Tree.CompilationUnit]]) to a
  [[java.io::Writer]]."
 shared class FormattingVisitor(
-	"The [[TokenStream]] from which the element was parsed;
-	 this is mainly needed to preserve comments, as they're not present in the AST."
-	TokenStream tokens,
-	"The writer to which the subject is written."
-	Writer writer,
-	"The options for the formatter that control the format of the written code."
-	FormattingOptions options) extends VisitorAdaptor() {
+    "The [[TokenStream]] from which the element was parsed;
+     this is mainly needed to preserve comments, as they're not present in the AST."
+    TokenStream tokens,
+    "The writer to which the subject is written."
+    Writer writer,
+    "The options for the formatter that control the format of the written code."
+    FormattingOptions options) extends VisitorAdaptor() {
     
     variable Boolean needsWhitespace = false;
-    variable String indent = "";
+    variable Integer indentLevel = 0;
     
     // initialize TokenStream
     tokens.la(1);
@@ -99,17 +99,15 @@ shared class FormattingVisitor(
         }
         writeOut(that.mainToken); // "{"
         nextLine();
-        indent += "\t";
+        indentLevel++;
         for (Statement statement in CeylonIterable(that.statements)) {
-            writer.write(indent);
+            writer.write(options.indentMode.indent(indentLevel));
             needsWhitespace = false;
             statement.visit(this);
             nextLine();
         }
-        // remove one character from indent
-        variable Boolean b = true;
-        indent = indent.trimTrailing(function(Character c) { if (b) { b = false; return true; } return false; });
-        writer.write(indent);
+        indentLevel--;
+        writer.write(options.indentMode.indent(indentLevel));
         writeOut(that.mainEndToken); // "}"
         needsWhitespace = true; // again, doesn't strictly "need"
         nextLine();
