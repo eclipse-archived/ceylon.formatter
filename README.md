@@ -15,9 +15,9 @@ Running
 
 The formatter is being developed inside a [ceylon-ide-eclipse](https://github.com/ceylon/ceylon-ide-eclipse) which is itself ran from source, with the following modifications made:
 
-    * Add the ANTLR runtime as dependency to the Ceylon typechecker, as outlined by Gavin King [here](https://github.com/ceylon/ceylon-ide-eclipse/issues/385#issuecomment-26142986)
-    * Update the `typechecker` binary of the IDE `defaultRepository` (located in `ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui/defaultRepository`) to a version built from source to include `VisitorAdaptor`
-      (This step will be obsolete as soon as the binaries are updated again upstream, which will hopefully be soon)
+* Add the ANTLR runtime as dependency to the Ceylon typechecker, as outlined by Gavin King [here](https://github.com/ceylon/ceylon-ide-eclipse/issues/385#issuecomment-26142986)
+* Update the `typechecker` binary of the IDE `defaultRepository` (located in `ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui/defaultRepository`) to a version built from source to include `VisitorAdaptor`
+  (This step will be obsolete as soon as the binaries are updated again upstream, which will hopefully be soon)
 
 It might very well be possible to compile and run the formatter using a different setup, but I'm happy with my current setup and don't want to risk breaking it :D If you succeed, contact me!
 
