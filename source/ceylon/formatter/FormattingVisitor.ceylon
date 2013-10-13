@@ -183,6 +183,10 @@ shared class FormattingVisitor(TokenStream tokens, Writer writer) extends Visito
         tokens.consume();
     }
     
+    "Fast-forward the token stream until the next token contains a line break or isn't hidden, writing out any comment tokens,
+     then write a line break.
+     
+     This is needed to keep a line comment at the end of a line instead of putting it into the next line."
     void nextLine() {
         variable Boolean wroteLastToken = false;
         variable Integer i = tokens.index();
