@@ -4,6 +4,7 @@ import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer, CeylonParser
 import org.antlr.runtime { ANTLRFileStream, CommonTokenStream, BufferedTokenStream }
 import com.redhat.ceylon.compiler.typechecker.tree { Tree }
 import ceylon.time { ... }
+import ceylon.formatter.options { defaultOptions }
 
 "Run the module `ceylon.formatter`."
 shared void run() {
@@ -19,7 +20,7 @@ shared void run() {
     Tree.CompilationUnit cu = CeylonParser(CommonTokenStream(lexer)).compilationUnit();
     lexer.reset(); // FormattingVisitor needs to read the tokens again
     Instant start = now();
-    cu.visit(FormattingVisitor(BufferedTokenStream(lexer), output));
+    cu.visit(FormattingVisitor(BufferedTokenStream(lexer), output, defaultOptions));
     Instant end = now();
     output.close();
     syserr.println(start.durationTo(end).string);

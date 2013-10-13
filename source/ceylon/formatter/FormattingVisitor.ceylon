@@ -4,8 +4,9 @@ import org.antlr.runtime { TokenStream { la=\iLA }, Token }
 import java.io { Writer }
 import java.lang { Error, System { syserr=err }, Exception }
 import ceylon.interop.java { CeylonIterable }
+import ceylon.formatter.options { FormattingOptions }
 
-shared class FormattingVisitor(TokenStream tokens, Writer writer) extends VisitorAdaptor() {
+shared class FormattingVisitor(TokenStream tokens, Writer writer, FormattingOptions options) extends VisitorAdaptor() {
     
     variable Boolean needsWhitespace = false;
     variable String indent = "";
