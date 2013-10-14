@@ -3,21 +3,27 @@
  The indented use is that users take a \"default\" `FormattingOptions` object and apply some
  `SparseFormattingOptions` on top of it using [[CombinedOptions]]; this way, they don't have
  to specify every option each time that they need to provide `FormattingOptions` somewhere."
-shared abstract class SparseFormattingOptions() {
+shared class SparseFormattingOptions(
+    	indentMode = null) {
     
     "The indentation mode of the formatter."
-    shared formal IndentMode? indentMode;
+    shared default IndentMode? indentMode;
 }
 
 "A bundle of options for the formatter that control how the code should be formatted.
  
- See [[SparseFormattingOptions]] for a convenient way to refine FormattingOptions without
- having to specify each option explicitly."
-// This class should do nothing more than narrow down all the parameters of
-// SparseFormattingOptions to non-optional types. 
-shared abstract class FormattingOptions() extends SparseFormattingOptions() {
+ The default arguments are modeled after the `ceylon.language` module and the Ceylon SDK.
+ You can refine them using named arguments:
+ 
+     FormattingOptions {
+         indentMode = Tabs(4);
+         // modify some others
+         // keep the rest
+     }"
+shared class FormattingOptions(
+    	indentMode = Spaces(4)) extends SparseFormattingOptions() {
     
-    shared actual formal IndentMode indentMode;
+    shared actual default IndentMode indentMode;
 }
 
 "A combination of several [[FormattingOptions]], of which some may be [[Sparse|SparseFormattingOptions]].
@@ -25,7 +31,7 @@ shared abstract class FormattingOptions() extends SparseFormattingOptions() {
  Each attribute is first searched in each of the [[decoration]] options, in the order of their appearance,
  and, if it isn't present in any of them, the attribute of [[foundation]] is used.
  
- In the typical use case, `foundation` will be some default options (e.g. [[defaultOptions]]), and 
+ In the typical use case, `foundation` will be some default options (e.g. `FormattingOptions()`), and 
  `decoration` will be one `SparseFormattingOptions` object created on the fly:
  
      FormattingVisitor(tokens, writer, CombinedOptions(defaultOptions,
@@ -45,8 +51,10 @@ shared class CombinedOptions(FormattingOptions foundation, SparseFormattingOptio
     }
 }
 
-"The default formatting options, as used in the `ceylon.language` module and the Ceylon SDK."
-shared object defaultOptions extends FormattingOptions() {
+"A subclass of [[FormattingOptions]] that makes its attributes [[variable]].
+ 
+ For internal use only."
+class VariableOptions(FormattingOptions baseOptions) extends FormattingOptions() {
     
-    indentMode = Spaces(4);
+    shared actual variable IndentMode indentMode = baseOptions.indentMode;
 }

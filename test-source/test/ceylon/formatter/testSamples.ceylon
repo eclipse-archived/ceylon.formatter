@@ -5,7 +5,7 @@ import com.redhat.ceylon.compiler.typechecker.tree { Tree { CompilationUnit } }
 import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer, CeylonParser }
 import org.antlr.runtime { ANTLRFileStream, CommonTokenStream, BufferedTokenStream }
 import ceylon.formatter { FormattingVisitor }
-import ceylon.formatter.options { defaultOptions }
+import ceylon.formatter.options { FormattingOptions }
 
 "Tests that the formatter transforms `test-samples/<filename>.ceylon`
  into `test-samples/<filename>.ceylon.formatted`."
@@ -19,7 +19,7 @@ void testFile(String filename) {
         CompilationUnit cu = CeylonParser(CommonTokenStream(lexer)).compilationUnit();
         lexer.reset(); // FormattingVisitor needs to read the tokens again
         cu.visit(FormattingVisitor(BufferedTokenStream(lexer), // don't use CommonTokenStream - we don't want to skip comments
-                                    output, defaultOptions));
+                                    output, FormattingOptions()));
         variable String actual = output.string;
         // read expected file
         variable String expected = "";
