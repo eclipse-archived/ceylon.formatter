@@ -49,6 +49,8 @@ shared class Spaces(spacesPerLevel) extends IndentMode() {
     
     widthOfLevel = spacesPerLevel;
     
+    shared actual variable String string = spacesPerLevel.string + " spaces";
+    
     object cache satisfies Cached<String> {
         shared actual MutableMap<Integer,String> cache = HashMap<Integer, String> {
             0 -> "",
@@ -67,6 +69,8 @@ shared class Tabs(width) extends IndentMode() {
     shared Integer width;
     
     widthOfLevel = width;
+    
+    shared actual variable String string = widthOfLevel.string + "-wide tabs";
     
     object cache satisfies Cached<String> {
         shared actual MutableMap<Integer,String> cache = HashMap<Integer, String> {
@@ -103,6 +107,8 @@ shared class Mixed(tabs, spaces) extends IndentMode() {
     
     widthOfLevel = spaces.widthOfLevel;
     
+    shared actual variable String string = "mix " + tabs.string + ", " + spaces.string;
+    
     MutableMap<Integer, String> cache = HashMap<Integer, String> { 0 -> "" };
     
     shared actual String indent(Integer level) {
@@ -117,5 +123,46 @@ shared class Mixed(tabs, spaces) extends IndentMode() {
         String indent = tabPart + spacesPart;
         cache.put(level, indent);
         return indent;
+    }
+}
+
+"The [[IndentMode]] represented by the given [[String]], or [[null]] if the string can't be parsed.
+ 
+ The format is like this:
+ 
+ * `n spaces`, where `n` represents an [[Integer]], for [[Spaces]]`(n)`
+ * `n-wide tabs`, where `n` represents an `Integer`, for [[Tabs]]`(n)`
+ * `mix n-wide tabs, m spaces`, where `m`, `n` represent `Integers`, for [[Mixed]]`(Tabs(n), Spaces(m))`"
+shared IndentMode? parseIndentMode(String string) {
+    if (exists mixIndex = string.inclusions("mix ").first) {
+    	if (exists commaIndex = string.inclusions(", ").first) {
+    		if (is Tabs tabs = parseIndentMode(string["mix ".size..commaIndex-1])) {
+    			if (is Spaces spaces = parseIndentMode(string[commaIndex+", ".size...])) {
+    				return Mixed(tabs, spaces);
+    			} else {
+    				throw Exception("Second pard of Mixed aren't spaces");
+    			}
+    		} else {
+    			throw Exception("First part of Mixed aren't tabs");
+    		}
+    	} else {
+    		throw Exception("Mixed doesn't contain a comma");
+    	}
+    } else if (exists spaceIndex = string.inclusions(" spaces").first) {
+    	value nString = string[...spaceIndex-1];
+    	if (exists n = parseInteger(nString)) {
+    		return Spaces(n);
+    	} else {
+    		throw Exception("Can't read space amount '``nString``'");
+    	}
+    } else if (exists tabsIndex = string.inclusions("-wide tabs").first) {
+    	value nString = string[...tabsIndex-1];
+    	if (exists n = parseInteger(nString)) {
+    		return Tabs(n);
+    	} else {
+    		throw Exception("Can't read tab width '``nString``'");
+    	}
+    } else {
+    	throw Exception("I didn't recognize anything in that string!");
     }
 }
