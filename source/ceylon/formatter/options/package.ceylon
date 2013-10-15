@@ -5,26 +5,23 @@
  
  * Manually create one, defining each attribute yourself:
  
-         object options extends FormattingOptions {
+         FormattingVisitor(tokens, writer, FormattingOptions {
              indentMode = Spaces(4);
              // ...
-         })
-         FormattingVisitor(tokens, writer, options);
+         });
  
- * Read one from a file using [[FormattingFile]]:
+ * Read one from a file using [[formattingFile]]:
  
-         FormattingVisitor(tokens, writer, FormattingFile(filename));
+         FormattingVisitor(tokens, writer, formattingFile(filename));
  
- * Use the [[default options|defaultOptions]]:
+ * Use the default options:
  
-         FormattingVisitor(tokens, writer, defaultOptions);
+         FormattingVisitor(tokens, writer, FormattingOptions());
  
  * [[Combine|CombinedOptions]] existing `FormattingOptions` with manually created [[SparseFormattingOptions]]:
  
-         object myOptions extends SparseFormattingOptions {
+         FormattingVisitor(tokens, writer, CombinedOptions(defaultOptions, SparseFormattingOptions {
              indentMode = Mixed(Tabs(8), Spaces(4));
              // ...
-         }
-         FormattingVisitor(tokens, writer, CombinedOptions(defaultOptions, myOptions));"
-// TODO implement FormattingFile
+         }));"
 shared package ceylon.formatter.options;
