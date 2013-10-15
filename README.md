@@ -42,7 +42,7 @@ To check if everything went well, you can run the tests in `test.ceylon.formatte
 
 ### Too complicated?
 
-One of my goals ([issue #3](https://github.com/lucaswerkmeister/ceylon-formatter/issues/3)) is to automate the build process.
+One of my goals ([issue #3](https://github.com/lucaswerkmeister/ceylon.formatter/issues/3)) is to automate the build process.
 If these instructions were too much for you, poke that issue, say that I should make that a priority, and then watch and wait.
 
 License
