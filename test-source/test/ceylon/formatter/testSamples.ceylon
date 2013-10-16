@@ -23,7 +23,7 @@ void testFile(String filename) {
         variable String actual = output.string;
         // read expected file
         variable String expected = "";
-        value reader = expectedFile.reader();
+        value reader = expectedFile.Reader();
         while (exists line = reader.readLine()) {
             expected += line;
             expected += "\n";
