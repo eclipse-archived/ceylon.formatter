@@ -1,9 +1,5 @@
-import ceylon.test { TestRunner, PrintingTestListener }
-import ceylon.formatter.options { ... }
+import ceylon.test { createTestRunner, TestRunResult }
 void run() {
-    TestRunner testRunner = TestRunner();
-    testRunner.addTestListener(PrintingTestListener());
-    testRunner.addTest("helloWorld", testHelloWorld);
-    testRunner.addTest("helloWorldCommented", testHelloWorldCommented);
-    testRunner.run();
+	TestRunResult result = createTestRunner([`package test.ceylon.formatter`]).run();
+	print(result.string);
 }

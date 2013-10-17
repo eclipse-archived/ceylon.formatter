@@ -1,4 +1,4 @@
-import ceylon.test { assertEquals, fail }
+import ceylon.test { assertEquals, fail, test }
 import ceylon.file { ... }
 import java.io { StringWriter }
 import com.redhat.ceylon.compiler.typechecker.tree { Tree { CompilationUnit } }
@@ -43,10 +43,12 @@ void testFile(String filename) {
     }
 }
 
+test
 shared void testHelloWorld() {
     testFile("helloWorld");
 }
 
+test
 shared void testHelloWorldCommented() {
     testFile("helloWorldCommented");
 }
