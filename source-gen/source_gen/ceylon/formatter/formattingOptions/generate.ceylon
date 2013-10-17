@@ -208,14 +208,22 @@ void generateFormattingFile(Writer writer) {
                          
                          switch (optionName)\n");
     for (FormattingOption option in formattingOptions) {
-    	writer.write(
-            "                case (\"``option.name``\") {
-                                 if (exists option = parse``option.type``(optionValue)) {
-                                     options.``option.name`` = option;
-                                 } else {
-                                     throw Exception(\"Can't parse value '\`\`optionValue\`\`' for option ``option.name``!\");
-                                 }
-                             }\n");
+        writer.write(
+            "                case (\"``option.name``\") {\n");
+        if (!option.type.endsWith("?")) {
+            writer.write(
+                "                    if (exists option = parse``option.type``(optionValue)) {
+                                         options.``option.name`` = option;
+                                     } else {
+                                         throw Exception(\"Can't parse value '\`\`optionValue\`\`' for option ``option.name``!\");
+                                     }\n");
+        } else {
+            writer.write(
+                "                    options.``option.name`` = parse``option.type.trimTrailing((Character c) => c == '?')``(optionValue);\n");
+        }
+        writer.write(
+            "                }\n");
+             
     }
     writer.write(
         "                else {
