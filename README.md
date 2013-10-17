@@ -22,19 +22,26 @@ I haven't tested these instructions, but I hope they should work, or at least ge
     mkdir ceylon && cd ceylon
     git clone https://github.com/ceylon/ceylon-dist.git
     cd ceylon-dist
-    ant update-all publish-all
+    ant setup publish-all
+    cd ..
+    git clone https://github.com/ceylon/ceylon-sdk.git
+    cd ceylon-sdk
+    ant publish
     cd ..
     git clone https://github.com/ceylon/ceylon-ide-eclipse.git
     mvn clean install -Dmaven.test.skip
     # now install it into your Eclipse from the update site ceylon/ceylon-ide-eclipse/site/target/site
 
-You probably also need to do the following:
-
-* Add the ANTLR runtime as dependency to the Ceylon typechecker, as outlined by Gavin King [here](https://github.com/ceylon/ceylon-ide-eclipse/issues/385#issuecomment-26142986)
-* Update the `typechecker` binary of the IDE `defaultRepository` (located in `ceylon-ide-eclipse/plugins/com.redhat.ceylon.eclipse.ui/defaultRepository`) to a version built from source to include `VisitorAdaptor`
-  (This step will be obsolete as soon as the binaries are updated again upstream, which will hopefully be soon)
-
 ### The formatter
+
+    cd ceylon
+    git clone https://github.com/lucaswerkmeister/ceylon.formatter.git
+
+Open Eclipse and choose Import -> Existing projects into workspaces, select the `ceylon.formatter` repository and import the project
+
+You need to tell Eclipse to use your system repo for building instead of the `defaultRepository`:
+Right click on the `ceylon.formatter` project, open Properties -> Ceylon Compiler -> Module Repositories and change the System repository from `${ceylon.repo}` to your `.ceylon/repo` in your home folder.
+(This step will be obsolete as soon as the `ceylon-ide-eclipse` developers update their `defaultRepository` binaries again, which will hopefully be soon.)
 
 Then compile and run the `source_gen.ceylon.formatter` module (in folder `source-gen`), which generates a few sources for the formatter;
 then you can finally compile `ceylon.formatter`.
