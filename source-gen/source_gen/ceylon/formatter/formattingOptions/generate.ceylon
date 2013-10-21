@@ -1,7 +1,13 @@
-import ceylon.file { Writer, parsePath, File, Resource }
+import ceylon.file { Writer, parsePath, File, Resource, Nil }
 shared void generate() {
     Resource resource = parsePath("source/ceylon/formatter/options/FormattingOptions.ceylon").resource;
-    assert (is File file = resource);
+    File file;
+    if (is Nil resource) {
+        file = resource.createFile();
+    } else {
+   	    assert (is File resource);
+   	    file = resource;
+    }
     Writer writer = file.Overwriter();
     try {
         writeHeader(writer);
