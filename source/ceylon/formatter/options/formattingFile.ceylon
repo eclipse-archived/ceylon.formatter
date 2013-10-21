@@ -1,5 +1,5 @@
 import ceylon.file { parsePath, File, Reader }
-import ceylon.language.meta.model { Attribute, VariableAttribute }
+import ceylon.language.meta.model { Attribute }
 import ceylon.language.meta.declaration { FunctionDeclaration }
 import ceylon.language.meta { type }
 "Reads a file with formatting options.
@@ -10,7 +10,7 @@ import ceylon.language.meta { type }
      blockBraceOnNewLine=true
      # 80 characters is not enough
      maxLineWidth=120
-     intentMode=4 spaces
+     indentMode=4 spaces
  
  As you can see, comment lines begin with a `#` (`\\{0023}`), and the value
  doesn't need to be quoted to contain spaces. Blank lines are also allowed.
@@ -76,22 +76,19 @@ VariableOptions variableFormattingFile(String filename, FormattingOptions baseOp
     			String fullTypeString = attribute.type.string;
         		Integer? endOfPackageIndex = fullTypeString.inclusions("::").first;
         		assert (exists endOfPackageIndex);
-        		String parseFunctionName = "parse" + fullTypeString[endOfPackageIndex+2...];
+        		String trimmedTypeString = fullTypeString[endOfPackageIndex+2...].trim((Character c) => c == '?');
+        		String parseFunctionName = "parse" + trimmedTypeString;
     			FunctionDeclaration? parseFunction =
     					`package ceylon.language`.getFunction(parseFunctionName)
     					else `package ceylon.formatter.options`.getFunction(parseFunctionName);
     			"Internal error - type not parsable"
     			assert (exists parseFunction);
     			
-    			// TODO in the code below, instead of Anything, we need the exact actual type of attribute.
-    			"Internal error - attribute not assignable"
-    			assert (is VariableAttribute<VariableOptions, Anything> attribute);
-    			
     			Anything parsedOptionValue = (parseFunction.apply<Anything, [String]>())(optionValue);
     			"Internal error - parser function of wrong type"
-    			assert (type(parsedOptionValue) == attribute.type);
+    			assert (type(parsedOptionValue).isSubTypeOf(attribute.type));
     			
-    			attribute(options).set(parsedOptionValue);
+    			attribute(options).unsafeSet(parsedOptionValue);
     		}
     	}
     	
