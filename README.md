@@ -17,24 +17,24 @@ Building and running
 
 You'll need a *very* recent version of Ceylon and the compiler (unless 1.0.0 is already out when you're reading this).
 For this, you need to build both your Ceylon and your Ceylon IDE from source.
-I haven't tested these instructions, but I hope they should work, or at least get you on your way:
 
     mkdir ceylon && cd ceylon
-    git clone https://github.com/ceylon/ceylon-dist.git
+    git clone https://github.com/ceylon/ceylon-dist
     cd ceylon-dist
     ant setup publish-all
     cd ..
-    git clone https://github.com/ceylon/ceylon-sdk.git
+    git clone https://github.com/ceylon/ceylon-sdk
     cd ceylon-sdk
     ant publish
     cd ..
-    git clone https://github.com/ceylon/ceylon-ide-eclipse.git
+    git clone https://github.com/ceylon/ceylon-ide-eclipse
+    cd ceylon-ide-eclipse
     mvn clean install -Dmaven.test.skip
     # now install it into your Eclipse from the update site ceylon/ceylon-ide-eclipse/site/target/site
+    cd ..
 
 ### The formatter
 
-    cd ceylon
     git clone https://github.com/lucaswerkmeister/ceylon.formatter.git
 
 Open Eclipse and choose Import -> Existing projects into workspaces, select the `ceylon.formatter` repository and import the project
