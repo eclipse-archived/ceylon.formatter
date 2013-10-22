@@ -39,10 +39,6 @@ For this, you need to build both your Ceylon and your Ceylon IDE from source.
 
 Open Eclipse and choose Import -> Existing projects into workspaces, select the `ceylon.formatter` repository and import the project
 
-You need to tell Eclipse to use your system repo for building instead of the `defaultRepository`:
-Right click on the `ceylon.formatter` project, open Properties -> Ceylon Compiler -> Module Repositories and change the System repository from `${ceylon.repo}` to your `.ceylon/repo` in your home folder.
-(This step will be obsolete as soon as the `ceylon-ide-eclipse` developers update their `defaultRepository` binaries again, which will hopefully be soon.)
-
 Then compile and run the `source_gen.ceylon.formatter` module (in folder `source-gen`), which generates a few sources for the formatter;
 then you can finally compile `ceylon.formatter`.
 To check if everything went well, you can run the tests in `test.ceylon.formatter` (in folder `source-test`).
