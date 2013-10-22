@@ -29,7 +29,7 @@ For this, you need to build both your Ceylon and your Ceylon IDE from source.
     cd ..
     git clone https://github.com/ceylon/ceylon-ide-eclipse
     cd ceylon-ide-eclipse
-    mvn clean install -Dmaven.test.skip
+    mvn install -Dmaven.test.skip
     # now install it into your Eclipse from the update site ceylon/ceylon-ide-eclipse/site/target/site
     cd ..
 
