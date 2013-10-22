@@ -140,13 +140,13 @@ void generateFormattingFile(Writer writer) {
         "\"Reads a file with formatting options.
           
           The file consists of lines of key=value pairs or comments, like this:
-          
-              # Boss Man says the One True Style is evil
-              blockBraceOnNewLine=true
-              # 80 characters is not enough
-              maxLineWidth=120
-              intentMode=4 spaces
-          
+          ~~~~plain
+          # Boss Man says the One True Style is evil
+          blockBraceOnNewLine=true
+          # 80 characters is not enough
+          maxLineWidth=120
+          intentMode=4 spaces
+          ~~~~
           As you can see, comment lines begin with a `#` (`\\\\{0023}`), and the value
           doesn't need to be quoted to contain spaces. Blank lines are also allowed.
           
