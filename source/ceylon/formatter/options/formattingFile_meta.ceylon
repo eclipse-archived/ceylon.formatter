@@ -45,7 +45,7 @@ VariableOptions variableFormattingFile_meta(String filename, FormattingOptions b
     	variable VariableOptions options = VariableOptions(baseOptions);
     	for (String line in lines) {
     		if (line.startsWith("include=")) {
-    			options = variableFormattingFile(line.terminal(line.size - "include=".size), options);
+    			options = variableFormattingFile_meta(line.terminal(line.size - "include=".size), options);
     		}
     	}
     	
