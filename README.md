@@ -35,7 +35,7 @@ For this, you need to build both your Ceylon and your Ceylon IDE from source.
 
 ### The formatter
 
-    git clone https://github.com/lucaswerkmeister/ceylon.formatter.git
+    git clone https://github.com/lucaswerkmeister/ceylon.formatter
 
 Open Eclipse and choose Import -> Existing projects into workspaces, select the `ceylon.formatter` repository and import the project
 
