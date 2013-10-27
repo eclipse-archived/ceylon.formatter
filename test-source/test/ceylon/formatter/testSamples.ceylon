@@ -1,6 +1,5 @@
 import ceylon.test { assertEquals, fail, test }
 import ceylon.file { ... }
-import java.io { StringWriter }
 import com.redhat.ceylon.compiler.typechecker.tree { Tree { CompilationUnit } }
 import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer, CeylonParser }
 import org.antlr.runtime { ANTLRFileStream, CommonTokenStream, BufferedTokenStream }
@@ -14,7 +13,14 @@ void testFile(String filename) {
     if(is File inputFile =  parsePath(fullFilename).resource,
         is File expectedFile = parsePath(fullFilename + ".formatted").resource) {
         // format input file
-        StringWriter output = StringWriter(inputFile.size);
+        object output satisfies Writer {            
+            variable String content = "";
+        	shared actual void destroy() => flush();        	
+        	shared actual void flush() {}        	
+        	shared actual void write(String string) => content += string;        	
+        	shared actual void writeLine(String line) => content += line + operatingSystem.newline;        	
+        	shared actual String string => content;        	
+        }
         CeylonLexer lexer = CeylonLexer(ANTLRFileStream(fullFilename));
         CompilationUnit cu = CeylonParser(CommonTokenStream(lexer)).compilationUnit();
         lexer.reset(); // FormattingVisitor needs to read the tokens again

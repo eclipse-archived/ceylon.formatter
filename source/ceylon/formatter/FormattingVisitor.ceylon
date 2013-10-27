@@ -1,8 +1,8 @@
 import com.redhat.ceylon.compiler.typechecker.tree { Tree { ... }, Node, VisitorAdaptor }
 import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer { lineComment=\iLINE_COMMENT, multiComment=\iMULTI_COMMENT, ws=\iWS } }
 import org.antlr.runtime { TokenStream { la=\iLA }, Token }
-import java.io { Writer }
-import java.lang { Error, System { syserr=err }, Exception }
+import java.lang { Error, Exception }
+import ceylon.file { Writer }
 import ceylon.interop.java { CeylonIterable }
 import ceylon.formatter.options { FormattingOptions }
 
@@ -156,11 +156,11 @@ shared class FormattingVisitor(
     //TODO eventually, this will be unneeded, as each visitSomeSubclassOfNode should be overwritten here.
     shared actual void visitAny(Node that) {
         if (exists Token start = that.mainToken) {
-            syserr.print(start.text);
+            process.writeError(start.text);
             if (exists Token end = that.mainEndToken) {
-                syserr.print("\t``end.text``");
+                process.writeError("\t``end.text``");
             }
-            syserr.println();
+            process.writeErrorLine();
         }
         super.visitAny(that); // continue walking the tree
     }
@@ -224,7 +224,7 @@ shared class FormattingVisitor(
             i++;
         }
         if (!current.text.endsWith("\n") || !wroteLastToken) { // LINE_COMMENTs contain the terminating line break
-            writer.write("\n");
+            writer.writeLine("");
         }
         needsWhitespace = false;
     }
