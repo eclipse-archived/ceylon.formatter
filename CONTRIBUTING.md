@@ -3,17 +3,17 @@ Contributing to `ceylon.formatter`
 
 So you want to contribute? Awesome! Here’s how you can do that:
 
-1. Participate in „Request for comment“ issues
+1. Participate in “Request for comment” issues
 2. Contribute code
 3. Test the formatter, report bugs, provide sample code
 4. Some other way that I didn’t think of
 
 Let’s look at them in closer detail.
 
-Participate in „Request for comment“ issues
+Participate in “Request for comment” issues
 -------------------------------------------
 
-This is the most lightweight way to contribute to this project. You don’t need to fork, you don’t need to clone, you don’t need to change any files on your computer. All you need to do is to **head over [here](https://github.com/lucaswerkmeister/ceylon.formatter/issues?labels=request+for+comments&page=1&state=open "issues tagged with \"request for comment\"")**, pick an issue, **read** through the issue text and existing comments, **think** about it, then **add your opinion** to the discussion. (I’d like to point out that while comments like „You forgot corner case X“, „@bob is currently working on this in ####“ and „I like the name A better, B could be misinterpreted as β“ are in a way more constructive, a simple „sounds good to me“, „good idea“ or just „+1“ can be really motivating as well, so please don’t hesitate sending your comment, no matter how short it is!)
+This is the most lightweight way to contribute to this project. You don’t need to fork, you don’t need to clone, you don’t need to change any files on your computer. All you need to do is to **head over [here](https://github.com/lucaswerkmeister/ceylon.formatter/issues?labels=request+for+comments&page=1&state=open "issues tagged with \"request for comment\"")**, pick an issue, **read** through the issue text and existing comments, **think** about it, then **add your opinion** to the discussion. (I’d like to point out that while comments like “You forgot corner case X”, “@bob is currently working on this in ####” and “I like the name A better, B could be misinterpreted as β” are in a way more constructive, a simple “sounds good to me”, “good idea” or just “+1” can be really motivating as well, so please don’t hesitate sending your comment, no matter how short it is!)
 
 Contribute code
 ---------------
