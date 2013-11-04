@@ -76,7 +76,7 @@ VariableOptions variableFormattingFile_meta(String filename, FormattingOptions b
     			"Internal error - parser function of wrong type"
     			assert (type(parsedOptionValue).isSubTypeOf(attribute.type));
     			
-    			attribute(options).unsafeSet(parsedOptionValue);
+    			attribute(options).setIfAssignable(parsedOptionValue);
     		}
     	}
     	
