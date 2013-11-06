@@ -33,55 +33,55 @@ shared FormattingOptions formattingFile_meta(
 VariableOptions variableFormattingFile_meta(String filename, FormattingOptions baseOptions) {
     
     if (is File file = parsePath(filename).resource) {
-    	// read the file
-    	Reader reader = file.Reader();
-    	variable String[] lines = [];
-    	while (exists line = reader.readLine()) {
-    		lines = [line, *lines];
-    	}
-    	lines = lines.reversed; // since we had to read the file in reverse order
-    	
-    	// read included files
-    	variable VariableOptions options = VariableOptions(baseOptions);
-    	for (String line in lines) {
-    		if (line.startsWith("include=")) {
-    			options = variableFormattingFile_meta(line.terminal(line.size - "include=".size), options);
-    		}
-    	}
-    	
-    	// read other options
-    	for (String line in lines) {
-    		if (!line.startsWith("#") && !line.startsWith("include=")) {
-    			Integer? indexOfEquals = line.indexes((Character c) => c == '=').first;
-    			"Line does not contain an equality sign"
-    			assert (exists indexOfEquals);
-    			String optionName = line.segment(0, indexOfEquals);
-    			String optionValue = line.segment(indexOfEquals + 1, line.size - indexOfEquals - 1);
-    			
-    			Attribute<VariableOptions>? attribute = `VariableOptions`.getAttribute<VariableOptions>(optionName);
-    			assert (exists attribute);
-    			
-    			String fullTypeString = attribute.type.string;
-        		Integer? endOfPackageIndex = fullTypeString.inclusions("::").first;
-        		assert (exists endOfPackageIndex);
-        		String trimmedTypeString = fullTypeString[endOfPackageIndex+2...].trim((Character c) => c == '?');
-        		String parseFunctionName = "parse" + trimmedTypeString;
-    			FunctionDeclaration? parseFunction =
-    					`package ceylon.language`.getFunction(parseFunctionName)
-    					else `package ceylon.formatter.options`.getFunction(parseFunctionName);
-    			"Internal error - type not parsable"
-    			assert (exists parseFunction);
-    			
-    			Anything parsedOptionValue = (parseFunction.apply<Anything, [String]>())(optionValue);
-    			"Internal error - parser function of wrong type"
-    			assert (type(parsedOptionValue).isSubTypeOf(attribute.type));
-    			
-    			attribute(options).setIfAssignable(parsedOptionValue);
-    		}
-    	}
-    	
-    	return options;
+        // read the file
+        Reader reader = file.Reader();
+        variable String[] lines = [];
+        while (exists line = reader.readLine()) {
+            lines = [line, *lines];
+        }
+        lines = lines.reversed; // since we had to read the file in reverse order
+        
+        // read included files
+        variable VariableOptions options = VariableOptions(baseOptions);
+        for (String line in lines) {
+            if (line.startsWith("include=")) {
+                options = variableFormattingFile_meta(line.terminal(line.size - "include=".size), options);
+            }
+        }
+        
+        // read other options
+        for (String line in lines) {
+            if (!line.startsWith("#") && !line.startsWith("include=")) {
+                Integer? indexOfEquals = line.indexes((Character c) => c == '=').first;
+                "Line does not contain an equality sign"
+                assert (exists indexOfEquals);
+                String optionName = line.segment(0, indexOfEquals);
+                String optionValue = line.segment(indexOfEquals + 1, line.size - indexOfEquals - 1);
+                
+                Attribute<VariableOptions>? attribute = `VariableOptions`.getAttribute<VariableOptions>(optionName);
+                assert (exists attribute);
+                
+                String fullTypeString = attribute.type.string;
+                Integer? endOfPackageIndex = fullTypeString.inclusions("::").first;
+                assert (exists endOfPackageIndex);
+                String trimmedTypeString = fullTypeString[endOfPackageIndex+2...].trim((Character c) => c == '?');
+                String parseFunctionName = "parse" + trimmedTypeString;
+                FunctionDeclaration? parseFunction =
+                        `package ceylon.language`.getFunction(parseFunctionName)
+                        else `package ceylon.formatter.options`.getFunction(parseFunctionName);
+                "Internal error - type not parsable"
+                assert (exists parseFunction);
+                
+                Anything parsedOptionValue = (parseFunction.apply<Anything, [String]>())(optionValue);
+                "Internal error - parser function of wrong type"
+                assert (type(parsedOptionValue).subtypeOf(attribute.type));
+                
+                attribute(options).setIfAssignable(parsedOptionValue);
+            }
+        }
+        
+        return options;
     } else {
-    	throw Exception("File '``filename``' not found!");
+        throw Exception("File '``filename``' not found!");
     }
 }
