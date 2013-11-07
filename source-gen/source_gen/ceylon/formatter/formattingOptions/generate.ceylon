@@ -145,7 +145,7 @@ void generateFormattingFile(Writer writer) {
           blockBraceOnNewLine=true
           # 80 characters is not enough
           maxLineWidth=120
-          intentMode=4 spaces
+          indentMode=4 spaces
           ~~~~
           As you can see, comment lines begin with a `#` (`\\\\{0023}`), and the value
           doesn't need to be quoted to contain spaces. Blank lines are also allowed.
