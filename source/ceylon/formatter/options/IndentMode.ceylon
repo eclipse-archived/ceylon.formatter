@@ -56,7 +56,7 @@ shared class Spaces(spacesPerLevel) extends IndentMode() {
             0 -> "",
             1 -> "".join
                 { for (value i in 1..spacesPerLevel) " " } // todo: check speed of " ".join("", "", ...) vs "".join(" ", " ", ...)
-        };        
+        };
     }
     shared actual String indent(Integer level) => cache.get(level);
 }
@@ -135,34 +135,34 @@ shared class Mixed(tabs, spaces) extends IndentMode() {
  * `mix n-wide tabs, m spaces`, where `m`, `n` represent `Integers`, for [[Mixed]]`(Tabs(n), Spaces(m))`"
 shared IndentMode? parseIndentMode(String string) {
     if (exists mixIndex = string.inclusions("mix ").first) {
-    	if (exists commaIndex = string.inclusions(", ").first) {
-    		if (is Tabs tabs = parseIndentMode(string["mix ".size..commaIndex-1])) {
-    			if (is Spaces spaces = parseIndentMode(string[commaIndex+", ".size...])) {
-    				return Mixed(tabs, spaces);
-    			} else {
-    				throw Exception("Second pard of Mixed aren't spaces");
-    			}
-    		} else {
-    			throw Exception("First part of Mixed aren't tabs");
-    		}
-    	} else {
-    		throw Exception("Mixed doesn't contain a comma");
-    	}
+        if (exists commaIndex = string.inclusions(", ").first) {
+            if (is Tabs tabs = parseIndentMode(string["mix ".size..commaIndex-1])) {
+                if (is Spaces spaces = parseIndentMode(string[commaIndex+", ".size...])) {
+                    return Mixed(tabs, spaces);
+                } else {
+                    throw Exception("Second pard of Mixed aren't spaces");
+                }
+            } else {
+                throw Exception("First part of Mixed aren't tabs");
+            }
+        } else {
+            throw Exception("Mixed doesn't contain a comma");
+        }
     } else if (exists spaceIndex = string.inclusions(" spaces").first) {
-    	value nString = string[...spaceIndex-1];
-    	if (exists n = parseInteger(nString)) {
-    		return Spaces(n);
-    	} else {
-    		throw Exception("Can't read space amount '``nString``'");
-    	}
+        value nString = string[...spaceIndex-1];
+        if (exists n = parseInteger(nString)) {
+            return Spaces(n);
+        } else {
+            throw Exception("Can't read space amount '``nString``'");
+        }
     } else if (exists tabsIndex = string.inclusions("-wide tabs").first) {
-    	value nString = string[...tabsIndex-1];
-    	if (exists n = parseInteger(nString)) {
-    		return Tabs(n);
-    	} else {
-    		throw Exception("Can't read tab width '``nString``'");
-    	}
+        value nString = string[...tabsIndex-1];
+        if (exists n = parseInteger(nString)) {
+            return Tabs(n);
+        } else {
+            throw Exception("Can't read tab width '``nString``'");
+        }
     } else {
-    	throw Exception("I didn't recognize anything in that string!");
+        throw Exception("I didn't recognize anything in that string!");
     }
 }

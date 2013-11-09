@@ -1,5 +1,4 @@
 import com.redhat.ceylon.compiler.typechecker.tree { Tree { ... }, Node, VisitorAdaptor }
-import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer { lineComment=\iLINE_COMMENT, multiComment=\iMULTI_COMMENT, ws=\iWS } }
 import org.antlr.runtime { TokenStream { la=\iLA }, Token }
 import java.lang { Error, Exception }
 import ceylon.file { Writer }
@@ -18,8 +17,7 @@ shared class FormattingVisitor(
     "The options for the formatter that control the format of the written code."
     FormattingOptions options) extends VisitorAdaptor() {
     
-    variable Boolean needsWhitespace = false;
-    variable Integer indentLevel = 0;
+    FormattingWriter fWriter = FormattingWriter(tokens, writer, options);
     
     // initialize TokenStream
     tokens.la(1);
@@ -62,60 +60,41 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitVoidModifier(VoidModifier that) {
-        if (needsWhitespace) {
-            writer.write(" ");
-        }
-        writeOut(that.mainToken);
-        needsWhitespace = true;
+        fWriter.writeToken(that.mainToken, null, 1, maxDesire, maxDesire);
     }
     
     shared actual void visitIdentifier(Identifier that) {
-        if (needsWhitespace) {
-            writer.write(" ");
-        }
-        writeOut(that.mainToken);
-        needsWhitespace = true;
+        fWriter.writeToken(that.mainToken, 0, 1, 0, 0);
     }
     
     shared actual void visitParameterList(ParameterList that) {
-        writeOut(that.mainToken); // "("
-        needsWhitespace = false;
+        value context = fWriter.writeToken(that.mainToken, null, 1, minDesire, minDesire); // "("
         variable Boolean hasFirst = false;
         for (Parameter parameter in CeylonIterable(that.parameters)) {
             if (hasFirst) {
-                writer.write(", ");
-                needsWhitespace = false;
+                fWriter.writeToken(",", null, 0, minDesire, maxDesire);
             }
             parameter.visit(this);
             hasFirst = true;
         }
-        writeOut(that.mainEndToken); // ")"
-        needsWhitespace = true; // doesn't "need", but looks prettier - obviously, this model won't be kept
+        fWriter.writeToken(that.mainEndToken, null, null, minDesire, 10, context); // ")"
     }
     
     shared actual void visitBlock(Block that) {
-        if (needsWhitespace) {
-            writer.write(" "); // doesn't "need", but looks prettier
-        }
-        writeOut(that.mainToken); // "{"
-        nextLine();
-        indentLevel++;
+        value context = fWriter.writeToken(that.mainToken, null, 1, 10, minDesire); // "{"
+        fWriter.nextLine();
         for (Statement statement in CeylonIterable(that.statements)) {
-            writer.write(options.indentMode.indent(indentLevel));
-            needsWhitespace = false;
             statement.visit(this);
-            nextLine();
+            fWriter.nextLine();
         }
-        indentLevel--;
-        writer.write(options.indentMode.indent(indentLevel));
-        writeOut(that.mainEndToken); // "}"
-        needsWhitespace = true; // again, doesn't strictly "need"
-        nextLine();
+        fWriter.writeToken(that.mainEndToken, null, null, minDesire, 5, context); // "}"
+        fWriter.nextLine();
     }
     
     shared actual void visitStatement(Statement that) {
+        value context = fWriter.acquireContext();
         that.visitChildren(this);
-        writeOut(that.mainEndToken); // ";"
+        fWriter.writeToken(that.mainEndToken, null, null, minDesire, maxDesire, context); // ";"
     }
     
     shared actual void visitInvocationExpression(InvocationExpression that) {
@@ -128,26 +107,20 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitPositionalArgumentList(PositionalArgumentList that) {
-        writeOut(that.mainToken); // "("
-        needsWhitespace = false;
+        value context = fWriter.writeToken(that.mainToken, null, 1, minDesire, minDesire); // "("
         variable Boolean hasFirst = false;
         for (PositionalArgument argument in CeylonIterable(that.positionalArguments)) {
             if (hasFirst) {
-                writer.write(", ");
-                needsWhitespace = false;
+                fWriter.writeToken(",", null, 0, minDesire, maxDesire);
             }
             argument.visit(this);
             hasFirst = true;
         }
-        writeOut(that.mainEndToken); // ")"
+        fWriter.writeToken(that.mainEndToken, null, null, minDesire, 5, context); // ")"
     }
     
     shared actual void visitLiteral(Literal that) {
-        if (needsWhitespace) {
-            writer.write(" ");
-        }
-        writeOut(that.mainToken);
-        needsWhitespace = true;
+        fWriter.writeToken(that.mainToken, null, null, 1, 1);
         if (exists Token endToken = that.mainEndToken) {
             throw Error("Literal has end token ('``endToken``')! Investigate"); // breakpoint here
         }
@@ -165,67 +138,8 @@ shared class FormattingVisitor(
         super.visitAny(that); // continue walking the tree
     }
     
-    "Fast-forward the token stream until the specified token is reached, writing out any comment tokens,
-     then write out the specified token.
-     
-     This method should always be used to write any tokens."
-    void writeOut(Token token) {
-        variable Integer i = tokens.index();
-        while (i < token.tokenIndex) {
-            Token current = tokens.get(i);
-            if (current.type == lineComment || current.type == multiComment) {
-                if (needsWhitespace) {
-                    writer.write(" ");
-                }
-                writer.write(current.text);
-            }
-            else if (current.type != ws) {
-                throw Error("Unexpected token '``current.text``'");
-            }
-            tokens.consume();
-            if (current.type == multiComment) {
-                nextLine();
-            }
-            i++;
-        }
-        writer.write(token.text);
-        tokens.consume();
-    }
-    
-    "Fast-forward the token stream until the next token contains a line break or isn't hidden, writing out any comment tokens,
-     then write a line break.
-     
-     This is needed to keep a line comment at the end of a line instead of putting it into the next line."
-    void nextLine() {
-        variable Boolean wroteLastToken = false;
-        variable Integer i = tokens.index();
-        variable Token current = tokens.get(i); // definitely initialize
-        while (i < tokens.size()) { // that's not the condition by which we normally exit the loop
-            wroteLastToken = false;
-            current = tokens.get(i);
-            if (current.type == lineComment || current.type == multiComment || current.type == ws) {
-                if (current.type != ws) {
-                    if (needsWhitespace) {
-                        writer.write(" ");
-                    }
-                    writer.write(current.text);
-                    tokens.consume();
-                    wroteLastToken = true;
-                }
-                if (current.text.contains("\n")) {
-                    break;
-                }
-            }
-            else {
-                // This happens when there's no newline where one should be (e.g., two statements in one line, closing brace after statement, etc.)
-                break;
-            }
-            tokens.consume();
-            i++;
-        }
-        if (!current.text.endsWith("\n") || !wroteLastToken) { // LINE_COMMENTs contain the terminating line break
-            writer.writeLine("");
-        }
-        needsWhitespace = false;
+    shared void close() {
+        fWriter.close();
+        writer.close(null);
     }
 }
