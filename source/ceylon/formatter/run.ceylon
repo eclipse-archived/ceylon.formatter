@@ -35,5 +35,5 @@ shared void run() {
     cu.visit(FormattingVisitor(BufferedTokenStream(lexer), output, FormattingOptions()));
     Instant end = now();
     output.close(null);
-    process.writeError(start.durationTo(end).string);
+    process.writeErrorLine(start.durationTo(end).string);
 }
