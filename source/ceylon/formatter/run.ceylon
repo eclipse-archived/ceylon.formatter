@@ -21,10 +21,10 @@ shared void run() {
     }
     else {
         object sysoutWriter satisfies Writer {
-        	shared actual void destroy() => flush();        	
-        	shared actual void flush() => process.flush();        	
-        	shared actual void write(String string) => process.write(string);        	
-        	shared actual void writeLine(String line) => process.write(string);            
+            shared actual void destroy() => flush();
+            shared actual void flush() => process.flush();
+            shared actual void write(String string) => process.write(string);
+            shared actual void writeLine(String line) => process.writeLine(line);
         }
         output = sysoutWriter;
     }
