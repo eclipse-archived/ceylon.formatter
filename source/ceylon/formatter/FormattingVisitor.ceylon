@@ -50,7 +50,9 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitMethodDefinition(MethodDefinition that) {
+        value context = fWriter.openContext();
         visitAnyMethod(that);
+        fWriter.closeContext(context);
         that.block.visit(this);
     }
     
@@ -60,7 +62,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitVoidModifier(VoidModifier that) {
-        fWriter.writeToken(that.mainToken, null, 1, maxDesire, maxDesire);
+        fWriter.writeToken(that.mainToken, null, 0, maxDesire, maxDesire);
     }
     
     shared actual void visitIdentifier(Identifier that) {
@@ -69,13 +71,13 @@ shared class FormattingVisitor(
     
     shared actual void visitParameterList(ParameterList that) {
         value context = fWriter.writeToken(that.mainToken, null, 1, minDesire, minDesire); // "("
-        variable Boolean hasFirst = false;
+        variable FormattingWriter.FormattingContext? previousContext = null;
         for (Parameter parameter in CeylonIterable(that.parameters)) {
-            if (hasFirst) {
-                fWriter.writeToken(",", null, 0, minDesire, maxDesire);
+            if (exists c = previousContext) {
+                fWriter.writeToken(",", null, 0, minDesire, maxDesire, c);
             }
+            previousContext = fWriter.openContext();
             parameter.visit(this);
-            hasFirst = true;
         }
         fWriter.writeToken(that.mainEndToken, null, null, minDesire, 10, context); // ")"
     }
@@ -90,9 +92,8 @@ shared class FormattingVisitor(
         fWriter.writeToken(that.mainEndToken, null, null, minDesire, 5, context); // "}"
         fWriter.nextLine();
     }
-    
     shared actual void visitStatement(Statement that) {
-        value context = fWriter.acquireContext();
+        value context = fWriter.openContext();
         that.visitChildren(this);
         fWriter.writeToken(that.mainEndToken, null, null, minDesire, maxDesire, context); // ";"
     }
@@ -108,13 +109,13 @@ shared class FormattingVisitor(
     
     shared actual void visitPositionalArgumentList(PositionalArgumentList that) {
         value context = fWriter.writeToken(that.mainToken, null, 1, minDesire, minDesire); // "("
-        variable Boolean hasFirst = false;
+        variable FormattingWriter.FormattingContext? previousContext = null;
         for (PositionalArgument argument in CeylonIterable(that.positionalArguments)) {
-            if (hasFirst) {
-                fWriter.writeToken(",", null, 0, minDesire, maxDesire);
+            if (exists c = previousContext) {
+                fWriter.writeToken(",", null, 0, minDesire, maxDesire, c);
             }
+            previousContext = fWriter.openContext();
             argument.visit(this);
-            hasFirst = true;
         }
         fWriter.writeToken(that.mainEndToken, null, null, minDesire, 5, context); // ")"
     }

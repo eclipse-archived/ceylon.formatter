@@ -31,10 +31,12 @@ object stopAndDontConsume extends Stop() { consume = false; }
  method, which will remove the context and all the contexts on top of it from the context stack.
  The indentation level of a line is the sum of the indentation levels of all contexts on the stack.
  
- You can get a `FormattingContext` not associated with any tokens from the [[acquireContext]]
+ You can get a `FormattingContext` not associated with any tokens from the [[openContext]]
  method; this is useful if you only have a closing token, but no opening token: for example, the
  semicolon terminating a statement should clearly close some context, but there is no special
- token which opens that context."
+ token which opens that context.
+ 
+ You can also close a `FormattingContext` without a token with the [[closeContext]] method."
 class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptions options) {
     
     shared interface FormattingContext {
@@ -47,8 +49,7 @@ class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptions opti
     interface OpeningElement satisfies Element {}
     interface ClosingElement satisfies Element {}
     
-    abstract class Token(text, postIndent, wantsSpaceBefore, wantsSpaceAfter)
-        of OpeningToken|ClosingToken {
+    class Token(text, postIndent, wantsSpaceBefore, wantsSpaceAfter) {
         
         shared default String text;
         shared default Integer? postIndent;
@@ -58,10 +59,14 @@ class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptions opti
         shared actual String string => text;
     }
     
-    class NoToken() satisfies OpeningElement {
+    abstract class Empty() of EmptyOpening|EmptyClosing {}
+    class EmptyOpening() extends Empty() satisfies OpeningElement {
         shared actual object context satisfies FormattingContext {
             postIndent = 0;
         }
+    }    
+    class EmptyClosing(context) extends Empty() satisfies ClosingElement {
+        shared actual FormattingContext context;
     }
     
     class OpeningToken(text, postIndent, wantsSpaceBefore, wantsSpaceAfter)
@@ -89,15 +94,12 @@ class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptions opti
     
     class LineBreak() {}
     
-    alias QueueElement => NoToken|LineBreak|Token;
+    alias QueueElement => Token|Empty|LineBreak;
     
     "The `tokenQueue` holds all tokens that have not yet been written."
-    MutableList<QueueElement> tokenQueue = LinkedList<QueueElement>();
+    variable MutableList<QueueElement> tokenQueue = LinkedList<QueueElement>();
     "The `tokenStack` holds all tokens that have been written, but whose context has not yet been closed."
     MutableList<FormattingContext> tokenStack = LinkedList<FormattingContext>();
-    "The `indentStack` holds only the tokens from [[tokenStack]] that were written at the end of a line,
-     i. e. whose `postIndent` is actually effective."
-    MutableList<FormattingContext> indentStack = LinkedList<FormattingContext>();
     
     "Remembers if anything was ever enqueued."
     variable Boolean isEmpty = true;
@@ -220,10 +222,73 @@ class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptions opti
         writeLines();
     }
     
-    shared FormattingContext acquireContext() {
-        value noToken = NoToken();
+    "Open a [[FormattingContext]] not associated with any token."
+    shared FormattingContext openContext() {
+        value noToken = EmptyOpening();
         tokenQueue.add(noToken);
         return noToken.context;
+    }
+    
+    "Close a [[FormattingContext]]."
+    // don’t use this internally; use closeContext0 instead.
+    shared void closeContext(FormattingContext context) {
+        value element = EmptyClosing(context);
+        tokenQueue.add(element);
+        closeContext0(element);
+        if (exists index = tokenStack.indexes((FormattingContext element) => element == context).first) {
+            for (i in index..tokenStack.size - 1) {
+                tokenStack.removeLast();
+            }
+        }
+    }
+    
+    "Close a [[FormattingContext]] associated with a [[QueueElement]].
+     
+     * If the associated context is still on the queue: Go through the [[tokenQueue]] and between
+       the opening element and the closing element (including both), do for each element:
+        1. If it’s an [[Empty]], remove it;
+        2. If it’s a (subclass of) [[Token]], replace it with a [[Token]].
+     * If the associated context isn’t on the queue:
+        1. Pop the context and its successors from the [[tokenStack]]
+        2. Go through the `tokenQueue` from the beginning until `element` and do the same as above."
+    void closeContext0(ClosingElement&QueueElement element) {
+        Integer? startIndex = tokenQueue.indexes((QueueElement e) {
+            if (is OpeningElement e, e.context == element.context) {
+                return true;
+            }
+            return false;
+        }).first;
+        Integer? endIndex = tokenQueue.indexes((QueueElement e) => e == element).first;
+        assert (exists endIndex);
+        
+        if (exists startIndex) {
+            // first case: only affects token queue
+            filterQueue(startIndex, endIndex);
+        } else {
+            // second case: affects token stack and queue
+            Integer? stackIndex = tokenStack.indexes((FormattingContext e) => e == element.context).first;
+            if (exists stackIndex) {
+                for (i in stackIndex..tokenStack.size-1) {
+                    tokenStack.removeLast();
+                }
+            }
+            filterQueue(0, endIndex);
+        }
+    }
+    
+    "Helper method for [[closeContext0]] that filters the tokenQueue as described there."
+    void filterQueue(Integer start, Integer end) {
+        variable Integer i = 0;
+        tokenQueue = LinkedList(tokenQueue.map((QueueElement elem) {
+            if (start <= i++ <= end) {
+                if (is Empty elem) {
+                    return null;
+                } else if (is Token elem) {
+                    return Token(elem.text, elem.postIndent, elem.wantsSpaceBefore, elem.wantsSpaceAfter);
+                }
+            }
+            return elem;
+        }).coalesced);
     }
     
     "Write a line if there are enough tokens enqueued to determine where the next line break should occur.
@@ -255,13 +320,14 @@ class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptions opti
     
     "Write `i + 1` tokens from the queue, followed by a line break.
      
-     1. Take elements `0..i` from the queue (making the formerly `i + 1`<sup>th</sup> token the new first token)
-     2. Determine the first and last token in that range
+     1. Take elements `0..i` from the queue (making the formerly `i + 1`<sup>th</sup> token
+        the new first token)
+     2. Determine the first token in that range
      3. If the first token is a [[ClosingToken]], [[close|closeContext]] its context
-     4. Write indentation – the sum of all `postIndent`s on the [[indentStack]]
-     5. [[write]] the elements (write the first token directly)
+     4. Write indentation – the sum of all `postIndent`s on the [[tokenStack]]
+     5. [[write]] the elements (write the first token directly, since its context was already
+        closed in `3.`)
      7. Write a line break
-     8. If the last token is an [[OpeningToken]], push its context onto the `indentStack`
      
      (Note that there may not appear any line breaks before token `i`.)"
     void writeLine(Integer i) {
@@ -273,21 +339,20 @@ class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptions opti
         };
         
         QueueElement? firstToken = tokenQueue[0..i].find(isToken);
-        QueueElement? lastToken = tokenQueue[0..i].findLast(isToken);
         
         if (is ClosingToken firstToken) {
-            closeContext(firstToken.context);
+            closeContext0(firstToken);
         }
         
-        Integer indentLevel = indentStack.fold(0,
+        Integer indentLevel = tokenStack.fold(0,
             (Integer partial, FormattingContext elem) => partial + elem.postIndent);
         writer.write(options.indentMode.indent(indentLevel));
         
         variable Token? previousToken = null;
         for (c in 0..i) {
-            QueueElement? removed = tokenQueue.removeFirst();
-            assert (exists removed);
-            if (is Token currentToken = removed) {
+            QueueElement? removing = tokenQueue.first;
+            assert (exists removing);
+            if (is Token currentToken = removing) {
                 if (exists p = previousToken, p.wantsSpaceAfter + currentToken.wantsSpaceBefore >= 0) {
                     writer.write(" ");
                 }
@@ -298,16 +363,15 @@ class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptions opti
                     write(currentToken);
                 }
                 previousToken = currentToken;
-            } else if (is NoToken removed) {
-                tokenStack.add(removed.context);
+            } else if (is EmptyOpening removing) {
+                tokenStack.add(removing.context);
+            } else if (is EmptyClosing removing) {
+                closeContext0(removing);
             }
+            tokenQueue.removeFirst();
         }
         
         writer.writeLine();
-        
-        if (is OpeningToken lastToken) {
-            indentStack.add(lastToken.context);
-        }
     }
     
     "Write a token.
@@ -315,35 +379,14 @@ class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptions opti
      1. Write the token’s text
      2. Context handling:
          1. If [[token]] is a [[OpeningToken]], push its context onto the [[tokenStack]];
-         2. if it’s a [[ClosingToken]], [[closeContext]] its context."
+         2. if it’s a [[ClosingToken]], [[close|closeContext]] its context."
     void write(Token token) {
         writer.write(token.text);
         
         if (is OpeningToken token) {
             tokenStack.add(token.context);
         } else if (is ClosingToken token) {
-            closeContext(token.context);
-        }
-    }
-    
-    "Close a [[FormattingContext]].
-     
-     Remove [[context]] and all its successors from [[tokenStack]] and [[indentStack]]."
-    void closeContext(FormattingContext context) {
-        Integer? indexOf = tokenStack.indexes((FormattingContext element) => element == context).first;
-        assert (exists indexOf);
-        for (FormattingContext c in tokenStack.terminal(tokenStack.size - indexOf)) {
-            variable Boolean contains = false;
-            while (indentStack.contains(c)) {
-                contains = true;
-                indentStack.removeLast();
-            }
-            if (contains) {
-                break;
-            }
-        }
-        for(c in indexOf..tokenStack.size-1) {
-            tokenStack.removeLast();
+            closeContext0(token);
         }
     }
     
@@ -380,7 +423,7 @@ class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptions opti
     shared void close() {
         if (!isEmpty) {
             QueueElement? lastElement = tokenQueue.findLast(function (QueueElement elem) {
-                if (is NoToken elem) {
+                if (is EmptyOpening elem) {
                     return false;
                 }
                 return true;
