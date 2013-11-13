@@ -4,10 +4,12 @@ import com.redhat.ceylon.compiler.typechecker.tree { Tree { CompilationUnit } }
 import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer, CeylonParser }
 import org.antlr.runtime { ANTLRFileStream, CommonTokenStream, BufferedTokenStream }
 import ceylon.formatter { FormattingVisitor }
-import ceylon.formatter.options { FormattingOptions }
+import ceylon.formatter.options { FormattingOptions, formattingFile }
 
 "Tests that the formatter transforms `test-samples/<filename>.ceylon`
- into `test-samples/<filename>.ceylon.formatted`."
+ into `test-samples/<filename>.ceylon.formatted`. If a file
+ `test-samples/<filename>.ceylon.options` exists, it is used as an options file
+ (see [[ceylon.formatter.options::formattingFile]])."
 void testFile(String filename) {
     String fullFilename = "test-samples/" + filename + ".ceylon";
     if(is File inputFile =  parsePath(fullFilename).resource,
@@ -24,8 +26,14 @@ void testFile(String filename) {
         CeylonLexer lexer = CeylonLexer(ANTLRFileStream(fullFilename));
         CompilationUnit cu = CeylonParser(CommonTokenStream(lexer)).compilationUnit();
         lexer.reset(); // FormattingVisitor needs to read the tokens again
+        FormattingOptions options;
+        if (is File optionsFile = parsePath(fullFilename + ".options").resource) {
+            options = formattingFile(optionsFile.path.string);
+        } else {
+            options = FormattingOptions();
+        }
         FormattingVisitor visitor = FormattingVisitor(BufferedTokenStream(lexer), // don't use CommonTokenStream - we don't want to skip comments
-            output, FormattingOptions());
+            output, options);
         cu.visit(visitor);
         visitor.close();
         variable String actual = output.string;
