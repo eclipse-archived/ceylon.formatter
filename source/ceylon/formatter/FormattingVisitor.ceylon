@@ -127,6 +127,12 @@ shared class FormattingVisitor(
         }
     }
     
+    shared actual void visitReturn(Return that) {
+        value context = fWriter.writeToken(that.mainToken, null, 1, 0, maxDesire); // "return"
+        that.expression.visit(this);
+        fWriter.writeToken(that.mainEndToken, null, 0, minDesire, 100, context); // ";"
+    }
+    
     //TODO eventually, this will be unneeded, as each visitSomeSubclassOfNode should be overwritten here.
     shared actual void visitAny(Node that) {
         if (exists Token start = that.mainToken) {
