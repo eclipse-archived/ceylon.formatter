@@ -1,6 +1,6 @@
 import ceylon.file { Writer }
 import ceylon.collection { MutableList, LinkedList }
-import org.antlr.runtime { AntrlToken=Token, TokenStream }
+import org.antlr.runtime { AntlrToken=Token, TokenStream }
 import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer { lineComment=\iLINE_COMMENT, multiComment=\iMULTI_COMMENT, ws=\iWS } }
 import ceylon.formatter.options { FormattingOptions }
 
@@ -15,7 +15,11 @@ Integer minDesire = runtime.minIntegerValue / 2;
 
 "Used in [[FormattingWriter.fastForward]]."
 abstract class Stop() of stopAndConsume|stopAndDontConsume { shared formal Boolean consume; }
+"Stop fast-forwarding and [[consume|org.antlr.runtime::IntStream.consume]] the current token."
+see(`value stopAndDontConsume`)
 object stopAndConsume extends Stop() { consume = true; }
+"Stop fast-forwarding and *don’t* consume the current token."
+see(`value stopAndConsume`)
 object stopAndDontConsume extends Stop() { consume = false; }
 
 "Writes out tokens, respecting certain indentation settings and a maximum line width.
@@ -37,7 +41,7 @@ object stopAndDontConsume extends Stop() { consume = false; }
  token which opens that context.
  
  You can also close a `FormattingContext` without a token with the [[closeContext]] method."
-class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptions options) {
+shared class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptions options) {
     
     shared interface FormattingContext {
         shared formal Integer postIndent;
@@ -49,17 +53,7 @@ class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptions opti
     interface OpeningElement satisfies Element {}
     interface ClosingElement satisfies Element {}
     
-    class Token(text, postIndent, wantsSpaceBefore, wantsSpaceAfter) {
-        
-        shared default String text;
-        shared default Integer? postIndent;
-        shared default Integer wantsSpaceBefore;
-        shared default Integer wantsSpaceAfter;
-        
-        shared actual String string => text;
-    }
-    
-    abstract class Empty() of EmptyOpening|EmptyClosing {}
+    shared abstract class Empty() of EmptyOpening|EmptyClosing {}
     class EmptyOpening() extends Empty() satisfies OpeningElement {
         shared actual object context satisfies FormattingContext {
             postIndent = 0;
@@ -69,6 +63,15 @@ class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptions opti
         shared actual FormattingContext context;
     }
     
+    shared class Token(text, postIndent, wantsSpaceBefore, wantsSpaceAfter) {
+        
+        shared default String text;
+        shared default Integer? postIndent;
+        shared default Integer wantsSpaceBefore;
+        shared default Integer wantsSpaceAfter;
+        
+        shared actual String string => text;
+    }    
     class OpeningToken(text, postIndent, wantsSpaceBefore, wantsSpaceAfter)
         extends Token(text, postIndent, wantsSpaceBefore, wantsSpaceAfter)
         satisfies OpeningElement {
@@ -92,9 +95,9 @@ class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptions opti
         shared actual FormattingContext context;
     }
     
-    class LineBreak() {}
+    shared class LineBreak() {}
     
-    alias QueueElement => Token|Empty|LineBreak;
+    shared alias QueueElement => Token|Empty|LineBreak;
     
     "The `tokenQueue` holds all tokens that have not yet been written."
     variable MutableList<QueueElement> tokenQueue = LinkedList<QueueElement>();
@@ -106,76 +109,45 @@ class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptions opti
     
     "Write a token, respecting [[FormattingOptions.maxLineLength]] and non-AST tokens (comments).
      
-     If [[token]] is a [[Token]], fast-forward the token stream until `token` is reached, writing out
-     any comment tokens, then write out `token`’s text as described below.
-     
-     If `token` is a `String`, put it into the token queue and check if a line can be written out.
+     First, fast-forward the token stream until [[token]] is reached, writing out
+     any comment tokens; then, put the `token`’s text into the token queue and
+     check if a line can be written out.
      
      This method should always be used to write any tokens."
     shared FormattingContext? writeToken(
-        AntrlToken|String token,
+        AntlrToken|String token,
         Integer? indentBefore,
         Integer? postIndent,
         Integer wantsSpaceBefore,
         Integer wantsSpaceAfter,
         FormattingContext? context = null) {
         
-        String tokenString;
-        if (is AntrlToken token) {
-            fastForward((AntrlToken current) {
-                if (current.type == lineComment || current.type == multiComment) {
-                    SequenceBuilder<QueueElement|Stop> ret = SequenceBuilder<QueueElement|Stop>();
-                    
-                    Boolean multiLine = current.type == multiComment && current.text.contains('\n');
-                    if (multiLine && !isEmpty) {
-                        // multi-line comments start and end on their own line
-                        ret.append(LineBreak());
-                    }
-                    // now we need to produce the following pattern: for each line in the comment,
-                    // line, linebreak, line, linebreak, ..., line.
-                    // notice how there’s no linebreak after the last line, which is why this gets
-                    // a little ugly...
-                    String? firstLine = current.text
-                            .split((Character c) => c == '\n')
-                            .first;
-                    assert (exists firstLine);
-                    ret.append(OpeningToken(
-                        firstLine.trimTrailing((Character c) => c == '\r'),
-                        0, maxDesire, maxDesire));
-                    ret.appendAll({
-                        for (line in current.text
-                                .split((Character c) => c == '\n')
-                                .rest
-                                .filter((String elem) => !elem.empty)
-                                .map((String l) => l.trimTrailing((Character c) => c == '\r')))
-                            for (element in {LineBreak(), OpeningToken(line, 0, maxDesire, maxDesire)})
-                                element
-                    });
-                    if (multiLine) {
-                        ret.append(LineBreak());
-                    }
-                    
-                    return ret.sequence;
-                } else if (current.type == ws) {
-                    return empty;
-                } else if (current.text == token.text) {
-                    return {stopAndConsume}; // end fast-forwarding
-                } else {
-                    throw Exception("Unexpected token '``current.text``'");
-                }
-            });
-            tokenString = token.text;
+        String tokenText;
+        if (is AntlrToken token) {
+            tokenText = token.text;
         } else {
             assert (is String token); // the typechecker can't figure that out (yet), see ceylon-spec#74
-            tokenString = token;
+            tokenText = token;
         }
+        fastForward((AntlrToken current) {
+            if (current.type == lineComment || current.type == multiComment) {
+                return fastForwardComment(current);
+            } else if (current.type == ws) {
+                return empty;
+            } else if (current.text == tokenText) {
+                return {stopAndConsume}; // end fast-forwarding
+            } else {
+                // TODO it would be really cool if we could recover here
+                throw Exception("Unexpected token '``current.text``', expected '``tokenText``' instead");
+            }
+        });
         FormattingContext? ret;
         Token t;
         if (exists context) {
-            t = ClosingToken(tokenString, postIndent, wantsSpaceBefore, wantsSpaceAfter, context);
+            t = ClosingToken(tokenText, postIndent, wantsSpaceBefore, wantsSpaceAfter, context);
             ret = null;
         } else {
-            t = OpeningToken(tokenString, postIndent, wantsSpaceBefore, wantsSpaceAfter);
+            t = OpeningToken(tokenText, postIndent, wantsSpaceBefore, wantsSpaceAfter);
             assert (is OpeningToken t); // ...yeah
             ret = t.context;
         }
@@ -190,36 +162,54 @@ class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptions opti
      
      This is needed to keep a line comment at the end of a line instead of putting it into the next line."
     shared void nextLine() {
-        fastForward((AntrlToken current) {
-            if (current.type == lineComment || current.type == multiComment || current.type == ws) {
-                if (current.type == ws) {
-                    return empty;
-                }
-                
-                SequenceBuilder<QueueElement|Stop> ret = SequenceBuilder<QueueElement|Stop>();
-                
-                Boolean multiLine = current.type == multiComment && current.text.contains('\n');
-                if (multiLine) {
-                    // multi-line comments start and end on their own line
-                    ret.append(LineBreak());
-                }                
-                ret.appendAll({
-                    for (line in current.text
-                            .split((Character ch) => ch == '\n')
-                            .filter((String elem) => !elem.empty))
-                        OpeningToken(line, 0, 100, current.type == multiComment then 100 else 0)
-                });                
-                if (multiLine) {
-                    ret.append(LineBreak());
-                }
-                ret.append(stopAndConsume);
-                
-                return ret.sequence;
+        fastForward((AntlrToken current) {
+            if (current.type == lineComment || current.type == multiComment) {
+                return fastForwardComment(current);
+            } else if (current.type == ws) {
+                return empty;
             } else {
                 return {LineBreak(), stopAndDontConsume}; // end fast-forwarding
             }
         });
         writeLines();
+    }
+    
+    "[[Fast-forward|fastForward]] a comment token."
+    {QueueElement|Stop*} fastForwardComment(AntlrToken current) {
+        assert(current.type == lineComment || current.type == multiComment);
+        
+        SequenceBuilder<QueueElement|Stop> ret = SequenceBuilder<QueueElement|Stop>();
+        
+        Boolean multiLine = current.type == multiComment && current.text.contains('\n');
+        if (multiLine && !isEmpty) {
+            // multi-line comments start and end on their own line
+            ret.append(LineBreak());
+        }
+        // now we need to produce the following pattern: for each line in the comment,
+        // line, linebreak, line, linebreak, ..., line.
+        // notice how there’s no linebreak after the last line, which is why this gets
+        // a little ugly...
+        String? firstLine = current.text
+                .split((Character c) => c == '\n')
+                .first;
+        assert (exists firstLine);
+        ret.append(OpeningToken(
+            firstLine.trimTrailing((Character c) => c == '\r'),
+            0, maxDesire, maxDesire));
+        ret.appendAll({
+            for (line in current.text
+                    .split((Character c) => c == '\n')
+                    .rest
+                    .filter((String elem) => !elem.empty)
+                    .map((String l) => l.trimTrailing((Character c) => c == '\r')))
+            for (element in {LineBreak(), OpeningToken(line, 0, maxDesire, maxDesire)})
+            element
+        });
+        if (multiLine) {
+            ret.append(LineBreak());
+        }
+        
+        return ret.sequence;
     }
     
     "Open a [[FormattingContext]] not associated with any token."
@@ -298,15 +288,30 @@ class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptions opti
      As the queue can contain enough tokens for more than one line, you’ll typically want to call
      [[writeLines]] instead."
     Boolean tryNextLine() {
-        // TODO implement a good line break strategy here
-        Integer? i = tokenQueue.indexes(function (FormattingWriter.QueueElement element) {
-           if (is LineBreak element) {
-               return true;
-           }
-           return false;
-        }).first;
-        if (exists i) {
-            writeLine(i);
+        if (tokenQueue.empty) {
+            return false;
+        }
+        Integer? index;
+        if (exists length = options.maxLineLength) {
+            index = options.lineBreakStrategy.lineBreakLocation(
+                tokenQueue.sequence,
+                options.indentMode.indent(
+                    tokenStack.fold(0, (Integer partial, FormattingContext elem) => partial + elem.postIndent)
+                ).size,
+                length);
+        } else {
+            index = tokenQueue.indexes(function (QueueElement element) {
+                if (is LineBreak element) {
+                    return true;
+                }
+                return false;
+            }).first;
+        }
+        if (exists index) {
+            if (!is LineBreak t = tokenQueue[index]) {
+                tokenQueue.insert(index, LineBreak());
+            }
+            writeLine(index);
             return true;
         }
         return false;
@@ -396,7 +401,7 @@ class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptions opti
      return value are added to the queue. A [[Stop]] element will stop fast-forwarding;
      its [[consume|Stop.consume]] will determine if the last token is
      [[consumed|TokenStream.consume]] or not."
-    void fastForward({QueueElement|Stop*}(AntrlToken) tokenConsumer) {
+    void fastForward({QueueElement|Stop*}(AntlrToken) tokenConsumer) {
         variable Integer i = tokens.index();
         variable {QueueElement|Stop*} resultTokens = tokenConsumer(tokens.get(i));
         variable Boolean hadStop = false;
