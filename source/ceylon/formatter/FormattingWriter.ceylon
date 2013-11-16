@@ -63,20 +63,29 @@ shared class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptio
         shared actual FormattingContext context;
     }
     
-    shared class Token(text, postIndent, wantsSpaceBefore, wantsSpaceAfter) {
+    shared class Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter) {
         
         shared default String text;
+        shared default Boolean allowLineBreakBefore;
         shared default Integer? postIndent;
         shared default Integer wantsSpaceBefore;
         shared default Integer wantsSpaceAfter;
         
+        shared Boolean allowLineBreakAfter {
+            if (exists p = postIndent) { // TODO revisit later (should be allowLineBreakAfter = exists postIndent;)
+                return true;
+            } else {
+                return false;
+            }
+        }
         shared actual String string => text;
     }    
-    class OpeningToken(text, postIndent, wantsSpaceBefore, wantsSpaceAfter)
-        extends Token(text, postIndent, wantsSpaceBefore, wantsSpaceAfter)
+    class OpeningToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter)
+        extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter)
         satisfies OpeningElement {
         
         shared actual String text;
+        shared actual Boolean allowLineBreakBefore;
         shared actual Integer? postIndent;
         shared actual Integer wantsSpaceBefore;
         shared actual Integer wantsSpaceAfter;
@@ -84,11 +93,12 @@ shared class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptio
             postIndent = outer.postIndent else 0;
         }
     }
-    class ClosingToken(text, postIndent, wantsSpaceBefore, wantsSpaceAfter, context)
-            extends Token(text, postIndent, wantsSpaceBefore, wantsSpaceAfter)
+    class ClosingToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, context)
+            extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter)
             satisfies ClosingElement {
         
         shared actual String text;
+        shared actual Boolean allowLineBreakBefore;
         shared actual Integer? postIndent;
         shared actual Integer wantsSpaceBefore;
         shared actual Integer wantsSpaceAfter;
@@ -116,7 +126,7 @@ shared class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptio
      This method should always be used to write any tokens."
     shared FormattingContext? writeToken(
         AntlrToken|String token,
-        Integer? indentBefore,
+        Boolean allowLineBreakBefore,
         Integer? postIndent,
         Integer wantsSpaceBefore,
         Integer wantsSpaceAfter,
@@ -144,10 +154,10 @@ shared class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptio
         FormattingContext? ret;
         Token t;
         if (exists context) {
-            t = ClosingToken(tokenText, postIndent, wantsSpaceBefore, wantsSpaceAfter, context);
+            t = ClosingToken(tokenText, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, context);
             ret = null;
         } else {
-            t = OpeningToken(tokenText, postIndent, wantsSpaceBefore, wantsSpaceAfter);
+            t = OpeningToken(tokenText, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter);
             assert (is OpeningToken t); // ...yeah
             ret = t.context;
         }
@@ -195,15 +205,15 @@ shared class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptio
         assert (exists firstLine);
         ret.append(OpeningToken(
             firstLine.trimTrailing((Character c) => c == '\r'),
-            0, maxDesire, maxDesire));
+            true, 0, maxDesire, maxDesire));
         ret.appendAll({
             for (line in current.text
                     .split((Character c) => c == '\n')
                     .rest
                     .filter((String elem) => !elem.empty)
                     .map((String l) => l.trimTrailing((Character c) => c == '\r')))
-            for (element in {LineBreak(), OpeningToken(line, 0, maxDesire, maxDesire)})
-            element
+                for (element in {LineBreak(), OpeningToken(line, true, 0, maxDesire, maxDesire)})
+                    element
         });
         if (multiLine) {
             ret.append(LineBreak());
@@ -274,7 +284,7 @@ shared class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptio
                 if (is Empty elem) {
                     return null;
                 } else if (is Token elem) {
-                    return Token(elem.text, elem.postIndent, elem.wantsSpaceBefore, elem.wantsSpaceAfter);
+                    return Token(elem.text, elem.allowLineBreakBefore, elem.postIndent, elem.wantsSpaceBefore, elem.wantsSpaceAfter);
                 }
             }
             return elem;

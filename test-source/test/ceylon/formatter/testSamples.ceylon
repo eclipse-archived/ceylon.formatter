@@ -51,6 +51,9 @@ void testFile(String filename) {
         // * trailing newline
         if (!actual.endsWith("\n")) {
             actual += "\n";
+        } else if (actual.endsWith("\n\n")) {
+            // remove last trailing newline
+            actual = actual[0..actual.size - 2];
         }
         // now test that they're equal
         assertEquals(expected, actual);
@@ -67,4 +70,9 @@ shared void testHelloWorld() {
 test
 shared void testHelloWorldCommented() {
     testFile("helloWorldCommented");
+}
+
+test
+shared void testLongInvocation() {
+    testFile("longInvocation");
 }

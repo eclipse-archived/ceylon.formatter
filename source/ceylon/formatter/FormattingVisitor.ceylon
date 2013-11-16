@@ -54,6 +54,7 @@ shared class FormattingVisitor(
         visitAnyMethod(that);
         fWriter.closeContext(context);
         that.block.visit(this);
+        fWriter.nextLine(); // blank line between method definitions
     }
     
     shared actual void visitTypedDeclaration(TypedDeclaration that) {
@@ -62,40 +63,40 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitVoidModifier(VoidModifier that) {
-        fWriter.writeToken(that.mainToken, null, 0, maxDesire, maxDesire);
+        fWriter.writeToken(that.mainToken, false, 0, maxDesire, maxDesire);
     }
     
     shared actual void visitIdentifier(Identifier that) {
-        fWriter.writeToken(that.mainToken, 0, 1, 0, 0);
+        fWriter.writeToken(that.mainToken, true, 0, 0, 0);
     }
     
     shared actual void visitParameterList(ParameterList that) {
-        value context = fWriter.writeToken(that.mainToken, null, 1, minDesire, minDesire); // "("
+        value context = fWriter.writeToken(that.mainToken, true, 1, minDesire, minDesire); // "("
         variable FormattingWriter.FormattingContext? previousContext = null;
         for (Parameter parameter in CeylonIterable(that.parameters)) {
             if (exists c = previousContext) {
-                fWriter.writeToken(",", null, 0, minDesire, maxDesire, c);
+                fWriter.writeToken(",", false, 0, minDesire, maxDesire, c);
             }
             previousContext = fWriter.openContext();
             parameter.visit(this);
         }
-        fWriter.writeToken(that.mainEndToken, null, null, minDesire, 10, context); // ")"
+        fWriter.writeToken(that.mainEndToken, false, null, minDesire, 10, context); // ")"
     }
     
     shared actual void visitBlock(Block that) {
-        value context = fWriter.writeToken(that.mainToken, null, 1, 10, minDesire); // "{"
+        value context = fWriter.writeToken(that.mainToken, false, 1, 10, minDesire); // "{"
         fWriter.nextLine();
         for (Statement statement in CeylonIterable(that.statements)) {
             statement.visit(this);
             fWriter.nextLine();
         }
-        fWriter.writeToken(that.mainEndToken, null, null, minDesire, 5, context); // "}"
+        fWriter.writeToken(that.mainEndToken, false, null, minDesire, 5, context); // "}"
         fWriter.nextLine();
     }
     shared actual void visitStatement(Statement that) {
         value context = fWriter.openContext();
         that.visitChildren(this);
-        fWriter.writeToken(that.mainEndToken, null, null, minDesire, maxDesire, context); // ";"
+        fWriter.writeToken(that.mainEndToken, false, null, minDesire, maxDesire, context); // ";"
     }
     
     shared actual void visitInvocationExpression(InvocationExpression that) {
@@ -108,29 +109,29 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitPositionalArgumentList(PositionalArgumentList that) {
-        value context = fWriter.writeToken(that.mainToken, null, 1, minDesire, minDesire); // "("
+        value context = fWriter.writeToken(that.mainToken, false, 1, minDesire, minDesire); // "("
         variable FormattingWriter.FormattingContext? previousContext = null;
         for (PositionalArgument argument in CeylonIterable(that.positionalArguments)) {
             if (exists c = previousContext) {
-                fWriter.writeToken(",", null, 0, minDesire, maxDesire, c);
+                fWriter.writeToken(",", false, 0, minDesire, maxDesire, c);
             }
             previousContext = fWriter.openContext();
             argument.visit(this);
         }
-        fWriter.writeToken(that.mainEndToken, null, null, minDesire, 5, context); // ")"
+        fWriter.writeToken(that.mainEndToken, false, null, minDesire, 5, context); // ")"
     }
     
     shared actual void visitLiteral(Literal that) {
-        fWriter.writeToken(that.mainToken, null, null, 1, 1);
+        fWriter.writeToken(that.mainToken, false, null, 1, 1);
         if (exists Token endToken = that.mainEndToken) {
             throw Error("Literal has end token ('``endToken``')! Investigate"); // breakpoint here
         }
     }
     
     shared actual void visitReturn(Return that) {
-        value context = fWriter.writeToken(that.mainToken, null, 1, 0, maxDesire); // "return"
+        value context = fWriter.writeToken(that.mainToken, false, 1, 0, maxDesire); // "return"
         that.expression.visit(this);
-        fWriter.writeToken(that.mainEndToken, null, 0, minDesire, 100, context); // ";"
+        fWriter.writeToken(that.mainEndToken, false, 0, minDesire, 100, context); // ";"
     }
     
     //TODO eventually, this will be unneeded, as each visitSomeSubclassOfNode should be overwritten here.

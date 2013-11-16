@@ -66,6 +66,32 @@ class DumbLineBreaks() extends LineBreakStrategy() {
             // ensure that we don’t write a neverending chain of empty lines because the first token is already too long
             return 1;
         }
+        // respect the token’s allowLineBreakBefore/-After
+        Integer origIndex = index;
+        "Used to determine if we should use [[index]] or [[origIndex]]."
+        variable Boolean skippedToken = false;
+        while (index > 0) { // TODO revisit later
+            if (is FormattingWriter.Token element = elements[index]) {
+                if (element.allowLineBreakBefore) {
+                    skippedToken = true;
+                } else {
+                    break;
+                }
+            }
+            if (is FormattingWriter.Token element = elements[index]) {
+                if (element.allowLineBreakAfter) {
+                    skippedToken = true;
+                } else {
+                    break;
+                }
+            }
+            index--;
+        }
+        index++; // we decreased it one time too much in the loop
+        if (skippedToken, !is FormattingWriter.LineBreak l = elements[index], index == 0) {
+            // same as above, except we return the original index to avoid lots of almost-empty lines
+            return origIndex;
+        }
         return index;
     }
 }
