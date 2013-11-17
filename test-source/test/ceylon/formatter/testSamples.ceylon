@@ -15,13 +15,13 @@ void testFile(String filename) {
     if(is File inputFile =  parsePath(fullFilename).resource,
         is File expectedFile = parsePath(fullFilename + ".formatted").resource) {
         // format input file
-        object output satisfies Writer {            
+        object output satisfies Writer {
             variable String content = "";
-            shared actual void destroy() => flush();            
-            shared actual void flush() {}            
-            shared actual void write(String string) => content += string;            
-            shared actual void writeLine(String line) => content += line + operatingSystem.newline;            
-            shared actual String string => content;            
+            shared actual void destroy() => flush();
+            shared actual void flush() {}
+            shared actual void write(String string) => content += string;
+            shared actual void writeLine(String line) => content += line + operatingSystem.newline;
+            shared actual String string => content;
         }
         CeylonLexer lexer = CeylonLexer(ANTLRFileStream(fullFilename));
         CompilationUnit cu = CeylonParser(CommonTokenStream(lexer)).compilationUnit();
@@ -75,4 +75,9 @@ shared void testHelloWorldCommented() {
 test
 shared void testLongInvocation() {
     testFile("longInvocation");
+}
+
+test
+shared void testBraceOnOwnLine() {
+    testFile("braceOnOwnLine");
 }

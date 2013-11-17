@@ -5,8 +5,8 @@ shared void generate() {
     if (is Nil resource) {
         file = resource.createFile();
     } else {
-           assert (is File resource);
-           file = resource;
+        assert (is File resource);
+        file = resource;
     }
     Writer writer = file.Overwriter();
     try {

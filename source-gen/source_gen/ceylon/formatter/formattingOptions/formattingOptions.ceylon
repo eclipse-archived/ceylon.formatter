@@ -10,5 +10,10 @@
     FormattingOption {
         "The strategy to determine where lines should be broken to accomodate [[maxLineLength]].";
         "LineBreakStrategy"; "lineBreakStrategy"; /* = */ "DumbLineBreaks()";
+    },
+    FormattingOption {
+        "Decide whether to keep an opening brace ('{') on the same line (One True Style)
+         or put them on the next line (Allman Style).";
+        "Boolean"; "braceOnOwnLine"; /* = */ "false";
     }
 };

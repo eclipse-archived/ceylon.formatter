@@ -53,6 +53,9 @@ shared class FormattingVisitor(
         value context = fWriter.openContext();
         visitAnyMethod(that);
         fWriter.closeContext(context);
+        if (options.braceOnOwnLine) {
+            fWriter.nextLine();
+        }
         that.block.visit(this);
         fWriter.nextLine(); // blank line between method definitions
     }
