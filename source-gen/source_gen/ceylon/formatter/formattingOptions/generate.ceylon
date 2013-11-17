@@ -5,8 +5,8 @@ shared void generate() {
     if (is Nil resource) {
         file = resource.createFile();
     } else {
-   	    assert (is File resource);
-   	    file = resource;
+           assert (is File resource);
+           file = resource;
     }
     Writer writer = file.Overwriter();
     try {
@@ -36,9 +36,9 @@ void writeHeader(Writer writer) {
 
 void writeImports(Writer writer) {
     writer.write(
-    	"import ceylon.file { File, Reader, parsePath }
-    	 
-    	 ");
+        "import ceylon.file { File, Reader, parsePath }
+         
+         ");
 }
 
 void generateSparseFormattingOptions(Writer writer) {
@@ -59,7 +59,23 @@ void generateSparseFormattingOptions(Writer writer) {
     }
     writer.write(") {\n");
     for (option in formattingOptions) {
-        writer.write("\n    \"``option.documentation``\"\n");
+        String[] lines = [*option.documentation.split((Character c) => c == '\n')];
+        if (lines.size == 0 || option.documentation == "") {
+            writer.write("\n");
+        }
+        else if (lines.size == 1) {
+            writer.write("\n    \"``option.documentation``\"\n");
+        } else {
+            assert(exists firstLine = lines.first);
+            assert(exists lastLine = lines.last);
+            writer.write("\n    \"``firstLine``\n");
+            if (lines.size > 2) {
+                for (String line in lines[1..lines.size-2]) {
+                    writer.write("     ``line``\n");
+                }
+            }
+            writer.write("     ``lastLine``\"\n");
+        }
         writer.write("    shared default ``option.type``? ``option.name``;\n");
     }
     writer.write("}\n\n");
