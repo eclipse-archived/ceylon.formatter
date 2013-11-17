@@ -88,8 +88,7 @@ void generateFormattingOptions(Writer writer) {
     }
     writer.write(") extends SparseFormattingOptions() {\n");
     for (option in formattingOptions) {
-        writer.write("\n    \"``option.documentation``\"\n");
-        writer.write("    shared actual default ``option.type`` ``option.name``;\n");
+        writer.write("\n    shared actual default ``option.type`` ``option.name``;\n");
     }
     writer.write("}\n\n");
 }
