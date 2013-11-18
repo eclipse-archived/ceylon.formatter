@@ -228,21 +228,21 @@ void generateFormattingFile(Writer writer) {
     for (FormattingOption option in formattingOptions) {
         writer.write(
             "                case (\"``option.name``\") {\n");
-        if (!option.type.endsWith("?")) {
-            writer.write("                    ");
-            for (String type in option.type.split((Character ch) => ch == '|')) {
-                writer.write(
-                    "if (exists option = parse``type``(optionValue)) {
-                                             options.``option.name`` = option;
-                                         } else ");
-            }
-            writer.write("{
-                                                  throw Exception(\"Can't parse value '\`\`optionValue\`\`' for option ``option.name``!\");
-                                              }\n");
-        } else {
-            writer.write(
-                "                    options.``option.name`` = parse``option.type.trimTrailing((Character c) => c == '?')``(optionValue);\n");
+        writer.write("                    ");
+        if (option.type.endsWith("?")) {
+            writer.write("if (optionValue == \"null\") {
+                                                  options.``option.name`` = null;
+                                              } else ");
         }
+        for (String type in option.type.split((Character ch) => ch == '|')) {
+            writer.write(
+                "if (exists option = parse``type.trimTrailing((Character elem) => elem == '?')``(optionValue)) {
+                                         options.``option.name`` = option;
+                                     } else ");
+        }
+        writer.write("{
+                                              throw Exception(\"Can't parse value '\`\`optionValue\`\`' for option ``option.name``!\");
+                                          }\n");
         writer.write(
             "                }\n");
              
