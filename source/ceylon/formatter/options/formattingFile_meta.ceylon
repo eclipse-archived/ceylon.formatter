@@ -35,11 +35,11 @@ VariableOptions variableFormattingFile_meta(String filename, FormattingOptions b
     if (is File file = parsePath(filename).resource) {
         // read the file
         Reader reader = file.Reader();
-        variable String[] lines = [];
+        SequenceBuilder<String> seq = SequenceBuilder<String>();
         while (exists line = reader.readLine()) {
-            lines = [line, *lines];
+            seq.append(line);
         }
-        lines = lines.reversed; // since we had to read the file in reverse order
+        String[] lines = seq.sequence;
         
         // read included files
         variable VariableOptions options = VariableOptions(baseOptions);
