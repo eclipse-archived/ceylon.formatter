@@ -10,43 +10,16 @@ I'm currently working out the architecture: How the formatting works in general,
 At the end of this phase, I should have a formatter with support for only a few language features and formatting options, but with that support being very generic and easily expandable.
 When I'm comfortable with the architecture, all there's left to do is implementing more language features and formatting options.
 
-Building and running
+Building
 --------------------
 
-### Environment
+1. Install the Ceylon IDE, following [these instructions](http://ceylon-lang.org/documentation/1.0/ide/install/)
+2. Clone the repository locally
+3. In Eclipse, go to File -> Import... -> Existing Projects into Workspace, then choose the location of the `ceylon.formatter` repository and import the `ceylon.formatter` project
+4. Run `source_gen.ceylon.formatter.run()` (ignore the warning that the project has build errors, that’s exactly what this is going to fix)
+5. Right-click the `test.ceylon.formatter` module and choose Run As -> Ceylon Test to test if everything works
 
-You'll need a *very* recent version of Ceylon and the compiler (unless 1.0.0 is already out when you're reading this).
-For this, you need to build both your Ceylon and your Ceylon IDE from source.
-
-    mkdir ceylon && cd ceylon
-    git clone https://github.com/ceylon/ceylon-dist
-    cd ceylon-dist
-    ant setup publish-all
-    cd ..
-    git clone https://github.com/ceylon/ceylon-sdk
-    cd ceylon-sdk
-    ant publish
-    cd ..
-    git clone https://github.com/ceylon/ceylon-ide-eclipse
-    cd ceylon-ide-eclipse
-    mvn install -Dmaven.test.skip
-    # now install it into your Eclipse from the update site ceylon/ceylon-ide-eclipse/site/target/site
-    cd ..
-
-### The formatter
-
-    git clone https://github.com/lucaswerkmeister/ceylon.formatter
-
-Open Eclipse and choose Import -> Existing projects into workspaces, select the `ceylon.formatter` repository and import the project
-
-Then compile and run the `source_gen.ceylon.formatter` module (in folder `source-gen`), which generates a few sources for the formatter;
-then you can finally compile `ceylon.formatter`.
-To check if everything went well, you can run the tests in `test.ceylon.formatter` (in folder `source-test`).
-
-### Too complicated?
-
-One of my goals ([issue #3](https://github.com/lucaswerkmeister/ceylon.formatter/issues/3)) is to automate the build process.
-If these instructions were too much for you, poke that issue, say that I should make that a priority, and then watch and wait.
+Due to some quirks in the Ceylon IDE, you might have to clean the project a few times during this process.
 
 License
 -------
