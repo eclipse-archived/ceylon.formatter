@@ -19,7 +19,8 @@ Building
 4. Run `source_gen.ceylon.formatter.run()` (ignore the warning that the project has build errors, that’s exactly what this is going to fix)
 5. Right-click the `test.ceylon.formatter` module and choose Run As -> Ceylon Test to test if everything works
 
-Due to some quirks in the Ceylon IDE, you might have to clean the project a few times during this process.
+Due to some quirks in the Ceylon IDE, compilation might fail because the compiler can’t find the ANTLR runtime (which comes with the ceylon compiler).
+I don’t have a reliable way to fix this, but cleaning the project and/or restarting the IDE has always worked for me after a few times.
 
 License
 -------
