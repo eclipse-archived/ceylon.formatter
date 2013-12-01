@@ -7,11 +7,29 @@ import ceylon.formatter.options { FormattingOptions }
 "The maximum value that is safe to use as [[FormattingWriter.writeToken]]’s `wantsSpace[Before|After]` argument.
  
  Using a greater value risks inverting the intended result due to overflow."
-Integer maxDesire = runtime.maxIntegerValue / 2;
+shared Integer maxDesire = runtime.maxIntegerValue / 2;
 "The minimum value that is safe to use as [[FormattingWriter.writeToken]]’s `wantsSpace[Before|After]` argument.
  
  Using a smaller value risks inverting the intended result due to overflow."
-Integer minDesire = runtime.minIntegerValue / 2;
+shared Integer minDesire = runtime.minIntegerValue / 2;
+
+"Parses a `Boolean` or `Integer` value into a desire in range [[minDesire]]`..`[[maxDesire]].
+ 
+ If [[desire]] is `Integer`, it is clamped to that range; if it’s `Boolean`, the returned
+ value is [[minDesire]] for `false` and [[maxDesire]] for `true`."
+shared Integer desire(Boolean|Integer desire) {
+    if (is Integer desire) {
+        return max({minDesire, min({maxDesire, desire})});
+    } else if (is Boolean desire) { // TODO unnecessary if here
+        if (desire) {
+            return maxDesire;
+        } else {
+            return minDesire;
+        }
+    }
+    // unreachable
+    return 0;
+}
 
 "Used in [[FormattingWriter.fastForward]]."
 abstract class Stop() of stopAndConsume|stopAndDontConsume { shared formal Boolean consume; }

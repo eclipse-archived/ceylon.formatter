@@ -74,7 +74,9 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitParameterList(ParameterList that) {
-        value context = fWriter.writeToken(that.mainToken, true, 1, minDesire, minDesire); // "("
+        value context = fWriter.writeToken(that.mainToken, true, 1,
+            desire(options.spaceAfterParamListOpeningParen),
+            desire(options.spaceAfterParamListOpeningParen)); // "("
         variable FormattingWriter.FormattingContext? previousContext = null;
         for (Parameter parameter in CeylonIterable(that.parameters)) {
             if (exists c = previousContext) {
@@ -83,7 +85,9 @@ shared class FormattingVisitor(
             previousContext = fWriter.openContext();
             parameter.visit(this);
         }
-        fWriter.writeToken(that.mainEndToken, false, null, minDesire, 10, context); // ")"
+        fWriter.writeToken(that.mainEndToken, false, null,
+            desire(options.spaceBeforeParamListClosingParen),
+            desire(options.spaceAfterParamListClosingParen), context); // ")"
     }
     
     shared actual void visitBlock(Block that) {

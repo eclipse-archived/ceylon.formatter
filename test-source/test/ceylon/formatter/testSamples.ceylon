@@ -81,3 +81,13 @@ test
 shared void testBraceOnOwnLine() {
     testFile("braceOnOwnLine");
 }
+
+test
+shared void testParamListParenWithSpaces() {
+    testFile("paramListParenWithSpaces");
+}
+
+test
+shared void testParamListParenWithoutSpaces() {
+    testFile("paramListParenWithoutSpaces");
+}
