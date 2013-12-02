@@ -11,7 +11,7 @@ import ceylon.formatter.options { FormattingOptions }
 shared class FormattingVisitor(
     "The [[TokenStream]] from which the element was parsed;
      this is mainly needed to preserve comments, as they're not present in the AST."
-    TokenStream tokens,
+    TokenStream? tokens,
     "The writer to which the subject is written."
     Writer writer,
     "The options for the formatter that control the format of the written code."
@@ -20,7 +20,7 @@ shared class FormattingVisitor(
     FormattingWriter fWriter = FormattingWriter(tokens, writer, options);
     
     // initialize TokenStream
-    tokens.la(1);
+    if (exists tokens) { tokens.la(1); }
     
     shared actual void handleException(Exception? e, Node that) {
         // set breakpoint here

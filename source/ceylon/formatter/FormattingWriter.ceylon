@@ -59,7 +59,7 @@ object stopAndDontConsume extends Stop() { consume = false; }
  token which opens that context.
  
  You can also close a `FormattingContext` without a token with the [[closeContext]] method."
-shared class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptions options) {
+shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOptions options) {
     
     shared interface FormattingContext {
         shared formal Integer postIndent;
@@ -157,16 +157,20 @@ shared class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptio
             assert (is String token); // the typechecker can't figure that out (yet), see ceylon-spec#74
             tokenText = token;
         }
-        fastForward((AntlrToken current) {
-            if (current.type == lineComment || current.type == multiComment) {
-                return fastForwardComment(current);
-            } else if (current.type == ws) {
-                return empty;
-            } else if (current.text == tokenText) {
-                return {stopAndConsume}; // end fast-forwarding
+        fastForward((AntlrToken? current) {
+            if (exists current) {
+                if (current.type == lineComment || current.type == multiComment) {
+                    return fastForwardComment(current);
+                } else if (current.type == ws) {
+                    return empty;
+                } else if (current.text == tokenText) {
+                    return {stopAndConsume}; // end fast-forwarding
+                } else {
+                    // TODO it would be really cool if we could recover here
+                    throw Exception("Unexpected token '``current.text``', expected '``tokenText``' instead");
+                }
             } else {
-                // TODO it would be really cool if we could recover here
-                throw Exception("Unexpected token '``current.text``', expected '``tokenText``' instead");
+                return {stopAndDontConsume}; // end fast-forwarding
             }
         });
         FormattingContext? ret;
@@ -190,11 +194,15 @@ shared class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptio
      
      This is needed to keep a line comment at the end of a line instead of putting it into the next line."
     shared void nextLine() {
-        fastForward((AntlrToken current) {
-            if (current.type == lineComment || current.type == multiComment) {
-                return fastForwardComment(current);
-            } else if (current.type == ws) {
-                return empty;
+        fastForward((AntlrToken? current) {
+            if (exists current) {
+                if (current.type == lineComment || current.type == multiComment) {
+                    return fastForwardComment(current);
+                } else if (current.type == ws) {
+                    return empty;
+                } else {
+                    return {LineBreak(), stopAndDontConsume}; // end fast-forwarding
+                }
             } else {
                 return {LineBreak(), stopAndDontConsume}; // end fast-forwarding
             }
@@ -428,10 +436,20 @@ shared class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptio
      Each token is sent to [[tokenConsumer]], and all non-null [[QueueElement]]s in the
      return value are added to the queue. A [[Stop]] element will stop fast-forwarding;
      its [[consume|Stop.consume]] will determine if the last token is
-     [[consumed|TokenStream.consume]] or not."
-    void fastForward({QueueElement|Stop*}(AntlrToken) tokenConsumer) {
-        variable Integer i = tokens.index();
-        variable {QueueElement|Stop*} resultTokens = tokenConsumer(tokens.get(i));
+     [[consumed|TokenStream.consume]] or not.
+     
+     The `tokenConsumer` only gets `null` tokens if [[tokens]] is null."
+    void fastForward({QueueElement|Stop*}(AntlrToken?) tokenConsumer) {
+        variable AntlrToken? currentToken;
+        variable Integer i;
+        if (exists tokens) {
+            i = tokens.index();
+            currentToken = tokens.get(i);
+        } else {
+            currentToken = null;
+            i = -1;
+        }
+        variable {QueueElement|Stop*} resultTokens = tokenConsumer(currentToken);
         variable Boolean hadStop = false;
         while (!hadStop) {
             for (QueueElement|Stop element in resultTokens) {
@@ -440,14 +458,17 @@ shared class FormattingWriter(TokenStream tokens, Writer writer, FormattingOptio
                 } else {
                     assert (is Stop element);
                     hadStop = true;
-                    if (element.consume) {
+                    if (element.consume, exists tokens) {
                         tokens.consume();
                     }
                     break;
                 }
             } else {
-                tokens.consume();
-                resultTokens = tokenConsumer(tokens.get(++i));
+                if (exists tokens) {                    
+                    tokens.consume();
+                    currentToken = tokens.get(++i);
+                }
+                resultTokens = tokenConsumer(currentToken);
             }
         }
     }
