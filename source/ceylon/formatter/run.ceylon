@@ -8,7 +8,15 @@ import ceylon.formatter.options { FormattingOptions }
 
 "Run the module `ceylon.formatter`."
 shared void run() {
-    String fileName = process.arguments[0] else "../ceylon-walkthrough/source/en/01basics.ceylon";
+    String? fileName = process.arguments[0];
+    if (exists fileName) {
+        Resource resource = parsePath(fileName).resource;
+        if (!is File resource) {
+            throw Exception("Argument 0 (input file) isn’t a regular file!");
+        }
+    } else {
+        throw Exception("Argument 0 (input file) not found!");
+    }
     Writer output;
     if (exists outFile = process.arguments[1]) {
         Resource resource = parsePath(outFile).resource;
@@ -17,7 +25,7 @@ shared void run() {
         } else if (is Nil resource) {
             output = resource.createFile().Overwriter();
         }
-        throw Exception("Argument 1 is a directory!");
+        throw Exception("Argument 1 (output file) is a directory!");
     }
     else {
         object sysoutWriter satisfies Writer {
