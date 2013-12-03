@@ -3,6 +3,7 @@ import ceylon.collection { MutableList, LinkedList }
 import org.antlr.runtime { AntlrToken=Token, TokenStream }
 import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer { lineComment=\iLINE_COMMENT, multiComment=\iMULTI_COMMENT, ws=\iWS } }
 import ceylon.formatter.options { FormattingOptions }
+import ceylon.time.internal.math { floorDiv }
 
 "The maximum value that is safe to use as [[FormattingWriter.writeToken]]’s `wantsSpace[Before|After]` argument.
  
@@ -157,8 +158,15 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 writer.writeLine();
                 m_CurrentWidth = 0;
             } else {
-                m_CurrentWidth += (lines.last else "").fold(0, (Integer partial, Character elem)
-                        => partial + (elem == '\t' then tabWidth else 1));
+                for (char in lines.last else "") {
+                    if (char == '\t') {
+                        m_CurrentWidth = (m_CurrentWidth % tabWidth == 0)
+                            then m_CurrentWidth + tabWidth
+                            else (floorDiv(m_CurrentWidth, tabWidth) + 1) * tabWidth;
+                    } else {
+                        m_CurrentWidth += 1;
+                    }
+                }
             }
         }
         
