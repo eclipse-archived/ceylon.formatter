@@ -132,6 +132,42 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     "The `tokenStack` holds all tokens that have been written, but whose context has not yet been closed."
     MutableList<FormattingContext> tokenStack = LinkedList<FormattingContext>();
     
+    Integer tabWidth => 4; // TODO see ceylon/ceylon-spec#866
+    "Keeps track of the length of the line that is currently being written.
+     
+     The width of a tab character is [[tabWidth]]."
+    object countingWriter satisfies Writer {
+        
+        variable Integer m_CurrentWidth = 0; // TODO “don’t ever write code like this in Ceylon”... how else can I hide the setter?
+        shared Integer currentWidth => m_CurrentWidth;
+        
+        shared actual void destroy() => writer.destroy();
+        
+        shared actual void flush() => writer.flush();
+        
+        shared actual void write(String string) {
+            [String*] lines = [*string.split(Character.equals('\n'))];
+            writer.write(lines.first else "");
+            for (line in lines.rest) {
+                writer.writeLine();
+                m_CurrentWidth = 0;
+                writer.write(line);
+            }
+            if (string.endsWith("\n")) {
+                writer.writeLine();
+                m_CurrentWidth = 0;
+            } else {
+                m_CurrentWidth += (lines.last else "").fold(0, (Integer partial, Character elem)
+                        => partial + (elem == '\t' then tabWidth else 1));
+            }
+        }
+        
+        shared actual void writeLine(String line) {
+            writer.writeLine(line);
+            m_CurrentWidth = 0;
+        }
+    }
+    
     "Remembers if anything was ever enqueued."
     variable Boolean isEmpty = true;
     
@@ -387,7 +423,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         
         Integer indentLevel = tokenStack.fold(0,
             (Integer partial, FormattingContext elem) => partial + elem.postIndent);
-        writer.write(options.indentMode.indent(indentLevel));
+        countingWriter.write(options.indentMode.indent(indentLevel));
         
         variable Token? previousToken = null;
         for (c in 0..i) {
@@ -395,11 +431,11 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             assert (exists removing);
             if (is Token currentToken = removing) {
                 if (exists p = previousToken, p.wantsSpaceAfter + currentToken.wantsSpaceBefore >= 0) {
-                    writer.write(" ");
+                    countingWriter.write(" ");
                 }
                 if (exists firstToken, currentToken == firstToken, is ClosingToken currentToken) {
                     // don’t attempt to close this context, we already did that
-                    writer.write(currentToken.text);
+                    countingWriter.write(currentToken.text);
                 } else {
                     write(currentToken);
                 }
@@ -412,7 +448,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             tokenQueue.removeFirst();
         }
         
-        writer.writeLine();
+        countingWriter.writeLine();
     }
     
     "Write a token.
@@ -422,7 +458,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
          1. If [[token]] is a [[OpeningToken]], push its context onto the [[tokenStack]];
          2. if it’s a [[ClosingToken]], [[close|closeContext]] its context."
     void write(Token token) {
-        writer.write(token.text);
+        countingWriter.write(token.text);
         
         if (is OpeningToken token) {
             tokenStack.add(token.context);
