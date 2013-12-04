@@ -1,69 +1,111 @@
-import ceylon.formatter { FormattingWriter }
+import ceylon.formatter { FormattingWriter { QueueElement=QueueElement, Token=Token, LineBreak=LineBreak } }
 class DumbLineBreaks() extends LineBreakStrategy() {
 
-    shared actual Integer? lineBreakLocation(FormattingWriter.QueueElement[] elements, Integer offset, Integer maxLineLength) {
+    shared actual Integer? lineBreakLocation(QueueElement[] elements, Integer offset, Integer maxLineLength) {
+        "Only the [[FormattingWriter.Token]] elements from [[elements]].
+         
+         This allows us to access previous and next tokens directly
+         instead of having to deal with non-token elements."
+        Token[] tokens = elements.filter((QueueElement elem) {
+            if (is Token elem) {
+                return true;
+            }
+            return false;
+        }).collect((QueueElement element) {
+            assert (is Token element);
+            return element;
+        });
+        
+        // 1. find the best location to break a line, without respect
+        //    to existing line breaks and allowSpace{Before,After} settings
+        
         variable Integer currentLength = offset;
-        variable Integer index = 0;
-        variable FormattingWriter.Token? previousToken = null;
-        "*Ugly* hack because `!exists previousToken` is not a normal expression" // TODO revisit this later
-        variable Boolean hasPreviousToken = false;
-        while (currentLength <= maxLineLength || !hasPreviousToken) {
-            FormattingWriter.QueueElement? element = elements[index];
-            switch (element)
-            case (is FormattingWriter.Token) {
-                currentLength += element.text.size;
-                if (exists p = previousToken, p.wantsSpaceAfter + element.wantsSpaceBefore >= 0) {
-                    currentLength++; // space between tokens
-                }
-                previousToken = element;
-                hasPreviousToken = true;
-            }
-            case (is FormattingWriter.LineBreak) {
-                return index;
-            }
-            case (is Null) {
-                // we’ve reached  the end of the queue
-                break;
-            }
-            else {
-                // do nothing
-            }
-            index++;
-        }
-        index--; // we increased it one time too much in the loop
-        if (index >= elements.size || currentLength < maxLineLength) {
-            return null;
-        }
-        if (!is FormattingWriter.LineBreak l = elements[index], index == 0) {
-            // ensure that we don’t write a neverending chain of empty lines because the first token is already too long
-            return 1;
-        }
-        // respect the token’s allowLineBreakBefore/-After
-        Integer origIndex = index;
-        "Used to determine if we should use [[index]] or [[origIndex]]."
-        variable Boolean skippedToken = false;
-        while (index > 0) { // TODO revisit later
-            if (is FormattingWriter.Token element = elements[index]) {
-                if (element.allowLineBreakBefore) {
-                    skippedToken = true;
+        "The index of the token in [[tokens]] whose index in [[elements]]
+         we’re going to return."
+        variable Integer tokenIndex = 0;
+        if (currentLength > maxLineLength) {
+            tokenIndex = 1;
+        } else {
+            while (currentLength <= maxLineLength) {
+                Token? token = tokens[tokenIndex];
+                if (exists token) {
+                    currentLength += token.text.size;
+                    if (exists previousToken = tokens[tokenIndex - 1],
+                        previousToken.wantsSpaceAfter + token.wantsSpaceBefore >= 0) {
+                            currentLength++; // space between tokens
+                    }
+                    tokenIndex++;
                 } else {
-                    break;
+                    // we’ve reached the end of the tokens without exceeding the maxLineLength;
+                    // return the index of the first LineBreak or null if there isn’t one
+                    return elements.indexes((QueueElement elem) {
+                        if (is LineBreak elem) {
+                            return true;
+                        }
+                        return false;
+                    }).first;
                 }
             }
-            if (is FormattingWriter.Token element = elements[index]) {
-                if (element.allowLineBreakAfter) {
-                    skippedToken = true;
-                } else {
-                    break;
-                }
+            if (tokenIndex > 1) {
+                tokenIndex--; // we incremented it one time too much in the loop
             }
-            index--;
         }
-        index++; // we decreased it one time too much in the loop
-        if (skippedToken, !is FormattingWriter.LineBreak l = elements[index], index == 0) {
-            // same as above, except we return the original index to avoid lots of almost-empty lines
-            return origIndex;
+        
+        // 2. respect allowSpace{Before,After} settings
+        //    go back until we encounter an index where the tokens before and after
+        //    allow a line break; we hit the beginning of the tokens, search in the
+        //    other direction; if we then hit the end of the tokens, return the index
+        //    of the first existing LineBreak, else null.
+        
+        Integer origTokenIndex = tokenIndex;
+        while (exists token = tokens[tokenIndex], exists previousToken = tokens[tokenIndex - 1],
+            !(previousToken.allowLineBreakAfter && token.allowLineBreakBefore)) {
+            tokenIndex--;
         }
-        return index;
+        if (tokenIndex <= 0) {
+            // search in the other direction
+            tokenIndex = origTokenIndex;
+            while (exists token = tokens[tokenIndex], exists nextToken = tokens[tokenIndex + 1],
+                !(token.allowLineBreakAfter && nextToken.allowLineBreakBefore)) {
+                tokenIndex++;
+            }
+            tokenIndex++; // we want the index of the second token of the pair
+        }
+        Token? token = tokens[tokenIndex];
+        if (is Null token) {
+            // we’ve reached the end of the tokens without finding a suitable token;
+            // return the index of the first LineBreak or null if there isn’t one
+            return elements.indexes((QueueElement elem) {
+                if (is LineBreak elem) {
+                    return true;
+                }
+                return false;
+            }).first;
+        }
+        assert (exists token); // TODO revisit, unnecessary assert
+        
+        // 3. find the element index from the token index
+        //    go through elements until we encounter token
+        //    (or a LineBreak).
+        
+        variable Integer elementIndex = 0;
+        while (exists element = elements[elementIndex], element != token) {
+            if (is LineBreak element) {
+                return elementIndex;
+            }
+            elementIndex++;
+        }
+        
+        if (elementIndex >= elements.size) {
+            // we’ve reached the end of the tokens without finding a suitable token;
+            // return the index of the first LineBreak or null if there isn’t one
+            return elements.indexes((QueueElement elem) {
+                if (is LineBreak elem) {
+                    return true;
+                }
+                return false;
+            }).first;
+        }
+        return elementIndex;
     }
 }
