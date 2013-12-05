@@ -21,8 +21,8 @@ shared abstract class LineBreakStrategy() {
 }
 
 shared LineBreakStrategy? parseLineBreakStrategy(String string) {
-    if (string == "dumb") {
-        return DumbLineBreaks();
+    if (string == "default") {
+        return DefaultLineBreaks();
     }
     throw Exception("Unknown line breaking strategy '``string``'!");
 }

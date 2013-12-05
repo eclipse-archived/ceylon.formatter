@@ -9,7 +9,7 @@
     },
     FormattingOption {
         "The strategy to determine where lines should be broken to accomodate [[maxLineLength]].";
-        "LineBreakStrategy"; "lineBreakStrategy"; /* = */ "DumbLineBreaks()";
+        "LineBreakStrategy"; "lineBreakStrategy"; /* = */ "DefaultLineBreaks()";
     },
     FormattingOption {
         "Decide whether to keep an opening brace ('{') on the same line (One True Style)

@@ -4,7 +4,7 @@ import ceylon.formatter.options { parseLineBreakStrategy, FormattingOptions, Lin
 import ceylon.file { Writer }
 
 test
-shared void testDumbLineBreaks() {
+shared void testDefaultLineBreaks() {
     object writer satisfies Writer {
         shared actual void destroy() {}        
         shared actual void flush() {}        
@@ -13,17 +13,17 @@ shared void testDumbLineBreaks() {
     }
     FormattingWriter w = FormattingWriter(null, writer, FormattingOptions());
     
-    LineBreakStrategy? dumbLineBreaks = parseLineBreakStrategy("dumb");
-    assert (exists dumbLineBreaks);
+    LineBreakStrategy? defaultLineBreaks = parseLineBreakStrategy("default");
+    assert (exists defaultLineBreaks);
     
-    assert(exists location1 = dumbLineBreaks.lineBreakLocation([
+    assert(exists location1 = defaultLineBreaks.lineBreakLocation([
         w.Token("breakHere", false, 1, maxDesire, maxDesire),
         *{
             for (i in 1..10)
                 w.Token("noBreakHere``i``", true, null, maxDesire, maxDesire)
         }], 0, 20), location1 == 1);
     
-    assert(is Null n = dumbLineBreaks.lineBreakLocation([
+    assert(is Null n = defaultLineBreaks.lineBreakLocation([
         for (i in 1..10)
             w.Token("noBreakHere``i``", false, null, maxDesire, maxDesire)
         ], 0, 20));
@@ -33,5 +33,5 @@ shared void testDumbLineBreaks() {
         s.append(w.Token("noBreakHere``i``", false, null, maxDesire, maxDesire));
     }
     s.append(w.LineBreak());
-    assert(exists location2 = dumbLineBreaks.lineBreakLocation(s.sequence, 0, 20), location2 == 10);
+    assert(exists location2 = defaultLineBreaks.lineBreakLocation(s.sequence, 0, 20), location2 == 10);
 }

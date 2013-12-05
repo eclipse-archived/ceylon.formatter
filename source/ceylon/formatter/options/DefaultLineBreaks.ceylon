@@ -1,5 +1,5 @@
 import ceylon.formatter { FormattingWriter { QueueElement=QueueElement, Token=Token, LineBreak=LineBreak } }
-class DumbLineBreaks() extends LineBreakStrategy() {
+class DefaultLineBreaks() extends LineBreakStrategy() {
 
     shared actual Integer? lineBreakLocation(QueueElement[] elements, Integer offset, Integer maxLineLength) {
         "Only the [[FormattingWriter.Token]] elements from [[elements]].
