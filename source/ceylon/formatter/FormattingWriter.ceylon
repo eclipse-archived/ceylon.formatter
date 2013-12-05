@@ -1,7 +1,13 @@
 import ceylon.file { Writer }
 import ceylon.collection { MutableList, LinkedList }
 import org.antlr.runtime { AntlrToken=Token, TokenStream }
-import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer { lineComment=\iLINE_COMMENT, multiComment=\iMULTI_COMMENT, ws=\iWS } }
+import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer {
+    lineComment=\iLINE_COMMENT,
+    multiComment=\iMULTI_COMMENT,
+    ws=\iWS,
+    stringLiteral=\iSTRING_LITERAL,
+    verbatimStringLiteral=\iVERBATIM_STRING
+} }
 import ceylon.formatter.options { FormattingOptions }
 import ceylon.time.internal.math { floorDiv }
 
@@ -82,13 +88,26 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         shared actual FormattingContext context;
     }
     
-    shared class Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter) {
+    shared class Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, alignSkip = 0) {
         
         shared default String text;
         shared default Boolean allowLineBreakBefore;
         shared default Integer? postIndent;
         shared default Integer wantsSpaceBefore;
         shared default Integer wantsSpaceAfter;
+        """If [[text]] has several lines, the subsequent lines will be aligned to
+           the [[alignSkip]]<sup>th</sup> character of the first line;
+           in other words, this determines how many characters from the first line
+           are skipped when the subsequent lines are aligned.
+           
+           Example values: `1` for multi-line string literals (to exclude the initial quote),
+           `3` for multi-line verbatim string literals (dito).
+           ~~~
+           print("first line
+                  here’s where we have to align
+                 aligning here is a syntax error");
+           """
+        shared default Integer alignSkip;
         
         shared Boolean allowLineBreakAfter {
             if (exists p = postIndent) { // TODO revisit later (should be allowLineBreakAfter = exists postIndent;)
@@ -99,8 +118,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         }
         shared actual String string => text;
     }    
-    class OpeningToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter)
-        extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter)
+    class OpeningToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, alignSkip = 0)
+        extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, alignSkip)
         satisfies OpeningElement {
         
         shared actual String text;
@@ -108,12 +127,13 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         shared actual Integer? postIndent;
         shared actual Integer wantsSpaceBefore;
         shared actual Integer wantsSpaceAfter;
+        shared actual Integer alignSkip;
         shared actual object context satisfies FormattingContext {
             postIndent = outer.postIndent else 0;
         }
     }
-    class ClosingToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, context)
-            extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter)
+    class ClosingToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, context, alignSkip = 0)
+            extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, alignSkip)
             satisfies ClosingElement {
         
         shared actual String text;
@@ -122,6 +142,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         shared actual Integer wantsSpaceBefore;
         shared actual Integer wantsSpaceAfter;
         shared actual FormattingContext context;
+        shared actual Integer alignSkip;
     }
     
     shared class LineBreak() {}
@@ -219,11 +240,27 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         });
         FormattingContext? ret;
         Token t;
+        see (`value Token.alignSkip`)
+        Integer alignSkip;
+        if (is AntlrToken token) {
+            if (token.type == stringLiteral) {
+                alignSkip = 1; // "string"
+            } else if (token.type == verbatimStringLiteral) {
+                alignSkip = 3; // """verbatim string"""
+            } else {
+                alignSkip = 0;
+            }
+        } else {
+            // hack: for now we assume the only multi-line tokens are multi-line string literals,
+            // so we use the amount of leading quotes as alignSkip
+            assert (is String token);
+            alignSkip = token.takingWhile('"'.equals).size;
+        }
         if (exists context) {
-            t = ClosingToken(tokenText, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, context);
+            t = ClosingToken(tokenText, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, context, alignSkip);
             ret = null;
         } else {
-            t = OpeningToken(tokenText, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter);
+            t = OpeningToken(tokenText, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, alignSkip);
             assert (is OpeningToken t); // ...yeah
             ret = t.context;
         }
@@ -383,13 +420,19 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             index = tokenQueue.indexes(function (QueueElement element) {
                 if (is LineBreak element) {
                     return true;
+                } else if (is Token element, element.text.split('\n'.equals).longerThan(1)) {
+                    return true;
                 }
                 return false;
             }).first;
         }
         if (exists index) {
             if (!is LineBreak t = tokenQueue[index]) {
-                tokenQueue.insert(index, LineBreak());
+                if (is Token element = t, element.text.split('\n'.equals).longerThan(1)) {
+                    // do *not* insert a LineBreak
+                } else {
+                    tokenQueue.insert(index, LineBreak());
+                }
             }
             writeLine(index);
             return true;
@@ -409,10 +452,13 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         the new first token)
      2. Determine the first token in that range
      3. If the first token is a [[ClosingToken]], [[close|closeContext]] its context
-     4. Write indentation – the sum of all `postIndent`s on the [[tokenStack]]
-     5. Write the elements: the first token directly, since its context was already
-        closed in `3.`, the others [[with context|writeWithContext]]
-     6. Write a line break
+     4. [[Write indentation|writeIndentation]]
+     5. Write the elements:
+         * If the last element contains more than one line: [[write]] all tokens directy,
+           then [[handle|handleContext]] their contexts
+         * otherwise write only the first token directly, since its context was already
+           closed in `3.`, and write the others [[with context|writeWithContext]]
+     6. If the last element isn’t multi-line: write a line break
      
      (Note that there may not appear any line breaks before token `i`.)"
     void writeLine(Integer i) {
@@ -429,11 +475,40 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             closeContext0(firstToken);
         }
         
-        Integer indentLevel = tokenStack.fold(0,
-            (Integer partial, FormattingContext elem) => partial + elem.postIndent);
-        countingWriter.write(options.indentMode.indent(indentLevel));
+        writeIndentation();
         
         variable Token? previousToken = null;
+        "The elements we have to handle later in case we’re writing a multi-line token"
+        value elementsToHandle = SequenceBuilder<QueueElement>();
+        "The function that handles elements. If the last token is a multi-line token,
+         it [[writes|write]] tokens directly and adds the elements to [[elementsToHandle]].
+         otherwise it writes tokens [[with context|writeWithContext]] and opens/closes
+         [[EmptyOpenings|EmptyOpening]]/[[-Closings|EmptyClosing]]."
+        Anything(QueueElement) elementHandler;
+        Boolean hasMultiLineToken;
+        if (is Token lastToken = tokenQueue[i], lastToken.text.split('\n'.equals).longerThan(1)) {
+            hasMultiLineToken = true;
+        } else {
+            hasMultiLineToken = false;
+        }
+        if (hasMultiLineToken) {
+            elementHandler = function(QueueElement elem) {
+                if (is Token t = elem) {
+                    write(t);
+                }
+                elementsToHandle.append(elem);
+                return null;
+            };
+        } else {
+            elementHandler = function(QueueElement elem) {
+                if (is Token t = elem) {
+                    writeWithContext(t);
+                } else if (is EmptyOpening|EmptyClosing elem) {
+                    handleContext(elem);
+                }
+                return null;
+            };
+        }
         for (c in 0..i) {
             QueueElement? removing = tokenQueue.first;
             assert (exists removing);
@@ -445,33 +520,82 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                     // don’t attempt to close this context, we already did that
                     countingWriter.write(currentToken.text);
                 } else {
-                    writeWithContext(currentToken);
+                    elementHandler(currentToken);
                 }
                 previousToken = currentToken;
-            } else if (is EmptyOpening removing) {
-                tokenStack.add(removing.context);
-            } else if (is EmptyClosing removing) {
-                closeContext0(removing);
+            } else if (is EmptyOpening|EmptyClosing removing) {
+                elementHandler(removing);
             }
             tokenQueue.removeFirst();
         }
+        for(token in elementsToHandle.sequence) {
+            handleContext(token);
+        }
         
-        countingWriter.writeLine();
+        if (hasMultiLineToken) {
+            // don’t write a line break
+        } else {
+            countingWriter.writeLine();
+        }
+    }
+    
+    "Write indentation – the sum of all `postIndent`s on the [[tokenStack]].
+     
+     Unless we’re not at the start of a line, which happens after writing a multi-line token
+     (e. g. multi-line string literals)."
+    void writeIndentation() {
+        if (countingWriter.currentWidth > 0) {
+            return;
+        }
+        Integer indentLevel = tokenStack.fold(0,
+            (Integer partial, FormattingContext elem) => partial + elem.postIndent);
+        countingWriter.write(options.indentMode.indent(indentLevel));
     }
     
     "Write a token.
      
-     1. Write the token’s text
-     2. Context handling:
-         1. If [[token]] is a [[OpeningToken]], push its context onto the [[tokenStack]];
-         2. if it’s a [[ClosingToken]], [[close|closeContext0]] its context."
+     1. [[write]] the token’s text
+     2. [[handle|handleContext]] the token’s context"
     void writeWithContext(Token token) {
-        countingWriter.write(token.text);
-        
-        if (is OpeningToken token) {
-            tokenStack.add(token.context);
-        } else if (is ClosingToken token) {
-            closeContext0(token);
+        write(token);
+        handleContext(token);
+    }
+    
+    "Write the token’s text. If it contains more than one line, pad the subsequent lines.
+     
+     The column to align to is determined by getting [[countingWriter.currentWidth]]
+     before writing the first line and adding [[token]].[[alignSkip|Token.alignSkip]] to it.
+     The subsequent lines are [[trimmed|String.trimmed]], indented with the current indentation
+     level (see [[tokenStack]]) using [[options]]`.`[[indentMode|FormattingOptions.indentMode]],
+     then aligned to the column with spaces."
+    void write(Token token) {
+        Integer column = countingWriter.currentWidth + token.alignSkip;
+        {String*} lines = token.text.split{
+            splitting = '\n'.equals;
+            groupSeparators = false; // keep empty lines
+        };
+        String? firstLine = lines.first;
+        "The token must not be empty"
+        assert (exists firstLine);
+        countingWriter.write(firstLine);
+        for (line in lines.rest) {
+            countingWriter.writeLine();
+            writeIndentation();
+            while (countingWriter.currentWidth < column) {
+                // TODO this is horribly inefficient
+                countingWriter.write(" ");
+            }
+            countingWriter.write(line.trimmed);
+        }
+    }
+    
+    "If [[element]] is an [[OpeningElement]], push its context onto the [[tokenStack]];
+     if it’s a [[ClosingElement]], [[close|closeContext0]] its context."
+    void handleContext(QueueElement element) {
+        if (is OpeningElement element) {
+            tokenStack.add(element.context);
+        } else if (is ClosingElement element) {
+            closeContext0(element);
         }
     }
     

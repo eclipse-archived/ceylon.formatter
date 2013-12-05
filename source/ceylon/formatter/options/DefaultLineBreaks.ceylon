@@ -29,6 +29,12 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
             while (currentLength <= maxLineLength) {
                 Token? token = tokens[tokenIndex];
                 if (exists token) {
+                    if (token.text.split(Character.equals('\n')).longerThan(1)) {
+                        // multi-line literal
+                        Integer? elementIndex = elements.indexes(token.equals).first;
+                        assert (exists elementIndex);
+                        return elementIndex;
+                    }
                     currentLength += token.text.size;
                     if (exists previousToken = tokens[tokenIndex - 1],
                         previousToken.wantsSpaceAfter + token.wantsSpaceBefore >= 0) {

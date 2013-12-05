@@ -91,3 +91,8 @@ test
 shared void testParamListParenWithoutSpaces() {
     testFile("paramListParenWithoutSpaces");
 }
+
+test
+shared void testMultiLineString() {
+    testFile("multiLineString");
+}
