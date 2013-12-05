@@ -316,11 +316,11 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
      
      * If the associated context is still on the queue: Go through the [[tokenQueue]] and between
        the opening element and the closing element (including both), do for each element:
-        1. If it’s an [[Empty]], remove it;
-        2. If it’s a (subclass of) [[Token]], replace it with a [[Token]].
+         1. If it’s an [[Empty]], remove it;
+         2. If it’s a (subclass of) [[Token]], replace it with a [[Token]].
      * If the associated context isn’t on the queue:
-        1. Pop the context and its successors from the [[tokenStack]]
-        2. Go through the `tokenQueue` from the beginning until `element` and do the same as above."
+         1. Pop the context and its successors from the [[tokenStack]]
+         2. Go through the `tokenQueue` from the beginning until `element` and do the same as above."
     void closeContext0(ClosingElement&QueueElement element) {
         Integer? startIndex = tokenQueue.indexes((QueueElement e) {
             if (is OpeningElement e, e.context == element.context) {
@@ -410,9 +410,9 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
      2. Determine the first token in that range
      3. If the first token is a [[ClosingToken]], [[close|closeContext]] its context
      4. Write indentation – the sum of all `postIndent`s on the [[tokenStack]]
-     5. [[write]] the elements (write the first token directly, since its context was already
-        closed in `3.`)
-     7. Write a line break
+     5. Write the elements: the first token directly, since its context was already
+        closed in `3.`, the others [[with context|writeWithContext]]
+     6. Write a line break
      
      (Note that there may not appear any line breaks before token `i`.)"
     void writeLine(Integer i) {
@@ -445,7 +445,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                     // don’t attempt to close this context, we already did that
                     countingWriter.write(currentToken.text);
                 } else {
-                    write(currentToken);
+                    writeWithContext(currentToken);
                 }
                 previousToken = currentToken;
             } else if (is EmptyOpening removing) {
@@ -464,8 +464,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
      1. Write the token’s text
      2. Context handling:
          1. If [[token]] is a [[OpeningToken]], push its context onto the [[tokenStack]];
-         2. if it’s a [[ClosingToken]], [[close|closeContext]] its context."
-    void write(Token token) {
+         2. if it’s a [[ClosingToken]], [[close|closeContext0]] its context."
+    void writeWithContext(Token token) {
         countingWriter.write(token.text);
         
         if (is OpeningToken token) {
