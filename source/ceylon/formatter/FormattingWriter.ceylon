@@ -101,7 +101,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
            are skipped when the subsequent lines are aligned.
            
            Example values: `1` for multi-line string literals (to exclude the initial quote),
-           `3` for multi-line verbatim string literals (dito).
+           `3` for multi-line verbatim string literals (to exclude the initial quotes).
            ~~~
            print("first line
                   here’s where we have to align
