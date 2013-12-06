@@ -16,12 +16,12 @@ void testFile(String filename) {
         is File expectedFile = parsePath(fullFilename + ".formatted").resource) {
         // format input file
         object output satisfies Writer {
-            variable String content = "";
+            StringBuilder content = StringBuilder();
             shared actual void destroy() => flush();
             shared actual void flush() {}
-            shared actual void write(String string) => content += string;
-            shared actual void writeLine(String line) => content += line + operatingSystem.newline;
-            shared actual String string => content;
+            shared actual void write(String string) => content.append(string);
+            shared actual void writeLine(String line) => content.append(line).appendNewline();
+            shared actual String string => content.string;
         }
         CeylonLexer lexer = CeylonLexer(ANTLRFileStream(fullFilename));
         CompilationUnit cu = CeylonParser(CommonTokenStream(lexer)).compilationUnit();
