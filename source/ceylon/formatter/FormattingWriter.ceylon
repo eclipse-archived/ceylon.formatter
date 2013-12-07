@@ -8,7 +8,7 @@ import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer {
     stringLiteral=\iSTRING_LITERAL,
     verbatimStringLiteral=\iVERBATIM_STRING
 } }
-import ceylon.formatter.options { FormattingOptions }
+import ceylon.formatter.options { FormattingOptions, Spaces, Tabs, Mixed }
 import ceylon.time.internal.math { floorDiv }
 
 "The maximum value that is safe to use as [[FormattingWriter.writeToken]]’s `wantsSpace[Before|After]` argument.
@@ -88,13 +88,33 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         shared actual FormattingContext context;
     }
     
-    shared class Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, alignSkip = 0) {
+    shared class Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine = 0, alignSkip = 0) {
         
         shared default String text;
         shared default Boolean allowLineBreakBefore;
         shared default Integer? postIndent;
         shared default Integer wantsSpaceBefore;
         shared default Integer wantsSpaceAfter;
+        """The character position of the first character of the token in its line.
+           Analogous to [[AntlrToken.charPositionInLine]].
+           
+           Example:
+           ~~~ceylon
+           print ( "hello,
+                        world");
+           ~~~
+           Here, the `charPositionInLine` of the string token is 8, so 8 whitespace
+           characters will be removed from each subsequent line. After that, padding
+           occurs, producing an output like this:
+           ~~~ceylon
+           print("hello,
+                      world");
+           ~~~
+           where the first 6 spaces are alignment, then comes one space from [[alignSkip]],
+           and then come 4 spaces that are part of the string.
+           """
+        see (`value alignSkip`)
+        shared default Integer charPositionInLine;
         """If [[text]] has several lines, the subsequent lines will be aligned to
            the [[alignSkip]]<sup>th</sup> character of the first line;
            in other words, this determines how many characters from the first line
@@ -106,7 +126,11 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
            print("first line
                   here’s where we have to align
                  aligning here is a syntax error");
+           ~~~
+           To determine how much whitespace has to be trimmed from the subsequent lines before
+           they are padded to be aligned to the first line, [[charPositionInLine]] is used.
            """
+        see (`value charPositionInLine`)
         shared default Integer alignSkip;
         
         shared Boolean allowLineBreakAfter {
@@ -118,8 +142,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         }
         shared actual String string => text;
     }    
-    class OpeningToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, alignSkip = 0)
-        extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, alignSkip)
+    class OpeningToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine = 0, alignSkip = 0)
+        extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine, alignSkip)
         satisfies OpeningElement {
         
         shared actual String text;
@@ -127,13 +151,14 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         shared actual Integer? postIndent;
         shared actual Integer wantsSpaceBefore;
         shared actual Integer wantsSpaceAfter;
+        shared actual Integer charPositionInLine;
         shared actual Integer alignSkip;
         shared actual object context satisfies FormattingContext {
             postIndent = outer.postIndent else 0;
         }
     }
-    class ClosingToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, context, alignSkip = 0)
-            extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, alignSkip)
+    class ClosingToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, context, charPositionInLine = 0, alignSkip = 0)
+            extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine, alignSkip)
             satisfies ClosingElement {
         
         shared actual String text;
@@ -142,6 +167,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         shared actual Integer wantsSpaceBefore;
         shared actual Integer wantsSpaceAfter;
         shared actual FormattingContext context;
+        shared actual Integer charPositionInLine;
         shared actual Integer alignSkip;
     }
     
@@ -240,9 +266,12 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         });
         FormattingContext? ret;
         Token t;
+        see (`value Token.charPositionInLine`)
+        Integer charPositionInLine;
         see (`value Token.alignSkip`)
         Integer alignSkip;
         if (is AntlrToken token) {
+            charPositionInLine = token.charPositionInLine;
             if (token.type == stringLiteral) {
                 alignSkip = 1; // "string"
             } else if (token.type == verbatimStringLiteral) {
@@ -251,16 +280,17 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 alignSkip = 0;
             }
         } else {
+            charPositionInLine = 0; // meaningless
             // hack: for now we assume the only multi-line tokens are multi-line string literals,
             // so we use the amount of leading quotes as alignSkip
             assert (is String token);
             alignSkip = token.takingWhile('"'.equals).size;
         }
         if (exists context) {
-            t = ClosingToken(tokenText, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, context, alignSkip);
+            t = ClosingToken(tokenText, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, context, charPositionInLine, alignSkip);
             ret = null;
         } else {
-            t = OpeningToken(tokenText, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, alignSkip);
+            t = OpeningToken(tokenText, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine, alignSkip);
             assert (is OpeningToken t); // ...yeah
             ret = t.context;
         }
@@ -565,11 +595,14 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
      
      The column to align to is determined by getting [[countingWriter.currentWidth]]
      before writing the first line and adding [[token]].[[alignSkip|Token.alignSkip]] to it.
-     The subsequent lines are [[trimmed|String.trimmed]], indented with the current indentation
+     The subsequent lines are [[trimmed|trimIndentation]], indented with the current indentation
      level (see [[tokenStack]]) using [[options]]`.`[[indentMode|FormattingOptions.indentMode]],
      then aligned to the column with spaces."
     void write(Token token) {
-        Integer column = countingWriter.currentWidth + token.alignSkip;
+        "The column where the text was originally aligned to."
+        Integer sourceColumn = token.charPositionInLine + token.alignSkip;
+        "The column where we want to align the text to."
+        Integer targetColumn = countingWriter.currentWidth + token.alignSkip;
         {String*} lines = token.text.split{
             splitting = '\n'.equals;
             groupSeparators = false; // keep empty lines
@@ -581,12 +614,46 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         for (line in lines.rest) {
             countingWriter.writeLine();
             writeIndentation();
-            while (countingWriter.currentWidth < column) {
+            while (countingWriter.currentWidth < targetColumn) {
                 // TODO this is horribly inefficient
                 countingWriter.write(" ");
             }
-            countingWriter.write(line.trimmed);
+            countingWriter.write(trimIndentation(line, sourceColumn));
         }
+    }
+    
+    "Removes [[column]] columns of whitespace from [[line]].
+     
+     The width of a tab is taken from the [[options]], or defaults to `4`
+     if the options don’t define a tab width in [[indentMode|FormattingOptions.indentMode]]."
+    String trimIndentation(String line, variable Integer column) {
+        Integer tabWidth;
+        value indentMode = options.indentMode;
+        switch (indentMode)
+        case (is Tabs) {
+            tabWidth = indentMode.width;
+        }
+        case (is Spaces) {
+            tabWidth = 4;
+        }
+        case (is Mixed) {
+            tabWidth = indentMode.tabs.width;
+        }
+        String trimmedLine = line.trimLeading((Character elem) {
+            if (column > 0) {
+                if (elem == '\t') {
+                    column -= tabWidth;
+                } else if (elem.whitespace) {
+                    column -= 1;
+                } else {
+                    return false;
+                }
+                return true;
+            }
+            return false;
+        });
+        String paddedLine = " ".repeat(-column) + trimmedLine;
+        return paddedLine;
     }
     
     "If [[element]] is an [[OpeningElement]], push its context onto the [[tokenStack]];

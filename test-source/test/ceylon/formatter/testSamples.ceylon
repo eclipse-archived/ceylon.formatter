@@ -96,3 +96,8 @@ test
 shared void testMultiLineString() {
     testFile("multiLineString");
 }
+
+test
+shared void testMultiLineStringIndented() {
+    testFile("multiLineStringIndented");
+}
