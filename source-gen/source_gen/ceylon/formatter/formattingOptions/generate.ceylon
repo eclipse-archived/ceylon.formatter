@@ -1,5 +1,11 @@
 import ceylon.file { Writer, parsePath, File, Resource, Nil }
+
 shared void generate() {
+    generateFileFormattingOptions();
+    generateEnums();
+}
+
+void generateFileFormattingOptions() {
     Resource resource = parsePath("source/ceylon/formatter/options/FormattingOptions.ceylon").resource;
     File file;
     if (is Nil resource) {
@@ -17,6 +23,33 @@ shared void generate() {
         generateCombinedOptions(writer);
         generateVariableOptions(writer);
         generateFormattingFile(writer);
+    } finally {
+        writer.close(null);
+    }
+}
+
+void generateEnums() {
+    for (Enum enum in enums) {
+        generateFileEnum(enum);
+    }
+}
+
+void generateFileEnum(Enum enum) {
+    Resource resource = parsePath("source/ceylon/formatter/options/``enum.classname``.ceylon").resource;
+    File file;
+    if (is Nil resource) {
+        file = resource.createFile();
+    } else {
+        assert (is File resource);
+        file = resource;
+    }
+    Writer writer = file.Overwriter();
+    try {
+        writeHeader(writer);
+        generateEnumClass(writer, enum);
+        for (String instance in enum.instances) {
+            generateEnumInstance(writer, enum.classname, instance);
+        }
     } finally {
         writer.close(null);
     }
@@ -59,7 +92,7 @@ void generateSparseFormattingOptions(Writer writer) {
     }
     writer.write(") {\n");
     for (option in formattingOptions) {
-        String[] lines = [*option.documentation.split((Character c) => c == '\n')];
+        String[] lines = [*option.documentation.split('\n'.equals)];
         if (lines.size == 0 || option.documentation == "") {
             writer.write("\n");
         }
@@ -116,7 +149,7 @@ void generateCombinedOptions(Writer writer) {
           Each attribute is first searched in each of the [[decoration]] options, in the order of their appearance,
           and, if it isn't present in any of them, the attribute of [[baseOptions]] is used.
           
-          In the typical use case, `foundation` will be some default options (e.g. `FormattingOptions()`), and 
+          In the typical use case, `baseOptions` will be some default options (e.g. `FormattingOptions()`), and 
           `decoration` will be one `SparseFormattingOptions` object created on the fly:
           
               FormattingVisitor(tokens, writer, CombinedOptions(defaultOptions,
@@ -229,15 +262,17 @@ void generateFormattingFile(Writer writer) {
         writer.write(
             "                case (\"``option.name``\") {\n");
         writer.write("                    ");
-        if (option.type.contains("?") || option.type.contains("Null")) {
-            writer.write("if (optionValue == \"null\") {
-                                                  options.``option.name`` = null;
-                                              } else ");
-        }
-        for (String type in option.type.split((Character ch) => ch == '|')) {
-            if (type != "Null") {
+        for (String type in option.type.split('|'.equals)) {
+            if (exists enum = enums.find((Enum elem) => elem.classname == type)) {
+                for (instance in enum.instances) {
+                    writer.write(
+                        "if (\"``instance``\" == optionValue) {
+                                                 options.``option.name`` = ``instance``;
+                                             } else ");
+                }
+            } else {
                 writer.write(
-                    "if (exists option = parse``type.trimTrailing((Character elem) => elem == '?')``(optionValue)) {
+                    "if (exists option = parse``type``(optionValue)) {
                                              options.``option.name`` = option;
                                          } else ");
             }
@@ -261,4 +296,13 @@ void generateFormattingFile(Writer writer) {
                  throw Exception(\"File '\`\`filename\`\` not found!\");
              }
          }");
+}
+
+void generateEnumClass(Writer writer, Enum enum) {
+    writer.writeLine("shared abstract class ``enum.classname``() of ``"|".join(enum.instances)`` {}");
+    writer.writeLine();
+}
+
+void generateEnumInstance(Writer writer, String classname, String instance) {
+    writer.writeLine("shared object ``instance`` extends ``classname``() {}");
 }

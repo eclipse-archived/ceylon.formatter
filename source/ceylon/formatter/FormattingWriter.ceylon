@@ -374,7 +374,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         closeContext0(element);
         if (exists index = tokenStack.indexes((FormattingContext element) => element == context).first) {
             for (i in index..tokenStack.size - 1) {
-                tokenStack.removeLast();
+                tokenStack.deleteLast();
             }
         }
     }
@@ -406,7 +406,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             Integer? stackIndex = tokenStack.indexes((FormattingContext e) => e == element.context).first;
             if (exists stackIndex) {
                 for (i in stackIndex..tokenStack.size-1) {
-                    tokenStack.removeLast();
+                    tokenStack.deleteLast();
                 }
             }
             filterQueue(0, endIndex);
@@ -439,7 +439,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             return false;
         }
         Integer? index;
-        if (exists length = options.maxLineLength) {
+        if (is Integer length = options.maxLineLength) {
             index = options.lineBreakStrategy.lineBreakLocation(
                 tokenQueue.sequence,
                 options.indentMode.indent(
@@ -556,7 +556,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             } else if (is EmptyOpening|EmptyClosing removing) {
                 elementHandler(removing);
             }
-            tokenQueue.removeFirst();
+            tokenQueue.deleteFirst();
         }
         for(token in elementsToHandle.sequence) {
             handleContext(token);

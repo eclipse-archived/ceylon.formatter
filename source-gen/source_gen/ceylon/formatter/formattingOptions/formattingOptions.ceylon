@@ -4,8 +4,8 @@
         "IndentMode"; "indentMode"; /* = */ "Spaces(4)";
     },
     FormattingOption {
-        "The maximum line length, or `null` for unlimited line length.";
-        "Integer?"; "maxLineLength"; /* = */ "null";
+        "The maximum line length, or [[unlimited]].";
+        "Integer|Unlimited"; "maxLineLength"; /* = */ "unlimited";
     },
     FormattingOption {
         "The strategy to determine where lines should be broken to accomodate [[maxLineLength]].";
@@ -47,5 +47,12 @@
          the space; `true` means the same as [[ceylon.formatter::maxDesire]], and `false` means
          the same as [[ceylon.formatter::minDesire]].";
         "Boolean|Integer"; "spaceAfterParamListClosingParen"; /* = */ "-10";
+    }
+};
+
+{Enum+} enums = {
+    Enum {
+        "Unlimited";
+        {"unlimited"}; // TODO remove (this should be the default)
     }
 };
