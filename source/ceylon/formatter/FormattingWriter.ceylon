@@ -133,13 +133,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         see (`value charPositionInLine`)
         shared default Integer alignSkip;
         
-        shared Boolean allowLineBreakAfter {
-            if (exists p = postIndent) { // TODO revisit later (should be allowLineBreakAfter = exists postIndent;)
-                return true;
-            } else {
-                return false;
-            }
-        }
+        shared Boolean allowLineBreakAfter => postIndent exists;
         shared actual String string => text;
     }    
     class OpeningToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine = 0, alignSkip = 0)
@@ -337,18 +331,18 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         // notice how there’s no linebreak after the last line, which is why this gets
         // a little ugly...
         String? firstLine = current.text
-                .split((Character c) => c == '\n')
+                .split('\n'.equals)
                 .first;
         assert (exists firstLine);
         ret.append(OpeningToken(
-            firstLine.trimTrailing((Character c) => c == '\r'),
+            firstLine.trimTrailing('\r'.equals),
             true, 0, maxDesire, maxDesire));
         ret.appendAll({
             for (line in current.text
-                    .split((Character c) => c == '\n')
+                    .split('\n'.equals)
                     .rest
                     .filter((String elem) => !elem.empty)
-                    .map((String l) => l.trimTrailing((Character c) => c == '\r')))
+                    .map((String l) => l.trimTrailing('\r'.equals)))
                 for (element in {LineBreak(), OpeningToken(line, true, 0, maxDesire, maxDesire)})
                     element
         });
@@ -395,7 +389,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             }
             return false;
         }).first;
-        Integer? endIndex = tokenQueue.indexes((QueueElement e) => e == element).first;
+        Integer? endIndex = tokenQueue.indexes(element.equals).first;
         assert (exists endIndex);
         
         if (exists startIndex) {
@@ -403,7 +397,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             filterQueue(startIndex, endIndex);
         } else {
             // second case: affects token stack and queue
-            Integer? stackIndex = tokenStack.indexes((FormattingContext e) => e == element.context).first;
+            Integer? stackIndex = tokenStack.indexes(element.context.equals).first;
             if (exists stackIndex) {
                 for (i in stackIndex..tokenStack.size-1) {
                     tokenStack.deleteLast();
@@ -492,14 +486,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
      
      (Note that there may not appear any line breaks before token `i`.)"
     void writeLine(Integer i) {
-        Boolean(QueueElement) isToken = function (QueueElement elem) {
-            if (is Token elem) {
-                return true;
-            }
-            return false;
-        };
-        
-        QueueElement? firstToken = tokenQueue[0..i].find(isToken);
+        QueueElement? firstToken = tokenQueue[0..i].find((QueueElement elem) => elem is Token);
         
         if (is ClosingToken firstToken) {
             closeContext0(firstToken);
@@ -626,7 +613,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
      
      The width of a tab is taken from the [[options]], or defaults to `4`
      if the options don’t define a tab width in [[indentMode|FormattingOptions.indentMode]]."
-    String trimIndentation(String line, variable Integer column) {
+    String trimIndentation(String line, column) {
+        variable Integer column;
         Integer tabWidth;
         value indentMode = options.indentMode;
         switch (indentMode)

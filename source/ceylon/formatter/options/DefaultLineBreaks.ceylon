@@ -6,12 +6,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
          
          This allows us to access previous and next tokens directly
          instead of having to deal with non-token elements."
-        Token[] tokens = elements.filter((QueueElement elem) {
-            if (is Token elem) {
-                return true;
-            }
-            return false;
-        }).collect((QueueElement element) {
+        Token[] tokens = elements.filter((QueueElement elem) => elem is Token).collect((QueueElement element) {
             assert (is Token element);
             return element;
         });
@@ -44,12 +39,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
                 } else {
                     // we’ve reached the end of the tokens without exceeding the maxLineLength;
                     // return the index of the first LineBreak or null if there isn’t one
-                    return elements.indexes((QueueElement elem) {
-                        if (is LineBreak elem) {
-                            return true;
-                        }
-                        return false;
-                    }).first;
+                    return elements.indexes((QueueElement elem) => elem is LineBreak).first;
                 }
             }
             if (tokenIndex > 1) {
@@ -81,12 +71,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
         if (is Null token) {
             // we’ve reached the end of the tokens without finding a suitable token;
             // return the index of the first LineBreak or null if there isn’t one
-            return elements.indexes((QueueElement elem) {
-                if (is LineBreak elem) {
-                    return true;
-                }
-                return false;
-            }).first;
+            return elements.indexes((QueueElement elem) => elem is LineBreak).first;
         }
         assert (exists token); // TODO revisit, unnecessary assert
         
@@ -105,12 +90,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
         if (elementIndex >= elements.size) {
             // we’ve reached the end of the tokens without finding a suitable token;
             // return the index of the first LineBreak or null if there isn’t one
-            return elements.indexes((QueueElement elem) {
-                if (is LineBreak elem) {
-                    return true;
-                }
-                return false;
-            }).first;
+            return elements.indexes((QueueElement elem) => elem is LineBreak).first;
         }
         return elementIndex;
     }

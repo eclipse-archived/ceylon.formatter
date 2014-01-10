@@ -234,11 +234,11 @@ void generateFormattingFile(Writer writer) {
              if (is File file = parsePath(filename).resource) {
                  // read the file
                  Reader reader = file.Reader();
-                 variable String[] lines = [];
+                 SequenceBuilder<String> linesBuilder = SequenceBuilder<String>();
                  while (exists line = reader.readLine()) {
-                     lines = [line, *lines];
+                     linesBuilder.append(line);
                  }
-                 lines = lines.reversed; // since we had to read the file in reverse order
+                 String[] lines = linesBuilder.sequence;
                  
                  // read included files
                  variable VariableOptions options = VariableOptions(baseOptions);
@@ -251,11 +251,11 @@ void generateFormattingFile(Writer writer) {
                  // read other options
                  for (String line in lines) {
                      if (!line.startsWith(\"#\") && !line.startsWith(\"include=\")) {
-                         Integer? indexOfEquals = line.indexes((Character c) => c == '=').first;
+                         Integer? indexOfEquals = line.indexes('='.equals).first;
                          \"Line does not contain an equality sign\"
                          assert (exists indexOfEquals);
-                         String optionName = line.segment(0, indexOfEquals);
-                         String optionValue = line.segment(indexOfEquals + 1, line.size - indexOfEquals - 1);
+                         String optionName = line[...indexOfEquals-1];
+                         String optionValue = line[indexOfEquals+1...];
                          
                          switch (optionName)\n");
     for (FormattingOption option in formattingOptions) {
@@ -278,7 +278,7 @@ void generateFormattingFile(Writer writer) {
             }
         }
         writer.write("{
-                                              throw Exception(\"Can't parse value '\`\`optionValue\`\`' for option ``option.name``!\");
+                                              throw Exception(\"Can't parse value '\`\`optionValue\`\`' for option '``option.name``'!\");
                                           }\n");
         writer.write(
             "                }\n");
