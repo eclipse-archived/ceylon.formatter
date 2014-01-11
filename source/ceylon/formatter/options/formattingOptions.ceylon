@@ -40,63 +40,66 @@ shared FormattingOptions formattingFile(
         => variableFormattingFile(filename, baseOptions);
 
 
-Map<String, String> shortcuts = HashMap { "w"->"maxLineLength" };
+Map<Character, String> shortcuts = HashMap { 'w'->"maxLineLength" };
+Map<String, String> aliases = HashMap { "maxLineWidth"->"maxLineLength" };
+Map<String, SparseFormattingOptions> presets = HashMap {
+    "allmanStyle"->SparseFormattingOptions {
+        braceOnOwnLine = true;
+    }
+};
 
-shared [FormattingOptions, String[]] commandLineOptions() {    
+shared [FormattingOptions, String[]] commandLineOptions() {
+    variable FormattingOptions baseOptions = FormattingOptions();
     MutableMap<String, SequenceAppender<String>> lines = HashMap<String, SequenceAppender<String>>();
     SequenceBuilder<String> otherLines = SequenceBuilder<String>();
+    SequenceBuilder<SparseFormattingOptions> usedPresets = SequenceBuilder<SparseFormattingOptions>();
     variable String? partialLine = null;
     for (String option in process.arguments) {
-        if (option.startsWith("--")) {
-            String o = option[2...];
-            if (exists i = o.indexes('='.equals).first) {
-                String key = o[...i-1];
-                String item = o[i+1...];
-                if(exists appender = lines[key]) {
-                    appender.append(item);
-                } else {
-                    lines.put(key, SequenceAppender([item]));
+        String key;
+        String item;
+        if (option.startsWith("-"), exists char1 = option[1]) {
+            String expanded;
+            if (char1 == '-') { // option.startsWith("--")
+                expanded = option[2...];
+                if (exists preset = presets[expanded]) {
+                    usedPresets.append(preset);
+                    continue;
                 }
-            } else {
-                partialLine = o;
-            }
-        } else if (option.startsWith("-")) {
-            if (exists longOption = shortcuts[option[1..1]]) {
-                String o = longOption+option[2...];
-                if (exists i = o.indexes('='.equals).first) {
-                    String key = o[...i-1];
-                    String item = o[i+1...];
-                    if(exists appender = lines[key]) {
-                        appender.append(item);
-                    } else {
-                        lines.put(key, SequenceAppender([item]));
-                    }
-                } else {
-                    partialLine = o;
-                }
+            } else if (exists longOption = shortcuts[char1]) {
+                expanded = longOption + option[2...];
             }
             else {
                 // TODO report the error somewhere?
                 process.writeError("Unrecognized short option '``option[0..1]``'!");
+                continue;
+            }
+            if (exists i = expanded.indexes('='.equals).first) {
+                key = expanded[...i-1];
+                item = expanded[i+1...];
+            } else {
+                partialLine = expanded;
+                continue;
             }
         } else if(exists p = partialLine){
-            // merge '--option value' into '--option=value'
-            String key = p;
-            String item = option;
-            if(exists appender = lines[key]) {
-                appender.append(item);
-            } else {
-                lines.put(key, SequenceAppender([item]));
-            }
+            key = p;
+            item = option;
             partialLine = null;
         } else {
             otherLines.append(option);
+            continue;
         }
+        if(exists appender = lines[(aliases[key] else key)]) {
+            appender.append(item);
+        } else {
+            lines.put(aliases[key] else key, SequenceAppender([item]));
+        }
+    }
+    if (nonempty seq = usedPresets.sequence) {
+        baseOptions = CombinedOptions(baseOptions, *seq.reversed);
     }
     return [
     parseFormattingOptions(
-        lines.map((String->SequenceAppender<String> option) => option.key->option.item.sequence),
-        FormattingOptions()),
+        lines.map((String->SequenceAppender<String> option) => option.key->option.item.sequence), baseOptions),
     otherLines.sequence
     ];
 }
