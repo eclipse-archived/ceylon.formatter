@@ -6,4 +6,4 @@ bin
 
 /classes
 /modules
-source/ceylon/formatter/options/FormattingOptions.ceylon
+source/ceylon/formatter/options/FormattingOptions_generated.ceylon

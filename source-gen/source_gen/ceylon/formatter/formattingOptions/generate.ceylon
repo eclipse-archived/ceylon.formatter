@@ -6,7 +6,7 @@ shared void generate() {
 }
 
 void generateFileFormattingOptions() {
-    Resource resource = parsePath("source/ceylon/formatter/options/FormattingOptions.ceylon").resource;
+    Resource resource = parsePath("source/ceylon/formatter/options/FormattingOptions_generated.ceylon").resource;
     File file;
     if (is Nil resource) {
         file = resource.createFile();
@@ -68,10 +68,7 @@ void writeHeader(Writer writer) {
 }
 
 void writeImports(Writer writer) {
-    writer.write(
-        "import ceylon.file { File, Reader, parsePath }
-         
-         ");
+    // no imports
 }
 
 void generateSparseFormattingOptions(Writer writer) {
@@ -185,116 +182,59 @@ void generateVariableOptions(Writer writer) {
 
 void generateFormattingFile(Writer writer) {
     writer.write(
-        "\"Reads a file with formatting options.
-          
-          The file consists of lines of key=value pairs or comments, like this:
-          ~~~~plain
-          # Boss Man says the One True Style is evil
-          blockBraceOnNewLine=true
-          # 80 characters is not enough
-          maxLineWidth=120
-          indentMode=4 spaces
-          ~~~~
-          As you can see, comment lines begin with a `#` (`\\\\{0023}`), and the value
-          doesn't need to be quoted to contain spaces. Blank lines are also allowed.
-          
-          The keys are attributes of [[FormattingOptions]].
-          The format of the value depends on the type of the key; to parse it, the
-          function `parse<KeyType>(String)` is used (e.g [[ceylon.language::parseInteger]]
-          for `Integer` values, [[ceylon.language::parseBoolean]] for `Boolean` values, etc.).
-          
-          A special option in this regard is `include`: It is not an attribute of
-          `FormattingOptions`, but instead specifies another file to be loaded.
-          
-          The file is processed in the following order:
-          
-          1. First, load [[baseOptions]].
-          2. Then, scan the file for any `include` options, and process any included files.
-          3. Lastly, parse all other lines.
-          
-          Thus, options in the top-level file override options in included files.
-          
-          For another function which does exactly the same thing in a different way,
-          see [[formattingFile_meta]].\"
-         shared FormattingOptions formattingFile(
-             \"The file to read\"
-             String filename,
-             \"The options that will be used if the file and its included files
-              don't specify an option\"
-             FormattingOptions baseOptions = FormattingOptions())
-                 => variableFormattingFile(filename, baseOptions);
-         
-         ");
-    
-    writer.write(
-        "\"An internal version of [[formattingFile]] that specifies a return type of [[VariableOptions]],
-          which is needed for the internally performed recursion.\"
-         VariableOptions variableFormattingFile(String filename, FormattingOptions baseOptions) {
+        "VariableOptions parseFormattingOptions(String[] lines, FormattingOptions baseOptions) {
+             // read included files
+             variable VariableOptions options = VariableOptions(baseOptions);
+             for (String line in lines) {
+                 if (line.startsWith(\"include=\")) {
+                     options = variableFormattingFile(line[\"include=\".size...], options);
+                 }
+             }
              
-             if (is File file = parsePath(filename).resource) {
-                 // read the file
-                 Reader reader = file.Reader();
-                 SequenceBuilder<String> linesBuilder = SequenceBuilder<String>();
-                 while (exists line = reader.readLine()) {
-                     linesBuilder.append(line);
-                 }
-                 String[] lines = linesBuilder.sequence;
-                 
-                 // read included files
-                 variable VariableOptions options = VariableOptions(baseOptions);
-                 for (String line in lines) {
-                     if (line.startsWith(\"include=\")) {
-                         options = variableFormattingFile(line[\"include=\".size...], options);
-                     }
-                 }
-                 
-                 // read other options
-                 for (String line in lines) {
-                     if (!line.startsWith(\"#\") && !line.startsWith(\"include=\")) {
-                         Integer? indexOfEquals = line.indexes('='.equals).first;
-                         \"Line does not contain an equality sign\"
-                         assert (exists indexOfEquals);
-                         String optionName = line[...indexOfEquals-1];
-                         String optionValue = line[indexOfEquals+1...];
-                         
-                         switch (optionName)\n");
+             // read other options
+             for (String line in lines) {
+                 if (!line.startsWith(\"#\") && !line.startsWith(\"include=\")) {
+                     Integer? indexOfEquals = line.indexes('='.equals).first;
+                     \"Line does not contain an equality sign\"
+                     assert (exists indexOfEquals);
+                     String optionName = line[...indexOfEquals-1];
+                     String optionValue = line[indexOfEquals+1...];
+                     
+                     switch (optionName)\n");
     for (FormattingOption option in formattingOptions) {
         writer.write(
-            "                case (\"``option.name``\") {\n");
-        writer.write("                    ");
+            "            case (\"``option.name``\") {\n");
+        writer.write("                ");
         for (String type in option.type.split('|'.equals)) {
             if (exists enum = enums.find((Enum elem) => elem.classname == type)) {
                 for (instance in enum.instances) {
                     writer.write(
                         "if (\"``instance``\" == optionValue) {
-                                                 options.``option.name`` = ``instance``;
-                                             } else ");
+                                             options.``option.name`` = ``instance``;
+                                         } else ");
                 }
             } else {
                 writer.write(
                     "if (exists option = parse``type``(optionValue)) {
-                                             options.``option.name`` = option;
-                                         } else ");
+                                         options.``option.name`` = option;
+                                     } else ");
             }
         }
         writer.write("{
-                                              throw Exception(\"Can't parse value '\`\`optionValue\`\`' for option '``option.name``'!\");
-                                          }\n");
+                                          throw Exception(\"Can't parse value '\`\`optionValue\`\`' for option '``option.name``'!\");
+                                      }\n");
         writer.write(
-            "                }\n");
+            "            }\n");
              
     }
     writer.write(
-        "                else {
-                             throw Exception(\"Unknown option '\`\`optionName\`\`'!\");
-                         }
+        "            else {
+                         throw Exception(\"Unknown option '\`\`optionName\`\`'!\");
                      }
                  }
-                 
-                 return options;
-             } else {
-                 throw Exception(\"File '\`\`filename\`\` not found!\");
              }
+             
+             return options;
          }");
 }
 
