@@ -39,9 +39,10 @@ shared FormattingOptions formattingFile(
     FormattingOptions baseOptions = FormattingOptions())
         => variableFormattingFile(filename, baseOptions);
 
-shared [FormattingOptions, String[]] commandLineOptions() {
-    Map<String, String> shortcuts = HashMap { "w"->"maxLineLength" };
-    
+
+Map<String, String> shortcuts = HashMap { "w"->"maxLineLength" };
+
+shared [FormattingOptions, String[]] commandLineOptions() {    
     MutableMap<String, SequenceAppender<String>> lines = HashMap<String, SequenceAppender<String>>();
     SequenceBuilder<String> otherLines = SequenceBuilder<String>();
     variable String? partialLine = null;
