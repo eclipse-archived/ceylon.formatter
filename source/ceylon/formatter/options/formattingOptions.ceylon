@@ -1,4 +1,4 @@
-import ceylon.collection { HashMap }
+import ceylon.collection { MutableMap, HashMap }
 import ceylon.file { Reader, File, parsePath }
 "Reads a file with formatting options.
  
@@ -42,22 +42,34 @@ shared FormattingOptions formattingFile(
 shared [FormattingOptions, String[]] commandLineOptions() {
     Map<String, String> shortcuts = HashMap { "w"->"maxLineLength" };
     
-    SequenceBuilder<String> lines = SequenceBuilder<String>();
+    MutableMap<String, SequenceAppender<String>> lines = HashMap<String, SequenceAppender<String>>();
     SequenceBuilder<String> otherLines = SequenceBuilder<String>();
     variable String? partialLine = null;
     for (String option in process.arguments) {
         if (option.startsWith("--")) {
             String o = option[2...];
-            if (o.contains('=')) {
-                lines.append(o);
+            if (exists i = o.indexes('='.equals).first) {
+                String key = o[...i-1];
+                String item = o[i+1...];
+                if(exists appender = lines[key]) {
+                    appender.append(item);
+                } else {
+                    lines.put(key, SequenceAppender([item]));
+                }
             } else {
                 partialLine = o;
             }
         } else if (option.startsWith("-")) {
             if (exists longOption = shortcuts[option[1..1]]) {
                 String o = longOption+option[2...];
-                if (o.contains('=')) {
-                    lines.append(o);
+                if (exists i = o.indexes('='.equals).first) {
+                    String key = o[...i-1];
+                    String item = o[i+1...];
+                    if(exists appender = lines[key]) {
+                        appender.append(item);
+                    } else {
+                        lines.put(key, SequenceAppender([item]));
+                    }
                 } else {
                     partialLine = o;
                 }
@@ -68,13 +80,24 @@ shared [FormattingOptions, String[]] commandLineOptions() {
             }
         } else if(exists p = partialLine){
             // merge '--option value' into '--option=value'
-            lines.append(p + "=" + option);
+            String key = p;
+            String item = option;
+            if(exists appender = lines[key]) {
+                appender.append(item);
+            } else {
+                lines.put(key, SequenceAppender([item]));
+            }
             partialLine = null;
         } else {
             otherLines.append(option);
         }
     }
-    return [parseFormattingOptions(lines.sequence, FormattingOptions()), otherLines.sequence];
+    return [
+    parseFormattingOptions(
+        lines.map((String->SequenceAppender<String> option) => option.key->option.item.sequence),
+        FormattingOptions()),
+    otherLines.sequence
+    ];
 }
 
 "An internal version of [[formattingFile]] that specifies a return type of [[VariableOptions]],
@@ -84,12 +107,25 @@ VariableOptions variableFormattingFile(String filename, FormattingOptions baseOp
     if (is File file = parsePath(filename).resource) {
         // read the file
         Reader reader = file.Reader();
-        SequenceBuilder<String> linesBuilder = SequenceBuilder<String>();
+        MutableMap<String, SequenceAppender<String>> lines = HashMap<String, SequenceAppender<String>>();
         while (exists line = reader.readLine()) {
-            linesBuilder.append(line);
+            if(line.startsWith("#")) {
+                continue;
+            }
+            if (exists i = line.indexes('='.equals).first) {
+                String key = line[...i-1];
+                String item = line[i+1...];
+                if(exists appender = lines[key]) {
+                    appender.append(item);
+                } else {
+                    lines.put(key, SequenceAppender([item]));
+                }
+            } else {
+                // TODO report the error somewhere?
+                process.writeError("Missing value for option '``line``'!");
+            }
         }
-        String[] lines = linesBuilder.sequence;
-        return parseFormattingOptions(lines, baseOptions);
+        return parseFormattingOptions(lines.map((String->SequenceAppender<String> option) => option.key->option.item.sequence), baseOptions);
     } else {
         throw Exception("File '``filename``' not found!");
     }

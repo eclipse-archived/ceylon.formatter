@@ -74,7 +74,7 @@ void writeImports(Writer writer) {
 void generateSparseFormattingOptions(Writer writer) {
     writer.write(
         "\"A superclass of [[FormattingOptions]] where attributes are optional.
-         
+          
           The indented use is that users take a \\\"default\\\" `FormattingOptions` object and apply some
           `SparseFormattingOptions` on top of it using [[CombinedOptions]]; this way, they don't have
           to specify every option each time that they need to provide `FormattingOptions` somewhere.\"\n");
@@ -182,55 +182,50 @@ void generateVariableOptions(Writer writer) {
 
 void generateFormattingFile(Writer writer) {
     writer.write(
-        "VariableOptions parseFormattingOptions(String[] lines, FormattingOptions baseOptions) {
+        "VariableOptions parseFormattingOptions({<String->{String+}>*} entries, FormattingOptions baseOptions) {
              // read included files
              variable VariableOptions options = VariableOptions(baseOptions);
-             for (String line in lines) {
-                 if (line.startsWith(\"include=\")) {
-                     options = variableFormattingFile(line[\"include=\".size...], options);
+             if(exists includes = LazyMap(entries)[\"include\"]) {
+                 for(include in includes) {
+                     options = variableFormattingFile(include, options);
                  }
              }
              
              // read other options
-             for (String line in lines) {
-                 if (!line.startsWith(\"#\") && !line.startsWith(\"include=\")) {
-                     Integer? indexOfEquals = line.indexes('='.equals).first;
-                     \"Line does not contain an equality sign\"
-                     assert (exists indexOfEquals);
-                     String optionName = line[...indexOfEquals-1];
-                     String optionValue = line[indexOfEquals+1...];
+             for (String->{String+} entry in entries.filter((String->{String+} entry) => entry.key != \"include\")) {
+                 String optionName = entry.key;
+                 String optionValue = entry.item.last;
                      
-                     switch (optionName)\n");
+                 switch (optionName)\n");
     for (FormattingOption option in formattingOptions) {
         writer.write(
-            "            case (\"``option.name``\") {\n");
-        writer.write("                ");
+            "        case (\"``option.name``\") {\n");
+        writer.write("            ");
         for (String type in option.type.split('|'.equals)) {
             if (exists enum = enums.find((Enum elem) => elem.classname == type)) {
                 for (instance in enum.instances) {
                     writer.write(
                         "if (\"``instance``\" == optionValue) {
-                                             options.``option.name`` = ``instance``;
-                                         } else ");
+                                         options.``option.name`` = ``instance``;
+                                     } else ");
                 }
             } else {
                 writer.write(
                     "if (exists option = parse``type``(optionValue)) {
-                                         options.``option.name`` = option;
-                                     } else ");
+                                     options.``option.name`` = option;
+                                 } else ");
             }
         }
         writer.write("{
-                                          throw Exception(\"Can't parse value '\`\`optionValue\`\`' for option '``option.name``'!\");
-                                      }\n");
+                                      throw Exception(\"Can't parse value '\`\`optionValue\`\`' for option '``option.name``'!\");
+                                  }\n");
         writer.write(
-            "            }\n");
+            "        }\n");
              
     }
     writer.write(
-        "            else {
-                         throw Exception(\"Unknown option '\`\`optionName\`\`'!\");
-                     }
+        "        else {
+                     throw Exception(\"Unknown option '\`\`optionName\`\`'!\");
                  }
              }
              
