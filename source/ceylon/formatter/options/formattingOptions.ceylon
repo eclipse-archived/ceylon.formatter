@@ -58,6 +58,10 @@ shared [FormattingOptions, String[]] commandLineOptions() {
         String key;
         String item;
         if (option.startsWith("-"), exists char1 = option[1]) {
+            if(exists p = partialLine) {
+                // TODO report the error somewhere?
+                process.writeError("Missing value for option '``p``'!");
+            }
             String expanded;
             if (char1 == '-') { // option.startsWith("--")
                 expanded = option[2...];
