@@ -59,8 +59,21 @@ shared [FormattingOptions, String[]] commandLineOptions() {
         String item;
         if (option.startsWith("-"), exists char1 = option[1]) {
             if(exists p = partialLine) {
-                // TODO report the error somewhere?
-                process.writeError("Missing value for option '``p``'!");
+                String stubKey;
+                String stubItem;
+                if(p.startsWith("no-")) {
+                    stubKey = p["no-".size...];
+                    stubItem = "false";
+                } else {
+                    stubKey = p;
+                    stubItem = "true";
+                }
+                if(exists appender = lines[stubKey]) {
+                    appender.append(stubItem);
+                } else {
+                    lines.put(stubKey, SequenceAppender([stubItem]));
+                }
+                partialLine = null;
             }
             String expanded;
             if (char1 == '-') { // option.startsWith("--")
