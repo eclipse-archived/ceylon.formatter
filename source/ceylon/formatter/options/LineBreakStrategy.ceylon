@@ -1,4 +1,4 @@
-import ceylon.formatter { FormattingWriter { QueueElement=QueueElement, Token=Token, LineBreak=LineBreak } }
+import ceylon.formatter { FormattingWriter { QueueElement=QueueElement } }
 
 "A strategy to break a series of tokens into multiple lines to accomodate a maximum line length."
 shared abstract class LineBreakStrategy() {
@@ -7,12 +7,13 @@ shared abstract class LineBreakStrategy() {
      occur (e. g. because there aren’t enough tokens).
      
      If the returned value `i` exists, it means that tokens `0..i` should be taken from the elements
-     and written out; if the element at that index does not contain a line break, a [[LineBreak]] should
-     be inserted there first.
+     and written out; if the element at that index does not contain a line break, a
+     [[LineBreak|ceylon.formatter::FormattingWriter.LineBreak]] should be inserted there first.
      
      To clarify:
      
-     * If `elements[i]` is neither a [[LineBreak]] nor a [[Token]] with more than one line,
+     * If `elements[i]` is neither a [[LineBreak|ceylon.formatter::FormattingWriter.LineBreak]] nor a
+       [[Token|ceylon.formatter::FormattingWriter.Token]] with more than one line,
        a `LineBreak` should be inserted at `elements[i]`;
      * then (this is independent of the “if” above), `elements[0..i]` should be removed and written."
     shared formal Integer? lineBreakLocation(
