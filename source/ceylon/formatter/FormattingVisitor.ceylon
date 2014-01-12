@@ -66,44 +66,85 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitVoidModifier(VoidModifier that) {
-        fWriter.writeToken(that.mainToken, false, 0, maxDesire, maxDesire);
+        fWriter.writeToken {
+            that.mainToken;
+            allowLineBreakBefore = false;
+            wantsSpaceBefore = maxDesire;
+            wantsSpaceAfter = maxDesire;
+        };
     }
     
     shared actual void visitIdentifier(Identifier that) {
-        fWriter.writeToken(that.mainToken, true, 0, 0, 0);
+        fWriter.writeToken {
+            that.mainToken;
+        };
     }
     
     shared actual void visitParameterList(ParameterList that) {
-        value context = fWriter.writeToken(that.mainToken, true, 1,
-            desire(options.spaceAfterParamListOpeningParen),
-            desire(options.spaceAfterParamListOpeningParen)); // "("
+        value context = fWriter.writeToken {
+            that.mainToken; // "("
+            postIndent = 1;
+            wantsSpaceBefore = desire(options.spaceAfterParamListOpeningParen);
+            wantsSpaceAfter = desire(options.spaceAfterParamListOpeningParen);
+        };
         variable FormattingWriter.FormattingContext? previousContext = null;
         for (Parameter parameter in CeylonIterable(that.parameters)) {
             if (exists c = previousContext) {
-                fWriter.writeToken(",", false, 0, minDesire, maxDesire, c);
+                fWriter.writeToken {
+                    ",";
+                    allowLineBreakBefore = false;
+                    wantsSpaceBefore = minDesire;
+                    wantsSpaceAfter = maxDesire;
+                    context = c;
+                };
             }
             previousContext = fWriter.openContext();
             parameter.visit(this);
         }
-        fWriter.writeToken(that.mainEndToken, false, null,
-            desire(options.spaceBeforeParamListClosingParen),
-            desire(options.spaceAfterParamListClosingParen), context); // ")"
+        fWriter.writeToken {
+            that.mainEndToken; // ")"
+            allowLineBreakBefore = false;
+            postIndent = null;
+            wantsSpaceBefore = desire(options.spaceBeforeParamListClosingParen);
+            wantsSpaceAfter = desire(options.spaceAfterParamListClosingParen);
+            context;
+        };
     }
     
     shared actual void visitBlock(Block that) {
-        value context = fWriter.writeToken(that.mainToken, false, 1, 10, minDesire); // "{"
+        value context = fWriter.writeToken {
+            that.mainToken; // "{"
+            allowLineBreakBefore = false;
+            postIndent = 1;
+            wantsSpaceBefore = 10;
+            wantsSpaceAfter = minDesire;
+        };
         fWriter.nextLine();
         for (Statement statement in CeylonIterable(that.statements)) {
             statement.visit(this);
             fWriter.nextLine();
         }
-        fWriter.writeToken(that.mainEndToken, false, null, minDesire, 5, context); // "}"
+        fWriter.writeToken {
+            that.mainEndToken; // "}"
+            allowLineBreakBefore = false;
+            postIndent = null;
+            wantsSpaceBefore = minDesire;
+            wantsSpaceAfter = 5;
+            context;
+        };
         fWriter.nextLine();
     }
     shared actual void visitStatement(Statement that) {
         value context = fWriter.openContext();
         that.visitChildren(this);
-        fWriter.writeToken(that.mainEndToken, false, null, minDesire, maxDesire, context); // ";"
+        fWriter.writeToken {
+            that.mainEndToken; // ";"
+            allowLineBreakBefore = false;
+            postIndent = null;
+            wantsSpaceBefore = minDesire;
+            wantsSpaceAfter = maxDesire;
+            context;
+        };
     }
     
     shared actual void visitInvocationExpression(InvocationExpression that) {
@@ -116,29 +157,65 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitPositionalArgumentList(PositionalArgumentList that) {
-        value context = fWriter.writeToken(that.mainToken, false, 1, minDesire, minDesire); // "("
+        value context = fWriter.writeToken {
+            that.mainToken; // "("
+            allowLineBreakBefore = false;
+            postIndent = 1;
+            wantsSpaceBefore = minDesire;
+            wantsSpaceAfter = maxDesire;
+        };
         variable FormattingWriter.FormattingContext? previousContext = null;
         for (PositionalArgument argument in CeylonIterable(that.positionalArguments)) {
             if (exists c = previousContext) {
-                fWriter.writeToken(",", false, 0, minDesire, maxDesire, c);
+                fWriter.writeToken {
+                    ",";
+                    allowLineBreakBefore = false;
+                    wantsSpaceBefore = minDesire;
+                    wantsSpaceAfter = maxDesire;
+                    context = c;
+                };
             }
             previousContext = fWriter.openContext();
             argument.visit(this);
         }
-        fWriter.writeToken(that.mainEndToken, false, null, minDesire, 5, context); // ")"
+        fWriter.writeToken {
+            that.mainEndToken; // ")"
+            allowLineBreakBefore = false;
+            postIndent = null;
+            wantsSpaceBefore = minDesire;
+            wantsSpaceAfter = 5;
+            context;
+        };
     }
     
     shared actual void visitLiteral(Literal that) {
-        fWriter.writeToken(that.mainToken, false, null, 1, 1);
+        fWriter.writeToken {
+            that.mainToken;
+            allowLineBreakBefore = false;
+            postIndent = null;
+            wantsSpaceBefore = 1;
+            wantsSpaceAfter = 1;
+        };
         if (exists Token endToken = that.mainEndToken) {
             throw Error("Literal has end token ('``endToken``')! Investigate"); // breakpoint here
         }
     }
     
     shared actual void visitReturn(Return that) {
-        value context = fWriter.writeToken(that.mainToken, false, 1, 0, maxDesire); // "return"
+        value context = fWriter.writeToken {
+            that.mainToken; // "return"
+            allowLineBreakBefore = false;
+            postIndent = 1;
+            wantsSpaceAfter = maxDesire;
+        };
         that.expression.visit(this);
-        fWriter.writeToken(that.mainEndToken, false, 0, minDesire, 100, context); // ";"
+        fWriter.writeToken {
+            that.mainEndToken; // ";"
+            allowLineBreakBefore = false;
+            wantsSpaceBefore = minDesire;
+            wantsSpaceAfter = 100;
+            context = context;
+        };
     }
     
     //TODO eventually, this will be unneeded, as each visitSomeSubclassOfNode should be overwritten here.

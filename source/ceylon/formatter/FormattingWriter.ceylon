@@ -229,10 +229,10 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
      This method should always be used to write any tokens."
     shared FormattingContext? writeToken(
         AntlrToken|String token,
-        Boolean allowLineBreakBefore,
-        Integer? postIndent,
-        Integer wantsSpaceBefore,
-        Integer wantsSpaceAfter,
+        Boolean allowLineBreakBefore = true,
+        Integer? postIndent = 0,
+        Integer wantsSpaceBefore = 0,
+        Integer wantsSpaceAfter = 0,
         FormattingContext? context = null) {
         
         String tokenText;
