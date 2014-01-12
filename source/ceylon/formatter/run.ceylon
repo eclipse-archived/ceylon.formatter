@@ -4,8 +4,9 @@ import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer, CeylonParser
 import org.antlr.runtime { CharStream, ANTLRFileStream, ANTLRInputStream, CommonTokenStream, BufferedTokenStream }
 import com.redhat.ceylon.compiler.typechecker.tree { Tree }
 import ceylon.time { ... }
-import ceylon.file { Writer, Resource, Path, parsePath, Directory, File, Nil, Link }
+import ceylon.file { Writer, Resource, Path, parsePath, Directory, File, Nil, Link, Visitor }
 import ceylon.formatter.options { FormattingOptions, commandLineOptions }
+import ceylon.collection { MutableMap, HashMap }
 
 "Run the module `ceylon.formatter`."
 shared void run() {
@@ -28,8 +29,26 @@ shared void run() {
     }
     case (equal) {
         // read from first file, write to second file
+        // or recursively from first directory to second directory
         assert(exists inFileName = options[1][0], exists outFileName = options[1][1]);
-        files = { ANTLRFileStream(inFileName)->file(outFileName).Overwriter() };
+        if (is Directory dir = parsePath(inFileName).resource) {
+            if (!is Directory d = parsePath(outFileName).resource) {
+                throw Exception("Can’t format files from source directory '``inFileName``' to target file '``outFileName``'!");
+            }
+            MutableMap<CharStream, Writer> mutableFiles = HashMap<CharStream, Writer>();
+            dir.path.visit {
+                object visitor extends Visitor() {
+                    shared actual void file(File file) {
+                        if(file.name.endsWith(".ceylon")) {
+                            mutableFiles.put(ANTLRFileStream(file.path.string), parseFile(parsePath(outFileName).childPath(file.path)).Overwriter());
+                        }
+                    }
+                }
+            };
+            files = mutableFiles;
+        } else {
+            files = { ANTLRFileStream(inFileName)->parseFile(outFileName).Overwriter() };
+        }
     }
     case (larger) {
         // read from first..second-to-last file, write to last directory
@@ -50,7 +69,7 @@ shared void run() {
         else { }
         files = {
             for (inFileName in options[1].initial(options[1].size-1))
-                ANTLRFileStream(inFileName)->file(outDir.childPath(inFileName)).Overwriter()
+                ANTLRFileStream(inFileName)->parseFile(outDir.childPath(inFileName)).Overwriter()
         };
     }
     Instant start = now();
@@ -65,7 +84,7 @@ shared void run() {
     process.writeErrorLine(start.durationTo(end).string);
 }
 
-File file(Path|String path) {
+File parseFile(Path|String path) {
     Resource output =  parsePath(path.string).resource;
     File|Directory|Nil resolved;
     if (is Link i = output) {
