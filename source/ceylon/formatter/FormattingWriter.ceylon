@@ -38,6 +38,10 @@ shared Integer desire(Boolean|Integer desire) {
     return 0;
 }
 
+shared class Indent(shared Integer level) { }
+shared abstract class NoLineBreak() of noLineBreak { }
+shared object noLineBreak extends NoLineBreak() { }
+
 "Used in [[FormattingWriter.fastForward]]."
 abstract class Stop() of stopAndConsume|stopAndDontConsume { shared formal Boolean consume; }
 "Stop fast-forwarding and [[consume|org.antlr.runtime::IntStream.consume]] the current token."
@@ -229,11 +233,21 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
      This method should always be used to write any tokens."
     shared FormattingContext? writeToken(
         AntlrToken|String token,
-        Boolean allowLineBreakBefore = true,
-        Integer? postIndent = 0,
-        Integer wantsSpaceBefore = 0,
-        Integer wantsSpaceAfter = 0,
+        Indent|NoLineBreak beforeToken = Indent(0),
+        Indent|NoLineBreak afterToken = Indent(0),
+        Integer|Boolean spaceBefore = 0,
+        Integer|Boolean spaceAfter = 0,
         FormattingContext? context = null) {
+        
+        Boolean allowLineBreakBefore = beforeToken is Indent;
+        Integer? postIndent;
+        if (is Indent afterToken) {
+            postIndent = afterToken.level;
+        } else {
+            postIndent = null;
+        }
+        Integer wantsSpaceBefore = desire(spaceBefore);
+        Integer wantsSpaceAfter = desire(spaceAfter);
         
         String tokenText;
         if (is AntlrToken token) {
