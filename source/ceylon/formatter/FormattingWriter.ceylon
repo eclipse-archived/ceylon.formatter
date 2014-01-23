@@ -92,7 +92,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         shared actual FormattingContext context;
     }
     
-    shared class Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine = 0, alignSkip = 0) {
+    shared class Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine = 0, alignSkip = 0, preIndent = 0) {
         
         shared default String text;
         shared default Boolean allowLineBreakBefore;
@@ -136,12 +136,16 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
            """
         see (`value charPositionInLine`)
         shared default Integer alignSkip;
+        "The amount of levels to indent before this token.
+         This is only effective if this is the first token in its line,
+         and the only affects this line."
+        shared default Integer preIndent;
         
         shared Boolean allowLineBreakAfter => postIndent exists;
         shared actual String string => text;
     }    
-    class OpeningToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine = 0, alignSkip = 0)
-        extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine, alignSkip)
+    class OpeningToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine = 0, alignSkip = 0, preIndent = 0)
+        extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine, alignSkip, preIndent)
         satisfies OpeningElement {
         
         shared actual String text;
@@ -151,12 +155,13 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         shared actual Integer wantsSpaceAfter;
         shared actual Integer charPositionInLine;
         shared actual Integer alignSkip;
+        shared actual Integer preIndent;
         shared actual object context satisfies FormattingContext {
             postIndent = outer.postIndent else 0;
         }
     }
-    class ClosingToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, context, charPositionInLine = 0, alignSkip = 0)
-            extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine, alignSkip)
+    class ClosingToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, context, charPositionInLine = 0, alignSkip = 0, preIndent = 0)
+            extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine, alignSkip, preIndent)
             satisfies ClosingElement {
         
         shared actual String text;
@@ -167,6 +172,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         shared actual FormattingContext context;
         shared actual Integer charPositionInLine;
         shared actual Integer alignSkip;
+        shared actual Integer preIndent;
     }
     
     shared class LineBreak() {}
@@ -224,6 +230,18 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     "Remembers if anything was ever enqueued."
     variable Boolean isEmpty = true;
     
+    Boolean equalsOrSameText(QueueElement self)(QueueElement? other) {
+        if (exists other) {
+            if (self == other) {
+                return true;
+            }
+            if (is Token self, is Token other, self.text == other.text) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     "Write a token, respecting [[FormattingOptions.maxLineLength]] and non-AST tokens (comments).
      
      First, fast-forward the token stream until [[token]] is reached, writing out
@@ -239,7 +257,15 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         Integer|Boolean spaceAfter = 0,
         FormattingContext? context = null) {
         
-        Boolean allowLineBreakBefore = beforeToken is Indent;
+        Boolean allowLineBreakBefore;
+        Integer preIndent;
+        if (is Indent beforeToken) {
+            allowLineBreakBefore = true;
+            preIndent = beforeToken.level;
+        } else {
+            allowLineBreakBefore = false;
+            preIndent = 0;
+        }
         Integer? postIndent;
         if (is Indent afterToken) {
             postIndent = afterToken.level;
@@ -295,14 +321,16 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             alignSkip = token.takingWhile('"'.equals).size;
         }
         if (exists context) {
-            t = ClosingToken(tokenText, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, context, charPositionInLine, alignSkip);
+            t = ClosingToken(tokenText, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, context, charPositionInLine, alignSkip, preIndent);
             ret = null;
         } else {
-            t = OpeningToken(tokenText, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine, alignSkip);
+            t = OpeningToken(tokenText, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine, alignSkip, preIndent);
             assert (is OpeningToken t); // ...yeah
             ret = t.context;
         }
+        
         tokenQueue.add(t);
+        
         isEmpty = false;
         writeLines();
         return ret;
@@ -448,11 +476,15 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         }
         Integer? index;
         if (is Integer length = options.maxLineLength) {
+            variable Integer offset = options.indentMode.indent(
+                tokenStack.fold(0, (Integer partial, FormattingContext elem) => partial + elem.postIndent)
+            ).size;
+            if (is Token firstToken = tokenQueue.find((QueueElement elem) => elem is Token), firstToken.preIndent != 0) {
+                offset += firstToken.preIndent;
+            }
             index = options.lineBreakStrategy.lineBreakLocation(
                 tokenQueue.sequence,
-                options.indentMode.indent(
-                    tokenStack.fold(0, (Integer partial, FormattingContext elem) => partial + elem.postIndent)
-                ).size,
+                offset,
                 length);
         } else {
             index = tokenQueue.indexes(function (QueueElement element) {
@@ -501,12 +533,32 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
      (Note that there may not appear any line breaks before token `i`.)"
     void writeLine(Integer i) {
         QueueElement? firstToken = tokenQueue[0..i].find((QueueElement elem) => elem is Token);
+        QueueElement? lastElement = tokenQueue[i];
+        "Tried to write too much into a line – not enough tokens!"
+        assert(exists lastElement);
         
         if (is ClosingToken firstToken) {
+            // this context needs to be closed *before* we write indentation
+            // because closing it may reduce the indentation level
             closeContext0(firstToken);
+        }
+        FormattingContext? tmpIndent;
+        if (is Token firstToken, firstToken.preIndent != 0) {
+            object _tmpIndent satisfies FormattingContext { // TODO somehow avoid _tmpIndent
+                postIndent = firstToken.preIndent;
+            }
+            tmpIndent = _tmpIndent;
+            tokenStack.add(_tmpIndent);
+        } else {
+            tmpIndent = null;
         }
         
         writeIndentation();
+        
+        if (exists tmpIndent) {
+            value deleted = tokenStack.deleteLast();
+            assert(exists deleted, deleted == tmpIndent);
+        }
         
         variable Token? previousToken = null;
         "The elements we have to handle later in case we’re writing a multi-line token"
@@ -534,13 +586,13 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             elementHandler = function(QueueElement elem) {
                 if (is Token t = elem) {
                     writeWithContext(t);
-                } else if (is EmptyOpening|EmptyClosing elem) {
+                } else if (is Empty elem) {
                     handleContext(elem);
                 }
                 return null;
             };
         }
-        for (c in 0..i) {
+        while(tokenQueue.any(equalsOrSameText(lastElement))) {
             QueueElement? removing = tokenQueue.first;
             assert (exists removing);
             if (is Token currentToken = removing) {
@@ -557,7 +609,11 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             } else if (is EmptyOpening|EmptyClosing removing) {
                 elementHandler(removing);
             }
-            tokenQueue.deleteFirst();
+            if (equalsOrSameText(removing)(tokenQueue.first)) {
+                tokenQueue.deleteFirst();
+            } else {
+                // the element was already deleted somewhere in the elementHandler
+            }
         }
         for(token in elementsToHandle.sequence) {
             handleContext(token);
@@ -713,12 +769,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     "Enqueue a line break if the last queue element isn’t a line break, then flush the queue."
     shared void close() {
         if (!isEmpty) {
-            QueueElement? lastElement = tokenQueue.findLast(function (QueueElement elem) {
-                if (is EmptyOpening elem) {
-                    return false;
-                }
-                return true;
-            });
+            QueueElement? lastElement = tokenQueue.findLast((QueueElement elem) => !(elem is EmptyOpening));
             if (exists lastElement, !is LineBreak lastElement) {
                 tokenQueue.add(LineBreak());
             }
