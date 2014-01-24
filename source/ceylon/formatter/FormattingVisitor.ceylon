@@ -42,6 +42,58 @@ shared class FormattingVisitor(
         }
     }
     
+    shared actual void visitBlock(Block that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "{"
+            beforeToken = noLineBreak;
+            afterToken = Indent(1);
+            spaceBefore = 10;
+            spaceAfter = false;
+        };
+        fWriter.nextLine();
+        for (Statement statement in CeylonIterable(that.statements)) {
+            statement.visit(this);
+            fWriter.nextLine();
+        }
+        fWriter.writeToken {
+            that.mainEndToken; // "}"
+            beforeToken = noLineBreak;
+            afterToken = noLineBreak;
+            spaceBefore = false;
+            spaceAfter = 5;
+            context;
+        };
+        fWriter.nextLine();
+    }
+    
+    shared actual void visitIdentifier(Identifier that) {
+        fWriter.writeToken {
+            that.mainToken;
+        };
+    }
+    
+    shared actual void visitInvocationExpression(InvocationExpression that) {
+        that.primary.visit(this);
+        if (exists PositionalArgumentList list = that.positionalArgumentList) {
+            list.visit(this);
+        } else if (exists NamedArgumentList list = that.namedArgumentList) {
+            list.visit(this);
+        }
+    }
+    
+    shared actual void visitLiteral(Literal that) {
+        fWriter.writeToken {
+            that.mainToken;
+            beforeToken = noLineBreak;
+            afterToken = noLineBreak;
+            spaceBefore = 1;
+            spaceAfter = 1;
+        };
+        if (exists Token endToken = that.mainEndToken) {
+            throw Error("Literal has end token ('``endToken``')! Investigate"); // breakpoint here
+        }
+    }
+    
     shared actual void visitMethodDeclaration(MethodDeclaration that) {
         visitAnyMethod(that);
         if (exists SpecifierExpression expr = that.specifierExpression) {
@@ -58,26 +110,6 @@ shared class FormattingVisitor(
         }
         that.block.visit(this);
         fWriter.nextLine(); // blank line between method definitions
-    }
-    
-    shared actual void visitTypedDeclaration(TypedDeclaration that) {
-        that.type.visit(this);
-        that.identifier.visit(this);
-    }
-    
-    shared actual void visitVoidModifier(VoidModifier that) {
-        fWriter.writeToken {
-            that.mainToken;
-            beforeToken = noLineBreak;
-            spaceBefore = true;
-            spaceAfter = true;
-        };
-    }
-    
-    shared actual void visitIdentifier(Identifier that) {
-        fWriter.writeToken {
-            that.mainToken;
-        };
     }
     
     shared actual void visitParameterList(ParameterList that) {
@@ -109,51 +141,6 @@ shared class FormattingVisitor(
             spaceAfter = options.spaceAfterParamListClosingParen;
             context;
         };
-    }
-    
-    shared actual void visitBlock(Block that) {
-        value context = fWriter.writeToken {
-            that.mainToken; // "{"
-            beforeToken = noLineBreak;
-            afterToken = Indent(1);
-            spaceBefore = 10;
-            spaceAfter = false;
-        };
-        fWriter.nextLine();
-        for (Statement statement in CeylonIterable(that.statements)) {
-            statement.visit(this);
-            fWriter.nextLine();
-        }
-        fWriter.writeToken {
-            that.mainEndToken; // "}"
-            beforeToken = noLineBreak;
-            afterToken = noLineBreak;
-            spaceBefore = false;
-            spaceAfter = 5;
-            context;
-        };
-        fWriter.nextLine();
-    }
-    shared actual void visitStatement(Statement that) {
-        value context = fWriter.openContext();
-        that.visitChildren(this);
-        fWriter.writeToken {
-            that.mainEndToken; // ";"
-            beforeToken = noLineBreak;
-            afterToken = noLineBreak;
-            spaceBefore = false;
-            spaceAfter = true;
-            context;
-        };
-    }
-    
-    shared actual void visitInvocationExpression(InvocationExpression that) {
-        that.primary.visit(this);
-        if (exists PositionalArgumentList list = that.positionalArgumentList) {
-            list.visit(this);
-        } else if (exists NamedArgumentList list = that.namedArgumentList) {
-            list.visit(this);
-        }
     }
     
     shared actual void visitPositionalArgumentList(PositionalArgumentList that) {
@@ -188,19 +175,6 @@ shared class FormattingVisitor(
         };
     }
     
-    shared actual void visitLiteral(Literal that) {
-        fWriter.writeToken {
-            that.mainToken;
-            beforeToken = noLineBreak;
-            afterToken = noLineBreak;
-            spaceBefore = 1;
-            spaceAfter = 1;
-        };
-        if (exists Token endToken = that.mainEndToken) {
-            throw Error("Literal has end token ('``endToken``')! Investigate"); // breakpoint here
-        }
-    }
-    
     shared actual void visitReturn(Return that) {
         value context = fWriter.writeToken {
             that.mainToken; // "return"
@@ -215,6 +189,33 @@ shared class FormattingVisitor(
             spaceBefore = false;
             spaceAfter = 100;
             context = context;
+        };
+    }
+    
+    shared actual void visitStatement(Statement that) {
+        value context = fWriter.openContext();
+        that.visitChildren(this);
+        fWriter.writeToken {
+            that.mainEndToken; // ";"
+            beforeToken = noLineBreak;
+            afterToken = noLineBreak;
+            spaceBefore = false;
+            spaceAfter = true;
+            context;
+        };
+    }
+    
+    shared actual void visitTypedDeclaration(TypedDeclaration that) {
+        that.type.visit(this);
+        that.identifier.visit(this);
+    }
+    
+    shared actual void visitVoidModifier(VoidModifier that) {
+        fWriter.writeToken {
+            that.mainToken;
+            beforeToken = noLineBreak;
+            spaceBefore = true;
+            spaceAfter = true;
         };
     }
     
