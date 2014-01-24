@@ -94,6 +94,16 @@ shared class FormattingVisitor(
         }
     }
     
+    shared actual void visitMemberOp(MemberOp that) {
+        fWriter.writeToken {
+            that.mainToken; // "."
+            beforeToken = Indent(1);
+            afterToken = noLineBreak;
+            spaceBefore = false;
+            spaceAfter = false;
+        };
+    }
+    
     shared actual void visitMethodDeclaration(MethodDeclaration that) {
         visitAnyMethod(that);
         if (exists SpecifierExpression expr = that.specifierExpression) {
@@ -173,6 +183,12 @@ shared class FormattingVisitor(
             spaceAfter = 5;
             context;
         };
+    }
+    
+    shared actual void visitQualifiedMemberExpression(QualifiedMemberExpression that) {
+        that.primary.visit(this);
+        that.memberOperator.visit(this);
+        that.identifier.visit(this);
     }
     
     shared actual void visitReturn(Return that) {

@@ -101,3 +101,8 @@ test
 shared void testMultiLineStringIndented() {
     testFile("multiLineStringIndented");
 }
+
+test
+shared void testMemberOp() {
+    testFile("memberOp");
+}
