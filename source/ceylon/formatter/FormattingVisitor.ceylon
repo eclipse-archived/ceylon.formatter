@@ -1,4 +1,4 @@
-import com.redhat.ceylon.compiler.typechecker.tree { Tree { ... }, Node, VisitorAdaptor }
+import com.redhat.ceylon.compiler.typechecker.tree { Tree { ... }, Node, VisitorAdaptor, NaturalVisitor }
 import org.antlr.runtime { TokenStream { la=\iLA }, Token }
 import java.lang { Error, Exception }
 import ceylon.file { Writer }
@@ -15,7 +15,7 @@ shared class FormattingVisitor(
     "The writer to which the subject is written."
     Writer writer,
     "The options for the formatter that control the format of the written code."
-    FormattingOptions options) extends VisitorAdaptor() {
+    FormattingOptions options) extends VisitorAdaptor() satisfies NaturalVisitor {
     
     FormattingWriter fWriter = FormattingWriter(tokens, writer, options);
     
@@ -39,6 +39,19 @@ shared class FormattingVisitor(
         }
         for (ParameterList list in CeylonIterable(that.parameterLists)) {
             list.visit(this);
+        }
+    }
+    
+    shared actual void visitAttributeDeclaration(AttributeDeclaration that) {
+        value context = fWriter.openContext();
+        visitAnyAttribute(that);
+        if (exists expression = that.specifierOrInitializerExpression) {
+            expression.visit(this);
+        }
+        if (exists endToken = that.mainEndToken) {
+            writeSemicolon(fWriter, that.mainEndToken, context);
+        } else {
+            fWriter.closeContext(context);
         }
     }
     
@@ -198,27 +211,30 @@ shared class FormattingVisitor(
             afterToken = Indent(1);
             spaceAfter = true;
         };
+        assert (exists context);
         that.expression.visit(this);
-        fWriter.writeToken {
-            that.mainEndToken; // ";"
-            beforeToken = noLineBreak;
-            spaceBefore = false;
-            spaceAfter = 100;
-            context = context;
-        };
+        writeSemicolon(fWriter, that.mainEndToken, context);
+    }
+    
+    shared actual void visitSpecifierExpression(SpecifierExpression that) {
+        if (exists mainToken = that.mainToken) {
+            writeEquals(fWriter, that.mainToken);
+        }
+        that.expression.visit(this);
+    }
+    
+    shared actual void visitSpecifierStatement(SpecifierStatement that) {
+        value context = fWriter.openContext();
+        that.baseMemberExpression.visit(this);
+        writeEquals(fWriter, "="); // I can’t find the "=" in the AST anywhere
+        that.specifierExpression.visit(this);
+        writeSemicolon(fWriter, that.mainEndToken, context);
     }
     
     shared actual void visitStatement(Statement that) {
         value context = fWriter.openContext();
         that.visitChildren(this);
-        fWriter.writeToken {
-            that.mainEndToken; // ";"
-            beforeToken = noLineBreak;
-            afterToken = noLineBreak;
-            spaceBefore = false;
-            spaceAfter = true;
-            context;
-        };
+        writeSemicolon(fWriter, that.mainEndToken, context);
     }
     
     shared actual void visitTypedDeclaration(TypedDeclaration that) {
@@ -226,13 +242,12 @@ shared class FormattingVisitor(
         that.identifier.visit(this);
     }
     
+    shared actual void visitValueModifier(ValueModifier that) {
+        writeModifier(fWriter, that.mainToken);
+    }
+    
     shared actual void visitVoidModifier(VoidModifier that) {
-        fWriter.writeToken {
-            that.mainToken;
-            beforeToken = noLineBreak;
-            spaceBefore = true;
-            spaceAfter = true;
-        };
+        writeModifier(fWriter, that.mainToken);
     }
     
     //TODO eventually, this will be unneeded, as each visitSomeSubclassOfNode should be overwritten here.

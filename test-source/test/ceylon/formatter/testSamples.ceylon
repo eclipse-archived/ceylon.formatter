@@ -106,3 +106,8 @@ test
 shared void testMemberOp() {
     testFile("memberOp");
 }
+
+test
+shared void testAssignments() {
+    testFile("assignments");
+}
