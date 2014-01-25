@@ -167,35 +167,43 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitPositionalArgumentList(PositionalArgumentList that) {
-        value context = fWriter.writeToken {
-            that.mainToken; // "("
-            beforeToken = noLineBreak;
-            afterToken = Indent(1);
-            spaceBefore = false;
-            spaceAfter = false;
-        };
-        variable FormattingWriter.FormattingContext? previousContext = null;
-        for (PositionalArgument argument in CeylonIterable(that.positionalArguments)) {
-            if (exists c = previousContext) {
-                fWriter.writeToken {
-                    ",";
-                    beforeToken = noLineBreak;
-                    spaceBefore = false;
-                    spaceAfter = true;
-                    context = c;
-                };
+        Token? openingParen = that.mainToken;
+        Token? closingParen = that.mainEndToken;
+        if(exists openingParen, exists closingParen) {
+            value context = fWriter.writeToken {
+                that.mainToken; // "("
+                beforeToken = noLineBreak;
+                afterToken = Indent(1);
+                spaceBefore = false;
+                spaceAfter = false;
+            };
+            variable FormattingWriter.FormattingContext? previousContext = null;
+            for (PositionalArgument argument in CeylonIterable(that.positionalArguments)) {
+                if (exists c = previousContext) {
+                    fWriter.writeToken {
+                        ",";
+                        beforeToken = noLineBreak;
+                        spaceBefore = false;
+                        spaceAfter = true;
+                        context = c;
+                    };
+                }
+                previousContext = fWriter.openContext();
+                argument.visit(this);
             }
-            previousContext = fWriter.openContext();
-            argument.visit(this);
+            fWriter.writeToken {
+                that.mainEndToken; // ")"
+                beforeToken = noLineBreak;
+                afterToken = noLineBreak;
+                spaceBefore = false;
+                spaceAfter = 5;
+                context;
+            };
+        } else {
+            // this happens for annotations with no arguments
+            assert (that.positionalArguments.empty);
+            return;
         }
-        fWriter.writeToken {
-            that.mainEndToken; // ")"
-            beforeToken = noLineBreak;
-            afterToken = noLineBreak;
-            spaceBefore = false;
-            spaceAfter = 5;
-            context;
-        };
     }
     
     shared actual void visitQualifiedMemberExpression(QualifiedMemberExpression that) {
@@ -238,6 +246,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitTypedDeclaration(TypedDeclaration that) {
+        that.annotationList.visit(this);
         that.type.visit(this);
         that.identifier.visit(this);
     }

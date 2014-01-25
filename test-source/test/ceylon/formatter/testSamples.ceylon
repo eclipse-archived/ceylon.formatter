@@ -111,3 +111,8 @@ test
 shared void testAssignments() {
     testFile("assignments");
 }
+
+test
+shared void testAnnotationsNoArguments() {
+    testFile("annotationsNoArguments");
+}
