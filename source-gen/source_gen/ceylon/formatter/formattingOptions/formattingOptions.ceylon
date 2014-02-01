@@ -51,8 +51,5 @@
 };
 
 {Enum+} enums = {
-    Enum {
-        "Unlimited";
-        {"unlimited"}; // TODO remove (this should be the default)
-    }
+    Enum("Unlimited")
 };
