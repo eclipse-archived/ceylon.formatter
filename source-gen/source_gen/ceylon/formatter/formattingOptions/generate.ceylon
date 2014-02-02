@@ -100,22 +100,22 @@ class Generator() satisfies Closeable {
         }
         writer.write(") {\n");
         for (option in formattingOptions) {
-            String[] lines = [*option.documentation.split('\n'.equals)];
+            String[] lines = [*option.documentation.split{'\n'.equals; groupSeparators = false;}];
             if (lines.size == 0 || option.documentation == "") {
                 writer.write("\n");
             }
             else if (lines.size == 1) {
-                writer.write("\n    \"``option.documentation``\"\n");
+                writer.write("\n    \"\"\"``option.documentation``\"\"\"\n");
             } else {
                 assert(exists firstLine = lines.first);
                 assert(exists lastLine = lines.last);
-                writer.write("\n    \"``firstLine``\n");
+                writer.write("\n    \"\"\"``firstLine``\n");
                 if (lines.size > 2) {
                     for (String line in lines[1..lines.size-2]) {
-                        writer.write("     ``line``\n");
+                        writer.write("       ``line``\n");
                     }
                 }
-                writer.write("     ``lastLine``\"\n");
+                writer.write("       ``lastLine``\"\"\"\n");
             }
             writer.write("    shared default ``option.type``? ``option.name``;\n");
         }
