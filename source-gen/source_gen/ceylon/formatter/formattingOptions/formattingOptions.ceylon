@@ -47,9 +47,41 @@
          the space; `true` means the same as [[ceylon.formatter::maxDesire]], and `false` means
          the same as [[ceylon.formatter::minDesire]].";
         "Boolean|Integer"; "spaceAfterParamListClosingParen"; /* = */ "-10";
+    },
+    FormattingOption {
+        """Decide which annotations should be on the same line as their declaration.
+           
+           [[all]] means that all annotations should be on the same line, in other words,
+           that line breaking will only occur according to [[lineBreakStrategy]].
+           
+           If you give an [[Iterable]] instead, a line break will be appended after any annotation
+           that it doesn’t contain. For example, the default value will produce:
+           
+               by ("John Doe")
+               throws (`class Anything`)
+               shared formal void foo();
+           
+           where `by` and `throws` are each on a separate line because they are not elements
+           of the default value, but `shared` and `formal` are elements of the default value
+           and therefore on the same line as the declaration.
+           
+           If the value of this option is [[empty]], line breaks will be inserted after every
+           annotation.
+           
+           It should be noted that the annotations can look weird if you put "inline" annotations
+           before or between "own-line" annotations:
+           
+               shared by ("John Doe")
+               formal throws (`class Anything`)
+               void foo();
+           
+           Don’t do that. (You can already see in this small example how the combination
+           "shared by" can be potentially confusing.)""";
+        "None|{String*}"; "inlineAnnotations"; /* = */ """{ "abstract", "actual", "annotation", "default", "final", "formal", "native", "optional", "shared", "variable" }""";
     }
 };
 
 {Enum+} enums = {
-    Enum("Unlimited")
+    Enum("Unlimited"),
+    Enum("None")
 };

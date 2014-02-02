@@ -29,6 +29,23 @@ shared class FormattingVisitor(
         }
     }
     
+    shared actual void visitAnnotation(Annotation that) {
+        that.visitChildren(this);
+        if (is {String*} inlineAnnotations = options.inlineAnnotations) {
+            if (exists primary = that.primary,
+                exists child = primary.children.get(0),
+                exists mainToken = child.mainToken,
+                exists text = mainToken.text,
+                text in inlineAnnotations) {
+                // no line break for these annotations
+            } else {
+                fWriter.nextLine();
+            }
+        } else {
+            // no line breaks for any annotations
+        }
+    }
+    
     shared actual void visitAnyMethod(AnyMethod that) {
         // override the default Walker's order
         that.annotationList.visit(this);

@@ -220,6 +220,20 @@ class Generator() satisfies Closeable {
                                              options.``option.name`` = ``instance``;
                                          } else ");
                     }
+                } else if (type.startsWith("{") && type.endsWith("*}")) {
+                    String innerType = type[1:type.size-3];
+                    String parseFunction;
+                    if (innerType == "String") {
+                        parseFunction = "s";
+                    } else {
+                        parseFunction = "if (exists v=parse``innerType``(s)) v";
+                    }
+                    String comprehension =
+                            "{ for (s in optionValue.split()) ``parseFunction`` }";
+                    writer.write(
+                        "if (!``comprehension``.empty) {
+                                         options.``option.name`` = ``comprehension``;
+                                     } else ");
                 } else {
                     writer.write(
                         "if (exists option = parse``type``(optionValue)) {
