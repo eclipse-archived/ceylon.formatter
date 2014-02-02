@@ -116,3 +116,8 @@ test
 shared void testAnnotationsNoArguments() {
     testFile("annotationsNoArguments");
 }
+
+test
+shared void testAnnotationsPositionalArguments() {
+    testFile("annotationsPositionalArguments");
+}
