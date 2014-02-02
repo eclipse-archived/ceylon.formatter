@@ -29,6 +29,9 @@ shared class FormattingVisitor(
         }
     }
     
+    shared actual void visitAliasLiteral(AliasLiteral that)
+            => writeMetaLiteral(fWriter, this, that, "alias");
+    
     shared actual void visitAnnotation(Annotation that) {
         that.visitChildren(this);
         if (is {String*} inlineAnnotations = options.inlineAnnotations) {
@@ -96,11 +99,20 @@ shared class FormattingVisitor(
         fWriter.nextLine();
     }
     
+    shared actual void visitClassLiteral(ClassLiteral that)
+            => writeMetaLiteral(fWriter, this, that, "class");
+    
+    shared actual void visitFunctionLiteral(FunctionLiteral that)
+            => writeMetaLiteral(fWriter, this, that, "function");
+    
     shared actual void visitIdentifier(Identifier that) {
         fWriter.writeToken {
             that.mainToken;
         };
     }
+    
+    shared actual void visitInterfaceLiteral(InterfaceLiteral that)
+            => writeMetaLiteral(fWriter, this, that, "interface");
     
     shared actual void visitInvocationExpression(InvocationExpression that) {
         that.primary.visit(this);
@@ -134,12 +146,21 @@ shared class FormattingVisitor(
         };
     }
     
+    shared actual void visitMetaLiteral(MetaLiteral that)
+            => writeMetaLiteral(fWriter, this, that, null);
+    
     shared actual void visitMethodDeclaration(MethodDeclaration that) {
         visitAnyMethod(that);
         if (exists SpecifierExpression expr = that.specifierExpression) {
             expr.visit(this);
         }
     }
+    
+    shared actual void visitModuleLiteral(ModuleLiteral that)
+            => writeMetaLiteral(fWriter, this, that, "module");
+    
+    shared actual void visitPackageLiteral(PackageLiteral that)
+            => writeMetaLiteral(fWriter, this, that, "package");
     
     shared actual void visitMethodDefinition(MethodDefinition that) {
         value context = fWriter.openContext();
@@ -267,6 +288,12 @@ shared class FormattingVisitor(
         that.type.visit(this);
         that.identifier.visit(this);
     }
+    
+    shared actual void visitTypeParameterLiteral(TypeParameterLiteral that)
+            => writeMetaLiteral(fWriter, this, that, "given");
+    
+    shared actual void visitValueLiteral(ValueLiteral that)
+            => writeMetaLiteral(fWriter, this, that, "value");
     
     shared actual void visitValueModifier(ValueModifier that) {
         writeModifier(fWriter, that.mainToken);
