@@ -220,7 +220,9 @@ shared class FormattingVisitor(
                 that.mainToken; // "("
                 beforeToken = noLineBreak;
                 afterToken = Indent(1);
-                spaceBefore = visitingAnnotation;
+                spaceBefore = visitingAnnotation
+                        then options.spaceBeforeAnnotationPositionalArgumentList
+                        else options.spaceBeforeMethodOrClassPositionalArgumentList;
                 spaceAfter = false;
             };
             variable FormattingWriter.FormattingContext? previousContext = null;

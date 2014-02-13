@@ -78,6 +78,26 @@
            Don’t do that. (You can already see in this small example how the combination
            "shared by" can be potentially confusing.)""";
         "All|{String*}"; "inlineAnnotations"; /* = */ """{ "abstract", "actual", "annotation", "default", "final", "formal", "native", "optional", "shared", "variable" }""";
+    },
+    FormattingOption {
+        """Decide if there should be a space in front of a positional argument list for a method or class.
+           
+           A positional argument list is the complement of a named argument list,
+           i. e. what you’d probably know as simply an argument list:
+           
+               process.arguments.filter("--help --usage --version".split().contains);
+               //                      '----------positional argument list---------'""";
+        "Boolean"; "spaceBeforeMethodOrClassPositionalArgumentList"; /* = */ "false";
+    },
+    FormattingOption {
+        """Decide if there should be a space in front of a positional argument list for an annotation.
+           
+           A positional argument list is the complement of a named argument list,
+           i. e. what you’d probably know as simply an argument list:
+           
+               process.arguments.filter("--help --usage --version".split().contains);
+               //                      '----------positional argument list---------'""";
+        "Boolean"; "spaceBeforeAnnotationPositionalArgumentList"; /* = */ "true";
     }
 };
 
