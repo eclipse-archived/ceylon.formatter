@@ -19,6 +19,13 @@ shared class FormattingVisitor(
     
     FormattingWriter fWriter = FormattingWriter(tokens, writer, options);
     
+    """When visiting an annotation, some elements are formatted differently.
+       For example:
+       
+           doc ("<-- space")
+           print("<-- no space");"""
+    variable Boolean visitingAnnotation = false;
+    
     // initialize TokenStream
     if (exists tokens) { tokens.la(1); }
     
@@ -33,7 +40,11 @@ shared class FormattingVisitor(
             => writeMetaLiteral(fWriter, this, that, "alias");
     
     shared actual void visitAnnotation(Annotation that) {
+        "Annotations can’t be nested"
+        assert (!visitingAnnotation);
+        visitingAnnotation = true;
         that.visitChildren(this);
+        visitingAnnotation = false;
         if (is {String*} inlineAnnotations = options.inlineAnnotations) {
             if (exists text = that.primary?.children?.get(0)?.mainToken?.text,
                 text in inlineAnnotations) {
@@ -209,7 +220,7 @@ shared class FormattingVisitor(
                 that.mainToken; // "("
                 beforeToken = noLineBreak;
                 afterToken = Indent(1);
-                spaceBefore = false;
+                spaceBefore = visitingAnnotation;
                 spaceAfter = false;
             };
             variable FormattingWriter.FormattingContext? previousContext = null;
