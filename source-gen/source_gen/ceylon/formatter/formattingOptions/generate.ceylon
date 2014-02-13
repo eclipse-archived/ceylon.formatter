@@ -196,7 +196,7 @@ class Generator() satisfies Closeable {
             "VariableOptions parseFormattingOptions({<String->{String+}>*} entries, FormattingOptions baseOptions) {
                  // read included files
                  variable VariableOptions options = VariableOptions(baseOptions);
-                 if(exists includes = LazyMap(entries)[\"include\"]) {
+                 if(exists includes = entries.find((String->{String+} entry) => entry.key == \"include\")?.item) {
                      for(include in includes) {
                          options = variableFormattingFile(include, options);
                      }
