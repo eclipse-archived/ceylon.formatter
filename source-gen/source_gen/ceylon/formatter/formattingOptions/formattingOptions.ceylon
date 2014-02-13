@@ -66,7 +66,7 @@
            and therefore on the same line as the declaration.
            
            If the value of this option is [[empty]], line breaks will be inserted after every
-           annotation.
+           annotation (no "inline" annotations).
            
            It should be noted that the annotations can look weird if you put "inline" annotations
            before or between "own-line" annotations:
@@ -77,11 +77,11 @@
            
            Don’t do that. (You can already see in this small example how the combination
            "shared by" can be potentially confusing.)""";
-        "None|{String*}"; "inlineAnnotations"; /* = */ """{ "abstract", "actual", "annotation", "default", "final", "formal", "native", "optional", "shared", "variable" }""";
+        "All|{String*}"; "inlineAnnotations"; /* = */ """{ "abstract", "actual", "annotation", "default", "final", "formal", "native", "optional", "shared", "variable" }""";
     }
 };
 
 {Enum+} enums = {
     Enum("Unlimited"),
-    Enum("None")
+    Enum("All")
 };

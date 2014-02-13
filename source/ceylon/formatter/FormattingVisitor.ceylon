@@ -35,10 +35,7 @@ shared class FormattingVisitor(
     shared actual void visitAnnotation(Annotation that) {
         that.visitChildren(this);
         if (is {String*} inlineAnnotations = options.inlineAnnotations) {
-            if (exists primary = that.primary,
-                exists child = primary.children.get(0),
-                exists mainToken = child.mainToken,
-                exists text = mainToken.text,
+            if (exists text = that.primary?.children?.get(0)?.mainToken?.text,
                 text in inlineAnnotations) {
                 // no line break for these annotations
             } else {
