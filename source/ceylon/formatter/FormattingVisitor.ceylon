@@ -247,7 +247,6 @@ shared class FormattingVisitor(
             }
             fWriter.closeContext(innerContext);
         }
-        that.visitChildren(this);
         fWriter.writeToken {
             that.mainEndToken;
             beforeToken = Indent(0);
