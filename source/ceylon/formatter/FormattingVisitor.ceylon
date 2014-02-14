@@ -3,7 +3,7 @@ import org.antlr.runtime { TokenStream { la=\iLA }, Token }
 import java.lang { Error, Exception }
 import ceylon.file { Writer }
 import ceylon.interop.java { CeylonIterable }
-import ceylon.formatter.options { FormattingOptions }
+import ceylon.formatter.options { FormattingOptions, multiLine }
 
 "A [[com.redhat.ceylon.compiler.typechecker.tree::Visitor]] that writes a formatted version of the
  element (typically a [[com.redhat.ceylon.compiler.typechecker.tree::Tree.CompilationUnit]]) to a
@@ -34,6 +34,17 @@ shared class FormattingVisitor(
         if (exists e) {
             e.printStackTrace();
         }
+    }
+    
+    shared actual void visitAlias(Alias that) {
+        that.identifier.visit(this);
+        fWriter.writeToken {
+            that.mainToken;
+            beforeToken = Indent(1);
+            afterToken = noLineBreak;
+            spaceBefore = options.spaceAroundImportAliasEqualsSign;
+            spaceAfter = options.spaceAroundImportAliasEqualsSign;
+        };
     }
     
     shared actual void visitAliasLiteral(AliasLiteral that)
@@ -116,6 +127,96 @@ shared class FormattingVisitor(
     shared actual void visitIdentifier(Identifier that) {
         fWriter.writeToken {
             that.mainToken;
+        };
+    }
+    
+    shared actual void visitImport(Import that) {
+        fWriter.writeToken {
+            that.mainToken;
+            beforeToken = noLineBreak;
+            afterToken = noLineBreak;
+            spaceBefore = false;
+            spaceAfter = true;
+        };
+        that.visitChildren(this);
+        fWriter.nextLine();
+    }
+    
+    shared actual void visitImportMemberOrTypeList(ImportMemberOrTypeList that) {
+        value context = fWriter.writeToken {
+            that.mainToken;
+            beforeToken = noLineBreak;
+            afterToken = Indent(1);
+            spaceBefore = true;
+            spaceAfter = true;
+        };
+        if (exists wildcard = that.importWildcard) {
+            wildcard.visit(this);
+        } else {
+            if (options.importStyle == multiLine) {
+                fWriter.nextLine();
+            }
+            assert (exists membersOrTypes = that.importMemberOrTypes);
+            value elements = CeylonIterable(membersOrTypes).sequence;
+            "Empty import list not allowed"
+            assert (exists first = elements.first);
+            variable value innerContext = fWriter.openContext();
+            first.visit(this);
+            for (value element in elements.rest) {
+                fWriter.writeToken {
+                    ",";
+                    beforeToken = noLineBreak;
+                    afterToken = Indent(0);
+                    spaceBefore = false;
+                    spaceAfter = true;
+                    innerContext;
+                };
+                if (options.importStyle == multiLine) {
+                    fWriter.nextLine();
+                }
+                innerContext = fWriter.openContext();
+                element.visit(this);
+            }
+            if (options.importStyle == multiLine) {
+                fWriter.nextLine();
+            }
+            fWriter.closeContext(innerContext);
+        }
+        that.visitChildren(this);
+        fWriter.writeToken {
+            that.mainEndToken;
+            beforeToken = Indent(0);
+            afterToken = Indent(0);
+            spaceBefore = true;
+            spaceAfter = true;
+            context;
+        };
+    }
+    
+    shared actual void visitImportPath(ImportPath that) {
+        value identifiers = CeylonIterable(that.identifiers).sequence;
+        "Import can’t have empty import path"
+        assert (nonempty identifiers);
+        identifiers.first.visit(this);
+        for (value identifier in identifiers.rest) {
+            fWriter.writeToken {
+                ".";
+                beforeToken = Indent(1);
+                afterToken = noLineBreak;
+                spaceBefore = false;
+                spaceAfter = false;
+            };
+            identifier.visit(this);
+        }
+    }
+    
+    shared actual void visitImportWildcard(ImportWildcard that) {
+        fWriter.writeToken {
+            that.mainToken; // "..."
+            beforeToken = noLineBreak;
+            afterToken = noLineBreak;
+            spaceBefore = true;
+            spaceAfter = true;
         };
     }
     

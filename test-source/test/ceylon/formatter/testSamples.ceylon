@@ -121,3 +121,13 @@ test
 shared void testAnnotationsPositionalArguments() {
     testFile("annotationsPositionalArguments");
 }
+
+test
+shared void testImportSingleLine() {
+    testFile("importSingleLine");
+}
+
+test
+shared void testImportMultiLine() {
+    testFile("importMultiLine");
+}

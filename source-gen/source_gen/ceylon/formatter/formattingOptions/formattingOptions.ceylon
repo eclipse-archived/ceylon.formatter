@@ -98,10 +98,40 @@
                process.arguments.filter("--help --usage --version".split().contains);
                //                      '----------positional argument list---------'""";
         "Boolean"; "spaceBeforeAnnotationPositionalArgumentList"; /* = */ "true";
+    },
+    FormattingOption {
+        """The formatting style for import statements.
+           
+           * [[singleLine]]
+           ~~~
+           import java.lang { Thread, JString=String, Runtime { runtime } }
+           ~~~
+           
+           * [[multiLine]]
+           ~~~
+           import java.lang {
+               Thread,
+               JString=String,
+               Runtime {
+                   runtime
+               }
+           }
+           ~~~""";
+        "ImportStyle"; "importStyle"; /* = */ "multiLine";
+    },
+    FormattingOption {
+        """Decide if there should be spaces around the equals sign ('=') of an import alias, that is
+           ~~~
+           import java.lang { JString=String }
+           // vs
+           import java.lang { JString = String }
+           ~~~""";
+        "Boolean"; "spaceAroundImportAliasEqualsSign"; "false";
     }
 };
 
 {Enum+} enums = {
     Enum("Unlimited"),
-    Enum("All")
+    Enum("All"),
+    Enum("ImportStyle", {"singleLine", "multiLine"})
 };
