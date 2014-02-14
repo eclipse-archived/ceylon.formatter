@@ -136,3 +136,8 @@ test
 shared void testDoc() {
     testFile("doc");
 }
+
+test
+shared void testTypes() {
+    testFile("types");
+}
