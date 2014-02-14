@@ -103,6 +103,7 @@ File parseFile(Path|String path) {
         value parts = resolved.path.elementPaths;
         assert (exists firstPart = parts.first, exists lastPart = parts.last);
         variable Path p = firstPart;
+        variable File f;
         for(childP in parts.rest) {
             p = p.childPath(childP);
             Resource r = p.resource;
@@ -111,17 +112,33 @@ File parseFile(Path|String path) {
                 if (childP != lastPart) {
                     throw Exception("Output directory part '``p``' is a file!");
                 }
+                f = r;
+                break;
             }
             case (is Nil) {
                 if (childP == lastPart) {
-                    r.createFile();
+                    f = r.createFile();
+                    break;
                 } else {
                     r.createDirectory();
                 }
             }
-            else { }
+            else { 
+                throw Exception("Output is not a file!");
+            }
+        } else {
+            value r = firstPart.resource;
+            switch (r)
+            case (is File) {
+                f = r;
+            }
+            case (is Nil) {
+                f = r.createFile();
+            }
+            else {
+                throw Exception("Output is not a file!");
+            }
         }
-        assert (is File f = p.resource);
         file = f;
     }
     case (is File) {
