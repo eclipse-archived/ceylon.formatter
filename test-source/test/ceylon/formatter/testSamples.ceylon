@@ -131,3 +131,8 @@ test
 shared void testImportMultiLine() {
     testFile("importMultiLine");
 }
+
+test
+shared void testDoc() {
+    testFile("doc");
+}

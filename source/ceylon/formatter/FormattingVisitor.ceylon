@@ -58,7 +58,7 @@ shared class FormattingVisitor(
         visitingAnnotation = false;
         if (is {String*} inlineAnnotations = options.inlineAnnotations) {
             if (exists text = that.primary?.children?.get(0)?.mainToken?.text,
-                text in inlineAnnotations) {
+            text in inlineAnnotations) {
                 // no line break for these annotations
             } else {
                 fWriter.nextLine();
@@ -66,6 +66,15 @@ shared class FormattingVisitor(
         } else {
             // no line breaks for any annotations
         }
+    }
+    
+    shared actual void visitAnonymousAnnotation(AnonymousAnnotation that) {
+        "Annotations can’t be nested"
+        assert (!visitingAnnotation);
+        visitingAnnotation = true;
+        that.visitChildren(this);
+        visitingAnnotation = false;
+        fWriter.nextLine();
     }
     
     shared actual void visitAnyMethod(AnyMethod that) {
@@ -79,6 +88,27 @@ shared class FormattingVisitor(
         for (ParameterList list in CeylonIterable(that.parameterLists)) {
             list.visit(this);
         }
+    }
+    
+    shared actual void visitAssertion(Assertion that) {
+        value context = fWriter.openContext();
+        that.annotationList.visit(this);
+        fWriter.writeToken {
+            that.mainToken; // "assert"
+            beforeToken = Indent(0);
+            afterToken = noLineBreak;
+            spaceBefore = true; // TODO option
+            spaceAfter = true;
+        };
+        that.conditionList.visit(this);
+        fWriter.writeToken {
+            that.mainEndToken; // ";"
+            beforeToken = noLineBreak;
+            afterToken = Indent(0);
+            spaceBefore = false;
+            spaceAfter = true;
+            context;
+        };
     }
     
     shared actual void visitAttributeDeclaration(AttributeDeclaration that) {
@@ -120,6 +150,41 @@ shared class FormattingVisitor(
     
     shared actual void visitClassLiteral(ClassLiteral that)
             => writeMetaLiteral(fWriter, this, that, "class");
+    
+    shared actual void visitConditionList(ConditionList that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "("
+            beforeToken = noLineBreak;
+            afterToken = Indent(1);
+            spaceBefore = 0;
+            spaceAfter = false;
+        };
+        value conditions = CeylonIterable(that.conditions).sequence;
+        "Empty condition list not allowed"
+        assert (exists first = conditions.first);
+        variable value innerContext = fWriter.openContext();
+        first.visit(this);
+        for (element in conditions.rest) {
+            fWriter.writeToken {
+                ",";
+                beforeToken = noLineBreak;
+                afterToken = Indent(0);
+                spaceBefore = false;
+                spaceAfter = true;
+                innerContext;
+            };
+            innerContext = fWriter.openContext();
+            element.visit(this);
+        }
+        fWriter.writeToken {
+            that.mainEndToken; // ")"
+            beforeToken = noLineBreak;
+            afterToken = Indent(0);
+            spaceBefore = false;
+            spaceAfter = 0;
+            context;
+        };
+    }
     
     shared actual void visitFunctionLiteral(FunctionLiteral that)
             => writeMetaLiteral(fWriter, this, that, "function");
