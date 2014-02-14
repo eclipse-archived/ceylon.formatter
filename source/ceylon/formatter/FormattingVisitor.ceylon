@@ -296,6 +296,21 @@ shared class FormattingVisitor(
         }
     }
     
+    shared actual void visitIterableType(IterableType that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "{"
+            afterToken = noLineBreak;
+            spaceAfter = false;
+        };
+        that.elementType.visit(this);
+        fWriter.writeToken {
+            that.mainEndToken; // "}"
+            beforeToken = noLineBreak;
+            spaceBefore = false;
+            context = context;
+        };
+    }
+    
     shared actual void visitLiteral(Literal that) {
         fWriter.writeToken {
             that.mainToken;
@@ -437,6 +452,35 @@ shared class FormattingVisitor(
         writeSemicolon(fWriter, that.mainEndToken, context);
     }
     
+    shared actual void visitSequencedType(SequencedType that) {
+        // String* is a SequencedType
+        that.type.visit(this);
+        fWriter.writeToken {
+            that.mainEndToken; // "*" or "+"
+            beforeToken = noLineBreak;
+            afterToken = noLineBreak;
+            spaceBefore = false;
+            spaceAfter = false;
+        };
+    }
+    
+    shared actual void visitSequenceType(SequenceType that) {
+        // String[] is a SequenceType
+        that.elementType.visit(this);
+        fWriter.writeToken {
+            "["; // doesn’t seem like that token is in the AST anywhere
+            beforeToken = noLineBreak;
+            afterToken = noLineBreak;
+            spaceBefore = false;
+            spaceAfter = false;
+        };
+        fWriter.writeToken {
+            that.mainEndToken; // "]"
+            beforeToken = noLineBreak;
+            spaceBefore = false;
+        };
+    }
+    
     shared actual void visitSpecifierExpression(SpecifierExpression that) {
         if (exists mainToken = that.mainToken) {
             writeEquals(fWriter, that.mainToken);
@@ -456,6 +500,37 @@ shared class FormattingVisitor(
         value context = fWriter.openContext();
         that.visitChildren(this);
         writeSemicolon(fWriter, that.mainEndToken, context);
+    }
+    
+    shared actual void visitTupleType(TupleType that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "["
+            afterToken = noLineBreak;
+            spaceAfter = false;
+        };
+        value elements = CeylonIterable(that.elementTypes).sequence;
+        if (exists first = elements.first) {
+            variable value innerContext = fWriter.openContext();
+            first.visit(this);
+            for (element in elements.rest) {
+                fWriter.writeToken {
+                    ",";
+                    beforeToken = noLineBreak;
+                    afterToken = Indent(1);
+                    spaceBefore = false;
+                    spaceAfter = true;
+                    innerContext;
+                };
+                innerContext = fWriter.openContext();
+                element.visit(this);
+            }
+        }
+        fWriter.writeToken {
+            that.mainEndToken; // "]"
+            beforeToken = noLineBreak;
+            spaceBefore = false;
+            context = context;
+        };
     }
     
     shared actual void visitTypedDeclaration(TypedDeclaration that) {
