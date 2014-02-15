@@ -186,6 +186,21 @@ shared class FormattingVisitor(
         };
     }
     
+    shared actual void visitEntryType(EntryType that) {
+        writeOptionallyGrouped(fWriter, () {
+            that.keyType.visit(this);
+            fWriter.writeToken {
+                "->";
+                beforeToken = noLineBreak;
+                afterToken = noLineBreak;
+                spaceBefore = false;
+                spaceAfter = false;
+            };
+            that.valueType.visit(this);
+            return null;
+        });
+    }
+    
     shared actual void visitFunctionLiteral(FunctionLiteral that)
             => writeMetaLiteral(fWriter, this, that, "function");
     

@@ -14,4 +14,9 @@ void run(
         String[],
         <[String, {String*}]>
     ] s5;
+    {<
+            String
+            ->
+            String
+     >*} s6;
 }
