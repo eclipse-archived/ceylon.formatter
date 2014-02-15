@@ -415,14 +415,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     "Close a [[FormattingContext]]."
     // don’t use this internally; use closeContext0 instead.
     shared void closeContext(FormattingContext context) {
-        value element = EmptyClosing(context);
-        tokenQueue.add(element);
-        closeContext0(element);
-        if (exists index = tokenStack.indexes((FormattingContext element) => element == context).first) {
-            for (i in index..tokenStack.size - 1) {
-                tokenStack.deleteLast();
-            }
-        }
+        tokenQueue.add(EmptyClosing(context));
     }
     
     "Close a [[FormattingContext]] associated with a [[QueueElement]].
