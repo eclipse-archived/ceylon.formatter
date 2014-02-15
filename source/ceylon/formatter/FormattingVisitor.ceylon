@@ -398,6 +398,27 @@ shared class FormattingVisitor(
             spaceBefore = options.spaceAfterParamListOpeningParen;
             spaceAfter = options.spaceAfterParamListOpeningParen;
         };
+        
+        variable Boolean multiLine = false;
+        object multiLineVisitor extends VisitorAdaptor() {
+            shared actual void visitAnnotation(Annotation annotation) {
+                if (is {String*} inlineAnnotations = options.inlineAnnotations) {
+                    if (exists text = annotation.primary?.children?.get(0)?.mainToken?.text,
+                    text in inlineAnnotations) {
+                        // not multiLine
+                    } else {
+                        multiLine = true;
+                    }
+                } else {
+                    // not multiLine
+                }
+            }
+            shared actual void visitAnonymousAnnotation(AnonymousAnnotation? anonymousAnnotation) {
+                multiLine = true;
+            }
+        }
+        that.visitChildren(multiLineVisitor);
+        
         variable FormattingWriter.FormattingContext? previousContext = null;
         for (Parameter parameter in CeylonIterable(that.parameters)) {
             if (exists c = previousContext) {
@@ -408,6 +429,9 @@ shared class FormattingVisitor(
                     spaceAfter = true;
                     context = c;
                 };
+            }
+            if (multiLine) {
+                fWriter.nextLine();
             }
             previousContext = fWriter.openContext();
             parameter.visit(this);
