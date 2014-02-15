@@ -255,7 +255,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         Indent|NoLineBreak afterToken = Indent(0),
         Integer|Boolean spaceBefore = 0,
         Integer|Boolean spaceAfter = 0,
-        FormattingContext? context = null) {
+        FormattingContext? context = null,
+        Boolean optional = false) {
         
         Boolean allowLineBreakBefore;
         Integer preIndent;
@@ -282,6 +283,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             assert (is String token); // the typechecker can't figure that out (yet), see ceylon-spec#74
             tokenText = token;
         }
+        variable Boolean discardToken = false;
         fastForward((AntlrToken? current) {
             if (exists current) {
                 if (current.type == lineComment || current.type == multiComment) {
@@ -291,13 +293,21 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 } else if (current.text == tokenText) {
                     return {stopAndConsume}; // end fast-forwarding
                 } else {
-                    // TODO it would be really cool if we could recover here
-                    throw Exception("Unexpected token '``current.text``', expected '``tokenText``' instead");
+                    if (optional) {
+                        discardToken = true;
+                        return {stopAndDontConsume};
+                    } else {
+                        // TODO it would be really cool if we could recover here
+                        throw Exception("Unexpected token '``current.text``', expected '``tokenText``' instead");
+                    }
                 }
             } else {
                 return {stopAndDontConsume}; // end fast-forwarding
             }
         });
+        if (discardToken) {
+            return null;
+        }
         FormattingContext? ret;
         Token t;
         see (`value Token.charPositionInLine`)

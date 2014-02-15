@@ -141,3 +141,8 @@ test
 shared void testTypes() {
     testFile("types");
 }
+
+test
+shared void testGroupedTypes() {
+    testFile("groupedTypes");
+}

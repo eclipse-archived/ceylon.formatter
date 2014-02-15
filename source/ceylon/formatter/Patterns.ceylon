@@ -91,3 +91,21 @@ void writeSemicolon(FormattingWriter writer, Token semicolon, FormattingWriter.F
         context;
     };
 }
+
+"Write an optional `<` before `inner` and an optional `>` after.
+ For grouped types (`{<String->String>*}`)."
+void writeOptionallyGrouped(FormattingWriter writer, Anything() inner) {
+    writer.writeToken {
+        "<";
+        afterToken = noLineBreak;
+        spaceAfter = false;
+        optional = true;
+    };
+    inner();
+    writer.writeToken {
+        ">";
+        beforeToken = noLineBreak;
+        spaceBefore = false;
+        optional = true;
+    };
+}
