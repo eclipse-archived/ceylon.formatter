@@ -379,6 +379,18 @@ shared class FormattingVisitor(
         fWriter.nextLine(); // blank line between method definitions
     }
     
+    shared actual void visitOptionalType(OptionalType that) {
+        writeOptionallyGrouped(fWriter, () {
+            that.definiteType.visit(this);
+            fWriter.writeToken {
+                that.mainEndToken; // "?"
+                beforeToken = noLineBreak;
+                spaceBefore = false;
+            };
+            return null;
+        });
+    }
+    
     shared actual void visitParameterList(ParameterList that) {
         value context = fWriter.writeToken {
             that.mainToken; // "("

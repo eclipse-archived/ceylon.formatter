@@ -14,4 +14,5 @@ void run(
         String[],
         [String, {String*}]
     ] s5;
+    String ? s6;
 }
