@@ -146,3 +146,8 @@ test
 shared void testGroupedTypes() {
     testFile("groupedTypes");
 }
+
+test
+shared void testMultiLineParameterList() {
+    testFile("multiLineParameterList");
+}
