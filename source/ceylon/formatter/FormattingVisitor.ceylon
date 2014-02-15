@@ -601,12 +601,8 @@ shared class FormattingVisitor(
     
     //TODO eventually, this will be unneeded, as each visitSomeSubclassOfNode should be overwritten here.
     shared actual void visitAny(Node that) {
-        if (exists Token start = that.mainToken) {
-            process.writeError(start.text);
-            if (exists Token end = that.mainEndToken) {
-                process.writeError("\t``end.text``");
-            }
-            process.writeErrorLine();
+        if (that.mainToken exists || that.mainEndToken exists) {
+            process.writeErrorLine("``that.mainToken?.text else ""``\t``that.mainEndToken?.text else ""``"); // breakpoint here
         }
         super.visitAny(that); // continue walking the tree
     }
