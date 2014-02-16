@@ -77,6 +77,33 @@ shared class FormattingVisitor(
         fWriter.nextLine();
     }
     
+    shared actual void visitAnyClass(AnyClass that) {
+        that.annotationList.visit(this);
+        fWriter.writeToken {
+            that.mainToken; // "class"
+            afterToken = noLineBreak;
+            spaceBefore = true;
+            spaceAfter = true;
+        };
+        that.identifier.visit(this);
+        that.typeParameterList?.visit(this);
+        that.parameterList?.visit(this);
+        that.caseTypes?.visit(this);
+        that.extendedType?.visit(this);
+        that.satisfiedTypes?.visit(this);
+        that.typeConstraintList?.visit(this);
+        if (is ClassDefinition that) {
+            that.classBody.visit(this);
+        } else if (is ClassDeclaration that) {
+            that.classSpecifier?.visit(this);
+            fWriter.writeToken {
+                that.mainEndToken; // ";"
+                beforeToken = noLineBreak;
+                spaceBefore = false;
+            };
+        }
+    }
+    
     shared actual void visitAnyMethod(AnyMethod that) {
         // override the default Walker's order
         that.annotationList.visit(this);
@@ -124,7 +151,7 @@ shared class FormattingVisitor(
         }
     }
     
-    shared actual void visitBlock(Block that) {
+    shared actual void visitBody(Body that) {
         value context = fWriter.writeToken {
             that.mainToken; // "{"
             beforeToken = noLineBreak;
@@ -199,6 +226,18 @@ shared class FormattingVisitor(
             that.valueType.visit(this);
             return null;
         });
+    }
+    
+    shared actual void visitExtendedType(ExtendedType that) {
+        fWriter.writeToken {
+            that.mainToken; // "extends"
+            beforeToken = Indent(1);
+            afterToken = noLineBreak;
+            spaceBefore = true;
+            spaceAfter = true;
+        };
+        that.type.visit(this);
+        that.invocationExpression.visit(this);
     }
     
     shared actual void visitFunctionLiteral(FunctionLiteral that)
@@ -504,6 +543,32 @@ shared class FormattingVisitor(
         assert (exists context);
         that.expression.visit(this);
         writeSemicolon(fWriter, that.mainEndToken, context);
+    }
+    
+    shared actual void visitSatisfiedTypes(SatisfiedTypes that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "satisfies"
+            beforeToken = Indent(1);
+            afterToken = noLineBreak;
+            spaceBefore = true;
+            spaceAfter = true;
+        };
+        assert (exists context);
+        value types = CeylonIterable(that.types).sequence;
+        "Must satisfy at least one type"
+        assert (nonempty types);
+        types.first.visit(this);
+        for (type in types.rest) {
+            fWriter.writeToken {
+                "&";
+                beforeToken = noLineBreak;
+                afterToken = noLineBreak;
+                spaceBefore = false;
+                spaceAfter = false;
+            };
+            type.visit(this);
+        }
+        fWriter.closeContext(context);
     }
     
     shared actual void visitSequencedType(SequencedType that) {

@@ -151,3 +151,8 @@ test
 shared void testMultiLineParameterList() {
     testFile("multiLineParameterList");
 }
+
+test
+shared void testSimpleClass() {
+    testFile("simpleClass");
+}
