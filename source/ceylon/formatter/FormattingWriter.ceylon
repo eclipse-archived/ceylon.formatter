@@ -26,7 +26,7 @@ shared Integer minDesire = runtime.minIntegerValue / 2;
  value is [[minDesire]] for `false` and [[maxDesire]] for `true`."
 shared Integer desire(Boolean|Integer desire) {
     if (is Integer desire) {
-        return max({minDesire, min({maxDesire, desire})});
+        return max{minDesire, min{maxDesire, desire}};
     } else if (is Boolean desire) { // TODO unnecessary if here
         if (desire) {
             return maxDesire;
@@ -39,8 +39,7 @@ shared Integer desire(Boolean|Integer desire) {
 }
 
 shared class Indent(shared Integer level) { }
-shared abstract class NoLineBreak() of noLineBreak { }
-shared object noLineBreak extends NoLineBreak() { }
+shared [Indent, Range<Integer>] noLineBreak = [Indent(0), 0..0];
 
 "Used in [[FormattingWriter.fastForward]]."
 abstract class Stop() of stopAndConsume|stopAndDontConsume { shared formal Boolean consume; }
@@ -242,6 +241,54 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         return false;
     }
     
+    variable Range<Integer> currentlyAllowedLinebreaks = 0..0;
+    
+    shared void intersectAllowedLineBreaks(Range<Integer> other) {
+        value inc1 = currentlyAllowedLinebreaks.decreasing then currentlyAllowedLinebreaks.reversed else currentlyAllowedLinebreaks;
+        value inc2 = other.decreasing then other.reversed else other;
+        value intersect = max{inc1.first, inc2.first}..min{inc1.last, inc2.last};
+        if (intersect.decreasing) {
+            assert (false); // TODO
+        }
+        currentlyAllowedLinebreaks = currentlyAllowedLinebreaks.decreasing then intersect.reversed else intersect;
+    }
+    shared void requireAtLeastLineBreaks(Integer limit) {
+        if (currentlyAllowedLinebreaks.decreasing) {
+            currentlyAllowedLinebreaks = currentlyAllowedLinebreaks.first..max{currentlyAllowedLinebreaks.last, limit};
+        } else {
+            currentlyAllowedLinebreaks = max{currentlyAllowedLinebreaks.first, limit}..currentlyAllowedLinebreaks.last;
+        }
+    }
+    
+    "Based on [[currently allowed line breaks|currentlyAllowedLinebreaks]]
+     and the [[given amount of line breaks|givenLineBreaks]],
+     decide how many line breaks should be printed.
+     
+     The current implementation will clamp the given line breaks into the allowed range
+     or use the first value of the allowed range if they’re null."
+    Integer lineBreakAmount(Integer? givenLineBreaks) {
+        if (is Integer givenLineBreaks) {
+            return min{max{givenLineBreaks, min(currentlyAllowedLinebreaks)}, max(currentlyAllowedLinebreaks)};
+        } else {
+            return currentlyAllowedLinebreaks.first;
+        }
+    }
+    
+    "Range of line breaks allowed before a line comment (`// comment`)."
+    Range<Integer> beforeLineCommentLineBreaks = 0..3; // TODO options
+    "Range of line breaks allowed after a line comment (`// comment`)."
+    Range<Integer> afterLineCommentLineBreaks = 1..3;
+    "Must not allow no line breaks after a multi-line comment, breaks syntax"
+    assert (min(afterLineCommentLineBreaks) > 0);
+    "Range of line breaks allowed before a single-line multi comment (`/* comment */`)."
+    Range<Integer> beforeSingleCommentLineBreaks = 0..3;
+    "Range of line breaks allowed after a single-line multi comment (`/* comment */`)."
+    Range<Integer> afterSingleCommentLineBreaks = 0..3;
+    "Range of line breaks allowed before a multi-line comment (`/* comment\\ncomment\\ncomment */`)."
+    Range<Integer> beforeMultiCommentLineBreaks = 1..3;
+    "Range of line breaks allowed after a multi-line comment (`/* comment\\ncomment\\ncomment */`)."
+    Range<Integer> afterMultiCommentLineBreaks = 1..3;
+    
     "Write a token, respecting [[FormattingOptions.maxLineLength]] and non-AST tokens (comments).
      
      First, fast-forward the token stream until [[token]] is reached, writing out
@@ -251,63 +298,151 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
      This method should always be used to write any tokens."
     shared FormattingContext? writeToken(
         AntlrToken|String token,
-        Indent|NoLineBreak beforeToken = Indent(0),
-        Indent|NoLineBreak afterToken = Indent(0),
+        [Indent, Range<Integer>]|Indent beforeToken = Indent(0),
+        [Indent, Range<Integer>]|Indent afterToken = Indent(0),
         Integer|Boolean spaceBefore = 0,
         Integer|Boolean spaceAfter = 0,
         FormattingContext? context = null,
         Boolean optional = false) {
         
+        // desugar
+        [Indent, Range<Integer>] _beforeToken;
+        [Indent, Range<Integer>] _afterToken;
+        Integer wantsSpaceBefore;
+        Integer wantsSpaceAfter;
+        String tokenText;
         Boolean allowLineBreakBefore;
         Integer preIndent;
-        if (is Indent beforeToken) {
-            allowLineBreakBefore = true;
-            preIndent = beforeToken.level;
-        } else {
-            allowLineBreakBefore = false;
-            preIndent = 0;
-        }
         Integer? postIndent;
-        if (is Indent afterToken) {
-            postIndent = afterToken.level;
+        if (is [Indent, Range<Integer>] beforeToken) {
+            "Newline count range must be nonnegative"
+            assert (beforeToken[1].first >= 0 && beforeToken[1].last >= 0);
+            _beforeToken = beforeToken;
         } else {
-            postIndent = null;
+            assert (is Indent beforeToken); // TODO see ceylon-spec#74
+            _beforeToken = [beforeToken, 0..1];
         }
-        Integer wantsSpaceBefore = desire(spaceBefore);
-        Integer wantsSpaceAfter = desire(spaceAfter);
-        
-        String tokenText;
+        if (is [Indent, Range<Integer>] afterToken) {
+            "Newline count range must be nonnegative"
+            assert (afterToken[1].first >= 0 && afterToken[1].last >= 0);
+            _afterToken = afterToken;
+        } else {
+            assert (is Indent afterToken); // TODO see ceylon-spec#74
+            _afterToken = [afterToken, 0..1];
+        }
+        wantsSpaceBefore = desire(spaceBefore);
+        wantsSpaceAfter = desire(spaceAfter);
         if (is AntlrToken token) {
             tokenText = token.text;
         } else {
             assert (is String token); // the typechecker can't figure that out (yet), see ceylon-spec#74
             tokenText = token;
         }
-        variable Boolean discardToken = false;
+        allowLineBreakBefore = _beforeToken[1].any(0.smallerThan);
+        preIndent = allowLineBreakBefore then _beforeToken[0].level else 0;
+        postIndent = _afterToken[1].any(0.smallerThan) then _afterToken[0].level;
+        
+        // look for optional token
+        // if it’s not there, return immediately
+        // the following sections will perform irreversible changes (intersect currentlyAllowedLineBreaks etc.)
+        if (optional, exists tokens) { // TODO if no token stream, we’ll always write optionals. Be smarter!
+            variable value i = 1;
+            try {
+                while (exists currentToken = tokens.\iLT(i++)) {
+                    if (currentToken.type in {lineComment, multiComment, ws}) {
+                        continue;
+                    }
+                    if (currentToken.text == tokenText) {
+                        break;
+                    } else {
+                        return null;
+                    }
+                }
+            } catch (Exception e) {
+                // reached the end of the token stream
+                return null;
+            }
+        }
+        
+        // handle the part before this token:
+        // fast-forward, intersect allowed line breaks, write out line breaks
+        intersectAllowedLineBreaks(_beforeToken[1]);
+        variable Integer? givenLineBreaks = tokens exists then 0 else null;
         fastForward((AntlrToken? current) {
             if (exists current) {
                 if (current.type == lineComment || current.type == multiComment) {
-                    return fastForwardComment(current);
+                    // we treat comments as regular tokens
+                    // just with the difference that their before- and afterToken range isn’t given, but an option instead
+                    Range<Integer> before;
+                    Range<Integer> after;
+                    if (current.type == lineComment) {
+                        before = beforeLineCommentLineBreaks;
+                        after = afterLineCommentLineBreaks;
+                    } else {
+                        if (current.text.contains('\n') && !isEmpty) {
+                            before = beforeMultiCommentLineBreaks;
+                            after = afterMultiCommentLineBreaks;
+                        } else {
+                            before = beforeSingleCommentLineBreaks;
+                            after = afterSingleCommentLineBreaks;
+                        }
+                    }
+                    intersectAllowedLineBreaks(before);
+                    for (i in 0:lineBreakAmount(givenLineBreaks)) {
+                        tokenQueue.add(LineBreak());
+                    }
+                    currentlyAllowedLinebreaks = after;
+                    givenLineBreaks = givenLineBreaks exists then 0;
+                    // that’s it for the surrounding line breaks.
+                    // now we need to produce the following pattern: for each line in the comment,
+                    // line, line break, line, line break, ..., line.
+                    // notice how there’s no line break after the last line, which is why this gets
+                    // a little ugly...
+                    value lines = current.text
+                            .trim('\n'.equals) // line comments include the trailine line break
+                            .split('\n'.equals);
+                    String? firstLine = lines.first;
+                    assert (exists firstLine);
+                    SequenceAppender<QueueElement> ret = SequenceAppender<QueueElement>{
+                        OpeningToken(
+                            firstLine.trimTrailing('\r'.equals),
+                            true, 0, maxDesire, maxDesire)};
+                    ret.appendAll({
+                        for (line in lines
+                                .rest
+                                .map((String l) => l.trimTrailing('\r'.equals)))
+                            for (element in {LineBreak(), OpeningToken(line, true, 0, maxDesire, maxDesire)})
+                                element
+                    });
+                    return ret.sequence;
                 } else if (current.type == ws) {
+                    value lineBreaks = current.text.count('\n'.equals);
+                    if (exists g=givenLineBreaks) {
+                        givenLineBreaks = g + lineBreaks;
+                    } else {
+                        givenLineBreaks = lineBreaks;
+                    }
                     return empty;
+                } else if (current.type == -1) {
+                    // EOF
+                    return {stopAndDontConsume};
                 } else if (current.text == tokenText) {
                     return {stopAndConsume}; // end fast-forwarding
                 } else {
-                    if (optional) {
-                        discardToken = true;
-                        return {stopAndDontConsume};
-                    } else {
-                        // TODO it would be really cool if we could recover here
-                        throw Exception("Unexpected token '``current.text``', expected '``tokenText``' instead");
-                    }
+                    // TODO it would be really cool if we could recover here
+                    throw Exception("Unexpected token '``current.text``', expected '``tokenText``' instead");
                 }
             } else {
                 return {stopAndDontConsume}; // end fast-forwarding
             }
         });
-        if (discardToken) {
-            return null;
+        intersectAllowedLineBreaks(_beforeToken[1]);
+        for (i in 0:lineBreakAmount(givenLineBreaks)) {
+            tokenQueue.add(LineBreak());
         }
+        // handle this token:
+        // set allowed line breaks, add token
+        currentlyAllowedLinebreaks = _afterToken[1]; 
         FormattingContext? ret;
         Token t;
         see (`value Token.charPositionInLine`)
@@ -344,65 +479,6 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         isEmpty = false;
         writeLines();
         return ret;
-    }
-    
-    "Fast-forward the token stream until the next token contains a line break or isn't hidden, writing out any comment tokens,
-     then write a line break.
-     
-     This is needed to keep a line comment at the end of a line instead of putting it into the next line."
-    shared void nextLine() {
-        fastForward((AntlrToken? current) {
-            if (exists current) {
-                if (current.type == lineComment || current.type == multiComment) {
-                    return fastForwardComment(current);
-                } else if (current.type == ws) {
-                    return empty;
-                } else {
-                    return {LineBreak(), stopAndDontConsume}; // end fast-forwarding
-                }
-            } else {
-                return {LineBreak(), stopAndDontConsume}; // end fast-forwarding
-            }
-        });
-        writeLines();
-    }
-    
-    "[[Fast-forward|fastForward]] a comment token."
-    {QueueElement|Stop*} fastForwardComment(AntlrToken current) {
-        assert(current.type == lineComment || current.type == multiComment);
-        
-        SequenceBuilder<QueueElement|Stop> ret = SequenceBuilder<QueueElement|Stop>();
-        
-        Boolean multiLine = current.type == multiComment && current.text.contains('\n');
-        if (multiLine && !isEmpty) {
-            // multi-line comments start and end on their own line
-            ret.append(LineBreak());
-        }
-        // now we need to produce the following pattern: for each line in the comment,
-        // line, linebreak, line, linebreak, ..., line.
-        // notice how there’s no linebreak after the last line, which is why this gets
-        // a little ugly...
-        String? firstLine = current.text
-                .split('\n'.equals)
-                .first;
-        assert (exists firstLine);
-        ret.append(OpeningToken(
-            firstLine.trimTrailing('\r'.equals),
-            true, 0, maxDesire, maxDesire));
-        ret.appendAll({
-            for (line in current.text
-                    .split('\n'.equals)
-                    .rest
-                    .filter((String elem) => !elem.empty)
-                    .map((String l) => l.trimTrailing('\r'.equals)))
-                for (element in {LineBreak(), OpeningToken(line, true, 0, maxDesire, maxDesire)})
-                    element
-        });
-        if (multiLine) {
-            ret.append(LineBreak());
-        }
-        
-        return ret.sequence;
     }
     
     "Open a [[FormattingContext]] not associated with any token."
@@ -772,11 +848,13 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     "Enqueue a line break if the last queue element isn’t a line break, then flush the queue."
     shared void close() {
         if (!isEmpty) {
-            QueueElement? lastElement = tokenQueue.findLast((QueueElement elem) => !(elem is EmptyOpening));
-            if (exists lastElement, !is LineBreak lastElement) {
-                tokenQueue.add(LineBreak());
-            }
-            writeLines();
+            writeToken {
+                ""; // empty token, big effect: fastForward again, comments, newlines, etc.
+                beforeToken = [Indent(0), 1..1];
+                afterToken = [Indent(0), 0..0];
+                spaceBefore = false;
+                spaceAfter = false;
+            };
         }
     }
 }

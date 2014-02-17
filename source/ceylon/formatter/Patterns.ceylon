@@ -74,7 +74,7 @@ void writeMetaLiteralStart(FormattingWriter writer, String start) {
 void writeModifier(FormattingWriter writer, Token modifier) {
     writer.writeToken {
         modifier;
-        beforeToken = noLineBreak;
+        beforeToken = [Indent(0), 0..2];
         spaceBefore = true;
         spaceAfter = true;
     };
@@ -85,7 +85,7 @@ void writeSemicolon(FormattingWriter writer, Token semicolon, FormattingWriter.F
     writer.writeToken {
         semicolon;
         beforeToken = noLineBreak;
-        afterToken = Indent(0);
+        afterToken = [Indent(0), 0..2];
         spaceBefore = false;
         spaceAfter = true;
         context;
