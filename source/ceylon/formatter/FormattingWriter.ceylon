@@ -11,11 +11,11 @@ import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer {
 import ceylon.formatter.options { FormattingOptions, Spaces, Tabs, Mixed }
 import ceylon.time.internal.math { floorDiv }
 
-"The maximum value that is safe to use as [[FormattingWriter.writeToken]]’s `wantsSpace[Before|After]` argument.
+"The maximum value that is safe to use as [[FormattingWriter.writeToken]]’s `space[Before|After]` argument.
  
  Using a greater value risks inverting the intended result due to overflow."
 shared Integer maxDesire = runtime.maxIntegerValue / 2;
-"The minimum value that is safe to use as [[FormattingWriter.writeToken]]’s `wantsSpace[Before|After]` argument.
+"The minimum value that is safe to use as [[FormattingWriter.writeToken]]’s `space[Before|After]` argument.
  
  Using a smaller value risks inverting the intended result due to overflow."
 shared Integer minDesire = runtime.minIntegerValue / 2;
@@ -50,25 +50,105 @@ object stopAndConsume extends Stop() { consume = true; }
 see(`value stopAndConsume`)
 object stopAndDontConsume extends Stop() { consume = false; }
 
-"Writes out tokens, respecting certain indentation settings and a maximum line width.
+"Writes tokens to an underlying [[writer]], respecting certain formatting settings and a maximum line width.
  
- Each token written with the [[writeToken]] method is stored in a buffer. As soon as enough tokens
- are present to decide where a line break should occur, the entire line is written out to the
- underlying [[writer]] and the tokens are removed from the buffer. This can also be forced at any
- time with the [[nextLine]] method.
+ The [[FormattingWriter]] manages the following aspects:
  
- Indentation stacks over the tokens: Each token can specify by how many levels the tokens following
- it should be indented. Such a token opens a [[FormattingContext]], which is then returned by
- `writeToken`. The context can later be closed with another token by passing it to the `writeToken`
- method, which will remove the context and all the contexts on top of it from the context stack.
- The indentation level of a line is the sum of the indentation levels of all contexts on the stack.
+ * Indentation
+ * Line Breaking
+ * Spacing
  
- You can get a `FormattingContext` not associated with any tokens from the [[openContext]]
- method; this is useful if you only have a closing token, but no opening token: for example, the
- semicolon terminating a statement should clearly close some context, but there is no special
- token which opens that context.
+ Additionally, it also writes comments if a [[token stream|tokens]] is given.
  
- You can also close a `FormattingContext` without a token with the [[closeContext]] method."
+ # Indentation
+ 
+ Two [[Indent]]s are associated with each token: one before the token, and one after it.
+ Warning: they are not symmetrical!
+ 
+ **The `indentAfter` of a token** introduces a *context* (instance of [[FormattingContext]]) that is
+ pushed onto a *context stack* when the token is written. The indentation of each line is the
+ sum of all indentation currently on the context stack. When a context is closed, the context
+ and all contexts on top of it are removed from the context stack.
+ 
+ A context can be closed in two ways:
+ 1. By associating it with a token. For example, you would say that a closing brace `}` closes the
+    context of the corresponding opening brace `{`: The block has ended, and subsequent lines should
+    no longer be indented as if they were still part of the block. Tokens that close another token’s
+    context do not open a context of their own.
+ 2. By calling [[closeContext]].
+ 
+ You can also obtain a context not associated with any token by calling [[openContext]]. This is
+ mostly useful if you have a closing token with no designated opening token: for example, a statement’s
+ closing semicolon `;` should close some context, but there is no corresponding token which opens
+ that context.
+ 
+ **The `indentBefore` of a token** does *not* introduce any context. It is only applied when a line
+ line break has occured immediately before this line, i. e. if it is the first token of its line.
+ For example, the member operator `.` typically has an `indentBefore` of `1`: A “call chain”
+ `foo.bar.baz` should, if spread across several lines, be indented, but that indentation should not
+ stack across multiple member operators.
+ 
+ # Line Breaking
+ 
+ Two [[Integer]] [[ranges|Range]] are associated with each token. One indicates how many line breaks
+ may occur before the token, and the other indicates how many may occur after the token. Additionally,
+ one may call [[requireAtLeastLineBreaks]] and [[intersectAllowedLineBreaks]] to further restrict
+ how many line breaks may occur between two tokens.
+ 
+ The intersection of these ranges for the border between two tokens is then used to determine how
+ many line breaks should be written before the token.
+ 
+ * If [[tokens]] exists, then each time a token is written, the token stream is fast-forwarded until
+   the token is met (if a token with a different text is met, an exception is thrown). In
+   fast-forwarding, the amount of line breaks is counted. After fast-forwarding has finished, the
+   number of line breaks that were counted is clamped into the line break range, and this many
+   line breaks are written.
+ * If [[tokens]] doesn’t exist, then the first element of the range is used (usually the lowest,
+   unless the range is [[decreasing|Range.decreasing]]).
+ 
+ Additionally, the [[FormattingWriter]] also breaks lines according to a maximum line length and
+ a [[ceylon.formatter.options::LineBreakStrategy]], as determined by [[options]].
+ To achieve this, tokens are not directly written to the underlying writer; instead, they are
+ added to a *token queue* (not to be confused with the token *stack*, which is used for indentation).
+ Each time a token is added, the [[FormattingWriter]] checks if there are enough tokens on the queue
+ for the line break strategy to decide where a line break should be placed. Line breaks are allowed
+ between tokens if their respecive ranges included at least one value greater than zero (in other
+ words, to disallow a line breaks between two tokens, pass a range of `0..0` to either of them).
+ When a line break location is known, that line is written and its tokens removed from the queue
+ (their contexts are then added to the token stack).
+ 
+ # Spacing
+ 
+ If you’ve made it this far, relax, this is the easiest section :)
+ 
+ Two [[Integer]]s are associated with each token. One indicates the token’s desire to have a space
+ before it, the other indicates the desire to have a space after it. When the two tokens are written,
+ these integers are added, and if the sum is `>= 0`, then a space is written.
+ 
+ To avoid inverting the intended result by numerical overflow, don’t use values outside the range
+ [[minDesire]]`..`[[maxDesire]]. You can also give `false` and `true` to [[writeToken]], which
+ are convenient and readable syntax sugar for these two values (`spaceBefore = true`).
+ 
+ # Comments
+ 
+ The fast-forwarding of the token stream (if given) was already mentioned in the “Line Breaking” section.
+ If comment tokens are encountered during the fast-forwarding, they are written out like tokens with
+ 
+ * `spaceBefore = true, spaceAfter = true`
+ * `indentBefore = Indent(0), indentAfter = Indent(0)`
+ * `linebreaksBefore, linebreaksAfter` as determined by the [[options]]
+     * [[beforeLineCommentLineBreaks|FormattingOptions.beforeLineCommentLineBreaks]] and
+       [[afterLineCommentLineBreaks|FormattingOptions.afterLineCommentLineBreaks]] for `// line comments`
+     * [[beforeSingleCommentLineBreaks|FormattingOptions.beforeSingleCommentLineBreaks]] and
+       [[afterSingleCommentLineBreaks|FormattingOptions.afterSingleCommentLineBreaks]] for `/* single-line multi comments */`
+     * [[beforeMultiCommentLineBreaks|FormattingOptions.beforeMultiCommentLineBreaks]] and
+       [[afterMultiCommentLineBreaks|FormattingOptions.afterMultiCommentLineBreaks]] for
+       ~~~
+       /*
+          multi-line
+          comments
+        */
+       ~~~"
 shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOptions options) {
     
     shared interface FormattingContext {
@@ -243,6 +323,9 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     
     variable Range<Integer> currentlyAllowedLinebreaks = 0..0;
     
+    "Intersect the range of allowed line breaks between the latest token and the next one to be [[written|writeToken]]
+     with the given range."
+    see (`function requireAtLeastLineBreaks`)
     shared void intersectAllowedLineBreaks(Range<Integer> other) {
         value inc1 = currentlyAllowedLinebreaks.decreasing then currentlyAllowedLinebreaks.reversed else currentlyAllowedLinebreaks;
         value inc2 = other.decreasing then other.reversed else other;
@@ -252,6 +335,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         }
         currentlyAllowedLinebreaks = currentlyAllowedLinebreaks.decreasing then intersect.reversed else intersect;
     }
+    "Require at leasts [[limit]] line breaks between the latest token and the next one to be [[written|writeToken]]."
+    see (`function intersectAllowedLineBreaks`)
     shared void requireAtLeastLineBreaks(Integer limit) {
         if (currentlyAllowedLinebreaks.decreasing) {
             currentlyAllowedLinebreaks = currentlyAllowedLinebreaks.first..max{currentlyAllowedLinebreaks.last, limit};
@@ -277,13 +362,12 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     "Must not allow no line breaks after a line comment, breaks syntax"
     assert (min(options.afterLineCommentLineBreaks) > 0);
     
-    "Write a token, respecting [[FormattingOptions.maxLineLength]] and non-AST tokens (comments).
+    "Add a single token, then try to write out a line.
      
-     First, fast-forward the token stream until [[token]] is reached, writing out
-     any comment tokens; then, put the `token`’s text into the token queue and
-     check if a line can be written out.
+     See the [[class documentation|FormattingWriter]] for more information on the token model
+     and how the various parameters of a token interact.
      
-     This method should always be used to write any tokens."
+     All arguments (except [[token]], of course) default to a “save to ignore” / “don’t care” value."
     shared FormattingContext? writeToken(
         token,
         context = null,
@@ -296,14 +380,41 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         optional = false) {
         
         // parameters
+        "The token."
         AntlrToken|String token;
+        "The context that this token closes. If this value isn’t `null`, then this token will not
+         itself open a new context, and the method will therefore return `null`."
         FormattingContext? context;
+        "The indentation that should be applied to a line if this token is the first of its line."
         Indent indentBefore;
+        "The indentation that should be applied to all subsequent lines until the token’s context
+         is closed."
         Indent indentAfter;
+        "The amount of line breaks that is allowed before this token."
+        see (`value noLineBreak`)
         Range<Integer> linebreaksBefore;
+        "The amount of line breaks that is allowed after this token."
         Range<Integer> linebreaksAfter;
+        "Whether to put a space before this token.
+         
+         [[true]] and [[false]] are sugar for [[maxDesire]] and [[minDesire]], respectively."
+        see (`value maxDesire`, `value minDesire`)
         Integer|Boolean spaceBefore;
+        "Whether to put a space after this token.
+         
+         [[true]] and [[false]] are sugar for [[maxDesire]] and [[minDesire]], respectively."
+        see (`value maxDesire`, `value minDesire`)
         Integer|Boolean spaceAfter;
+        "If the token is marked optional, then it is only written if it also occurs in the
+         [[token stream|tokens]].
+         
+         This should be rarely used, as there are typically not many optional tokens; one example
+         are the angle brackets for grouping types: they are required in complicated types like
+         `{<Key->Value>*} map`, but around `<String> name`, they are optional.
+         
+         (If the token stream doesn’t exist, the token is currently always written; however,
+         in the future a more sophisticated method to avoid writing too many unnecessary optional
+         tokens might be added.)"
         Boolean optional;
         
         "Line break count range must be nonnegative"
