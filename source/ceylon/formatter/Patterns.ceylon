@@ -11,9 +11,7 @@ FormattingWriter.FormattingContext writeBacktickOpening(FormattingWriter writer,
     assert (backtick.text == "`");
     value context = writer.writeToken {
         backtick;
-        beforeToken = Indent(0);
-        afterToken = noLineBreak;
-        spaceBefore = 0;
+        linebreaksAfter = noLineBreak;
         spaceAfter = false;
     };
     assert (exists context);
@@ -24,10 +22,8 @@ void writeBacktickClosing(FormattingWriter writer, Token backtick, FormattingWri
     assert (backtick.text == "`");
     writer.writeToken {
         backtick;
-        beforeToken = noLineBreak;
-        afterToken = Indent(0);
+        linebreaksBefore = noLineBreak;
         spaceBefore = false;
-        spaceAfter = 0;
         context;
     };
 }
@@ -40,8 +36,8 @@ void writeEquals(FormattingWriter writer, Token|String equals) {
     }
     writer.writeToken {
         equals;
-        beforeToken = noLineBreak;
-        afterToken = Indent(1);
+        linebreaksBefore = noLineBreak;
+        indentAfter = Indent(1);
         spaceBefore = true;
         spaceAfter = true;
     };
@@ -64,8 +60,8 @@ void writeMetaLiteral(FormattingWriter writer, FormattingVisitor visitor, MetaLi
 void writeMetaLiteralStart(FormattingWriter writer, String start) {
     writer.writeToken {
         start;
-        beforeToken = noLineBreak;
-        afterToken = Indent(1);
+        linebreaksBefore = noLineBreak;
+        indentAfter = Indent(1);
         spaceBefore = false;
         spaceAfter = true;
     };
@@ -74,7 +70,7 @@ void writeMetaLiteralStart(FormattingWriter writer, String start) {
 void writeModifier(FormattingWriter writer, Token modifier) {
     writer.writeToken {
         modifier;
-        beforeToken = [Indent(0), 0..2];
+        linebreaksBefore = 0..2;
         spaceBefore = true;
         spaceAfter = true;
     };
@@ -84,8 +80,8 @@ void writeSemicolon(FormattingWriter writer, Token semicolon, FormattingWriter.F
     assert(semicolon.text == ";");
     writer.writeToken {
         semicolon;
-        beforeToken = noLineBreak;
-        afterToken = [Indent(0), 0..2];
+        linebreaksBefore = noLineBreak;
+        linebreaksAfter = 0..2;
         spaceBefore = false;
         spaceAfter = true;
         context;
@@ -97,14 +93,14 @@ void writeSemicolon(FormattingWriter writer, Token semicolon, FormattingWriter.F
 void writeOptionallyGrouped(FormattingWriter writer, Anything() inner) {
     writer.writeToken {
         "<";
-        afterToken = noLineBreak;
+        linebreaksAfter = noLineBreak;
         spaceAfter = false;
         optional = true;
     };
     inner();
     writer.writeToken {
         ">";
-        beforeToken = noLineBreak;
+        linebreaksBefore = noLineBreak;
         spaceBefore = false;
         optional = true;
     };

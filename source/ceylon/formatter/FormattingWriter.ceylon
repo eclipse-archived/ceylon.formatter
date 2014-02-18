@@ -39,7 +39,7 @@ shared Integer desire(Boolean|Integer desire) {
 }
 
 shared class Indent(shared Integer level) { }
-shared [Indent, Range<Integer>] noLineBreak = [Indent(0), 0..0];
+shared Range<Integer> noLineBreak = 0..0;
 
 "Used in [[FormattingWriter.fastForward]]."
 abstract class Stop() of stopAndConsume|stopAndDontConsume { shared formal Boolean consume; }
@@ -285,50 +285,50 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
      
      This method should always be used to write any tokens."
     shared FormattingContext? writeToken(
-        AntlrToken|String token,
-        [Indent, Range<Integer>]|Indent beforeToken = Indent(0),
-        [Indent, Range<Integer>]|Indent afterToken = Indent(0),
-        Integer|Boolean spaceBefore = 0,
-        Integer|Boolean spaceAfter = 0,
-        FormattingContext? context = null,
-        Boolean optional = false) {
+        token,
+        context = null,
+        indentBefore = Indent(0),
+        indentAfter = Indent(0),
+        linebreaksBefore = 0..1,
+        linebreaksAfter = 0..1,
+        spaceBefore = 0,
+        spaceAfter = 0,
+        optional = false) {
+        
+        // parameters
+        AntlrToken|String token;
+        FormattingContext? context;
+        Indent indentBefore;
+        Indent indentAfter;
+        Range<Integer> linebreaksBefore;
+        Range<Integer> linebreaksAfter;
+        Integer|Boolean spaceBefore;
+        Integer|Boolean spaceAfter;
+        Boolean optional;
+        
+        "Line break count range must be nonnegative"
+        assert (linebreaksBefore.first >= 0 && linebreaksBefore.last >= 0);
+        "Line break count range must be nonnegative"
+        assert (linebreaksAfter.first >= 0 && linebreaksAfter.last >= 0);
         
         // desugar
-        [Indent, Range<Integer>] _beforeToken;
-        [Indent, Range<Integer>] _afterToken;
-        Integer wantsSpaceBefore;
-        Integer wantsSpaceAfter;
+        Integer spaceBeforeDesire;
+        Integer spaceAfterDesire;
         String tokenText;
         Boolean allowLineBreakBefore;
         Integer preIndent;
         Integer? postIndent;
-        if (is [Indent, Range<Integer>] beforeToken) {
-            "Newline count range must be nonnegative"
-            assert (beforeToken[1].first >= 0 && beforeToken[1].last >= 0);
-            _beforeToken = beforeToken;
-        } else {
-            assert (is Indent beforeToken); // TODO see ceylon-spec#74
-            _beforeToken = [beforeToken, 0..1];
-        }
-        if (is [Indent, Range<Integer>] afterToken) {
-            "Newline count range must be nonnegative"
-            assert (afterToken[1].first >= 0 && afterToken[1].last >= 0);
-            _afterToken = afterToken;
-        } else {
-            assert (is Indent afterToken); // TODO see ceylon-spec#74
-            _afterToken = [afterToken, 0..1];
-        }
-        wantsSpaceBefore = desire(spaceBefore);
-        wantsSpaceAfter = desire(spaceAfter);
+        spaceBeforeDesire = desire(spaceBefore);
+        spaceAfterDesire = desire(spaceAfter);
         if (is AntlrToken token) {
             tokenText = token.text;
         } else {
             assert (is String token); // the typechecker can't figure that out (yet), see ceylon-spec#74
             tokenText = token;
         }
-        allowLineBreakBefore = _beforeToken[1].any(0.smallerThan);
-        preIndent = allowLineBreakBefore then _beforeToken[0].level else 0;
-        postIndent = _afterToken[1].any(0.smallerThan) then _afterToken[0].level;
+        allowLineBreakBefore = linebreaksBefore.any(0.smallerThan);
+        preIndent = allowLineBreakBefore then indentBefore.level else 0;
+        postIndent = linebreaksAfter.any(0.smallerThan) then indentAfter.level;
         
         // look for optional token
         // if it’s not there, return immediately
@@ -354,7 +354,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         
         // handle the part before this token:
         // fast-forward, intersect allowed line breaks, write out line breaks
-        intersectAllowedLineBreaks(_beforeToken[1]);
+        intersectAllowedLineBreaks(linebreaksBefore);
         variable Integer? givenLineBreaks = tokens exists then 0 else null;
         fastForward((AntlrToken? current) {
             if (exists current) {
@@ -424,13 +424,12 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 return {stopAndDontConsume}; // end fast-forwarding
             }
         });
-        intersectAllowedLineBreaks(_beforeToken[1]);
         for (i in 0:lineBreakAmount(givenLineBreaks)) {
             tokenQueue.add(LineBreak());
         }
         // handle this token:
         // set allowed line breaks, add token
-        currentlyAllowedLinebreaks = _afterToken[1]; 
+        currentlyAllowedLinebreaks = linebreaksAfter; 
         FormattingContext? ret;
         Token t;
         see (`value Token.charPositionInLine`)
@@ -454,10 +453,10 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             alignSkip = token.takingWhile('"'.equals).size;
         }
         if (exists context) {
-            t = ClosingToken(tokenText, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, context, charPositionInLine, alignSkip, preIndent);
+            t = ClosingToken(tokenText, allowLineBreakBefore, postIndent, spaceBeforeDesire, spaceAfterDesire, context, charPositionInLine, alignSkip, preIndent);
             ret = null;
         } else {
-            t = OpeningToken(tokenText, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine, alignSkip, preIndent);
+            t = OpeningToken(tokenText, allowLineBreakBefore, postIndent, spaceBeforeDesire, spaceAfterDesire, charPositionInLine, alignSkip, preIndent);
             assert (is OpeningToken t); // ...yeah
             ret = t.context;
         }
@@ -838,8 +837,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         if (!isEmpty) {
             writeToken {
                 ""; // empty token, big effect: fastForward again, comments, newlines, etc.
-                beforeToken = [Indent(0), 1..1];
-                afterToken = [Indent(0), 0..0];
+                linebreaksBefore = 1..1;
+                linebreaksAfter = 0..0;
                 spaceBefore = false;
                 spaceAfter = false;
             };

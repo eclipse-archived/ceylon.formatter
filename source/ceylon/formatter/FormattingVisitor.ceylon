@@ -40,8 +40,8 @@ shared class FormattingVisitor(
         that.identifier.visit(this);
         fWriter.writeToken {
             that.mainToken; // "="
-            beforeToken = noLineBreak;
-            afterToken = noLineBreak;
+            linebreaksBefore = noLineBreak;
+            linebreaksAfter = noLineBreak;
             spaceBefore = options.spaceAroundImportAliasEqualsSign;
             spaceAfter = options.spaceAroundImportAliasEqualsSign;
         };
@@ -81,7 +81,7 @@ shared class FormattingVisitor(
         that.annotationList.visit(this);
         fWriter.writeToken {
             that.mainToken; // "class"
-            afterToken = noLineBreak;
+            linebreaksAfter = noLineBreak;
             spaceBefore = true;
             spaceAfter = true;
         };
@@ -98,7 +98,7 @@ shared class FormattingVisitor(
             that.classSpecifier?.visit(this);
             fWriter.writeToken {
                 that.mainEndToken; // ";"
-                beforeToken = noLineBreak;
+                linebreaksBefore = noLineBreak;
                 spaceBefore = false;
             };
         }
@@ -122,16 +122,14 @@ shared class FormattingVisitor(
         that.annotationList.visit(this);
         fWriter.writeToken {
             that.mainToken; // "assert"
-            beforeToken = Indent(0);
-            afterToken = noLineBreak;
+            linebreaksAfter = noLineBreak;
             spaceBefore = true; // TODO option
             spaceAfter = true;
         };
         that.conditionList.visit(this);
         fWriter.writeToken {
             that.mainEndToken; // ";"
-            beforeToken = noLineBreak;
-            afterToken = Indent(0);
+            linebreaksBefore = noLineBreak;
             spaceBefore = false;
             spaceAfter = true;
             context;
@@ -154,8 +152,9 @@ shared class FormattingVisitor(
     shared actual void visitBody(Body that) {
         value context = fWriter.writeToken {
             that.mainToken; // "{"
-            beforeToken = options.braceOnOwnLine then [Indent(0), 1..1] else noLineBreak;
-            afterToken = [Indent(1), 1..2];
+            indentAfter = Indent(1);
+            linebreaksBefore = options.braceOnOwnLine then 1..1 else noLineBreak;
+            linebreaksAfter = 1..2;
             spaceBefore = 10;
             spaceAfter = false;
         };
@@ -167,8 +166,7 @@ shared class FormattingVisitor(
         }
         fWriter.writeToken {
             that.mainEndToken; // "}"
-            beforeToken = [Indent(0), 0..1];
-            afterToken = [Indent(0), 1..3];
+            linebreaksAfter = 1..3;
             spaceBefore = false;
             spaceAfter = 5;
             context;
@@ -181,9 +179,8 @@ shared class FormattingVisitor(
     shared actual void visitConditionList(ConditionList that) {
         value context = fWriter.writeToken {
             that.mainToken; // "("
-            beforeToken = noLineBreak;
-            afterToken = Indent(1);
-            spaceBefore = 0;
+            linebreaksBefore = noLineBreak;
+            indentAfter = Indent(1);
             spaceAfter = false;
         };
         value conditions = CeylonIterable(that.conditions).sequence;
@@ -194,8 +191,7 @@ shared class FormattingVisitor(
         for (element in conditions.rest) {
             fWriter.writeToken {
                 ",";
-                beforeToken = noLineBreak;
-                afterToken = Indent(0);
+                linebreaksBefore = noLineBreak;
                 spaceBefore = false;
                 spaceAfter = true;
                 innerContext;
@@ -205,8 +201,7 @@ shared class FormattingVisitor(
         }
         fWriter.writeToken {
             that.mainEndToken; // ")"
-            beforeToken = noLineBreak;
-            afterToken = Indent(0);
+            linebreaksBefore = noLineBreak;
             spaceBefore = false;
             spaceAfter = 0;
             context;
@@ -218,8 +213,8 @@ shared class FormattingVisitor(
             that.keyType.visit(this);
             fWriter.writeToken {
                 "->";
-                beforeToken = noLineBreak;
-                afterToken = noLineBreak;
+                linebreaksBefore = noLineBreak;
+                linebreaksAfter = noLineBreak;
                 spaceBefore = false;
                 spaceAfter = false;
             };
@@ -231,8 +226,8 @@ shared class FormattingVisitor(
     shared actual void visitExtendedType(ExtendedType that) {
         fWriter.writeToken {
             that.mainToken; // "extends"
-            beforeToken = Indent(1);
-            afterToken = noLineBreak;
+            indentBefore = Indent(1);
+            linebreaksAfter = noLineBreak;
             spaceBefore = true;
             spaceAfter = true;
         };
@@ -246,14 +241,14 @@ shared class FormattingVisitor(
     shared actual void visitIdentifier(Identifier that) {
         fWriter.writeToken {
             that.mainToken;
-            beforeToken = [Indent(0), 0..2];
+            linebreaksBefore = 0..2;
         };
     }
     
     shared actual void visitImport(Import that) {
         fWriter.writeToken {
             that.mainToken;
-            afterToken = noLineBreak;
+            linebreaksAfter = noLineBreak;
             spaceBefore = false;
             spaceAfter = true;
         };
@@ -264,8 +259,8 @@ shared class FormattingVisitor(
     shared actual void visitImportMemberOrTypeList(ImportMemberOrTypeList that) {
         value context = fWriter.writeToken {
             that.mainToken; // "{"
-            beforeToken = noLineBreak;
-            afterToken = Indent(1);
+            linebreaksBefore = noLineBreak;
+            indentAfter = Indent(1);
             spaceBefore = true;
             spaceAfter = true;
         };
@@ -284,8 +279,8 @@ shared class FormattingVisitor(
             for (value element in elements.rest) {
                 fWriter.writeToken {
                     ",";
-                    beforeToken = noLineBreak;
-                    afterToken = [Indent(0), (options.importStyle == multiLine then 1 else 0)..1];
+                    linebreaksBefore = noLineBreak;
+                    linebreaksAfter = (options.importStyle == multiLine then 1 else 0)..1;
                     spaceBefore = false;
                     spaceAfter = true;
                     innerContext;
@@ -300,8 +295,7 @@ shared class FormattingVisitor(
         }
         fWriter.writeToken {
             that.mainEndToken; // "}"
-            beforeToken = Indent(0);
-            afterToken = [Indent(0), 0..3];
+            linebreaksAfter = 0..3;
             spaceBefore = true;
             spaceAfter = true;
             context;
@@ -316,8 +310,8 @@ shared class FormattingVisitor(
         for (value identifier in identifiers.rest) {
             fWriter.writeToken {
                 ".";
-                beforeToken = Indent(1);
-                afterToken = noLineBreak;
+                indentBefore = Indent(1);
+                linebreaksAfter = noLineBreak;
                 spaceBefore = false;
                 spaceAfter = false;
             };
@@ -328,8 +322,8 @@ shared class FormattingVisitor(
     shared actual void visitImportWildcard(ImportWildcard that) {
         fWriter.writeToken {
             that.mainToken; // "..."
-            beforeToken = noLineBreak;
-            afterToken = noLineBreak;
+            linebreaksBefore = noLineBreak;
+            linebreaksAfter = noLineBreak;
             spaceBefore = true;
             spaceAfter = true;
         };
@@ -351,13 +345,13 @@ shared class FormattingVisitor(
         writeOptionallyGrouped(fWriter, () {
             value context = fWriter.writeToken {
                 that.mainToken; // "{"
-                afterToken = noLineBreak;
+                linebreaksAfter = noLineBreak;
                 spaceAfter = false;
             };
             that.elementType.visit(this);
             fWriter.writeToken {
                 that.mainEndToken; // "}"
-                beforeToken = noLineBreak;
+                linebreaksBefore = noLineBreak;
                 spaceBefore = false;
                 context = context;
             };
@@ -379,8 +373,8 @@ shared class FormattingVisitor(
     shared actual void visitMemberOp(MemberOp that) {
         fWriter.writeToken {
             that.mainToken; // "."
-            beforeToken = Indent(1);
-            afterToken = noLineBreak;
+            indentBefore = Indent(1);
+            linebreaksAfter = noLineBreak;
             spaceBefore = false;
             spaceAfter = false;
         };
@@ -414,7 +408,7 @@ shared class FormattingVisitor(
             that.definiteType.visit(this);
             fWriter.writeToken {
                 that.mainEndToken; // "?"
-                beforeToken = noLineBreak;
+                linebreaksBefore = noLineBreak;
                 spaceBefore = false;
             };
             return null;
@@ -444,7 +438,8 @@ shared class FormattingVisitor(
         
         value context = fWriter.writeToken {
             that.mainToken; // "("
-            afterToken = [Indent(1), multiLine then 1..1 else 0..1];
+            indentAfter = Indent(1);
+            linebreaksAfter = multiLine then 1..1 else 0..1;
             spaceBefore = options.spaceAfterParamListOpeningParen;
             spaceAfter = options.spaceAfterParamListOpeningParen;
         };
@@ -454,8 +449,8 @@ shared class FormattingVisitor(
             if (exists c = previousContext) {
                 fWriter.writeToken {
                     ",";
-                    beforeToken = noLineBreak;
-                    afterToken = [Indent(0), multiLine then 1..1 else 0..0];
+                    linebreaksBefore = noLineBreak;
+                    linebreaksAfter = multiLine then 1..1 else 0..1;
                     spaceBefore = false;
                     spaceAfter = true;
                     context = c;
@@ -466,7 +461,7 @@ shared class FormattingVisitor(
         }
         fWriter.writeToken {
             that.mainEndToken; // ")"
-            beforeToken = noLineBreak;
+            linebreaksBefore = noLineBreak;
             spaceBefore = options.spaceBeforeParamListClosingParen;
             spaceAfter = options.spaceAfterParamListClosingParen;
             context = context;
@@ -479,8 +474,8 @@ shared class FormattingVisitor(
         if(exists openingParen, exists closingParen) {
             value context = fWriter.writeToken {
                 that.mainToken; // "("
-                beforeToken = noLineBreak;
-                afterToken = Indent(1);
+                linebreaksBefore = noLineBreak;
+                indentAfter = Indent(1);
                 spaceBefore = visitingAnnotation
                         then options.spaceBeforeAnnotationPositionalArgumentList
                         else options.spaceBeforeMethodOrClassPositionalArgumentList;
@@ -491,10 +486,10 @@ shared class FormattingVisitor(
                 if (exists c = previousContext) {
                     fWriter.writeToken {
                         ",";
-                        beforeToken = noLineBreak;
+                        c;
+                        linebreaksBefore = noLineBreak;
                         spaceBefore = false;
                         spaceAfter = true;
-                        context = c;
                     };
                 }
                 previousContext = fWriter.openContext();
@@ -502,8 +497,8 @@ shared class FormattingVisitor(
             }
             fWriter.writeToken {
                 that.mainEndToken; // ")"
-                beforeToken = noLineBreak;
-                afterToken = noLineBreak;
+                linebreaksBefore = noLineBreak;
+                linebreaksAfter = noLineBreak;
                 spaceBefore = false;
                 spaceAfter = 5;
                 context;
@@ -524,7 +519,7 @@ shared class FormattingVisitor(
     shared actual void visitReturn(Return that) {
         value context = fWriter.writeToken {
             that.mainToken; // "return"
-            afterToken = Indent(1);
+            indentAfter = Indent(1);
             spaceAfter = true;
         };
         assert (exists context);
@@ -535,8 +530,8 @@ shared class FormattingVisitor(
     shared actual void visitSatisfiedTypes(SatisfiedTypes that) {
         value context = fWriter.writeToken {
             that.mainToken; // "satisfies"
-            beforeToken = Indent(1);
-            afterToken = noLineBreak;
+            indentBefore = Indent(1);
+            linebreaksAfter = noLineBreak;
             spaceBefore = true;
             spaceAfter = true;
         };
@@ -548,8 +543,8 @@ shared class FormattingVisitor(
         for (type in types.rest) {
             fWriter.writeToken {
                 "&";
-                beforeToken = noLineBreak;
-                afterToken = noLineBreak;
+                linebreaksBefore = noLineBreak;
+                linebreaksAfter = noLineBreak;
                 spaceBefore = false;
                 spaceAfter = false;
             };
@@ -564,8 +559,8 @@ shared class FormattingVisitor(
             that.type.visit(this);
             fWriter.writeToken {
                 that.mainEndToken; // "*" or "+"
-                beforeToken = noLineBreak;
-                afterToken = noLineBreak;
+                linebreaksBefore = noLineBreak;
+                linebreaksAfter = noLineBreak;
                 spaceBefore = false;
                 spaceAfter = false;
             };
@@ -579,14 +574,14 @@ shared class FormattingVisitor(
             that.elementType.visit(this);
             fWriter.writeToken {
                 "["; // doesn’t seem like that token is in the AST anywhere
-                beforeToken = noLineBreak;
-                afterToken = noLineBreak;
+                linebreaksBefore = noLineBreak;
+                linebreaksAfter = noLineBreak;
                 spaceBefore = false;
                 spaceAfter = false;
             };
             fWriter.writeToken {
                 that.mainEndToken; // "]"
-                beforeToken = noLineBreak;
+                linebreaksBefore = noLineBreak;
                 spaceBefore = false;
             };
             return null;
@@ -625,7 +620,7 @@ shared class FormattingVisitor(
         writeOptionallyGrouped(fWriter, () {
             value context = fWriter.writeToken {
                 that.mainToken; // "["
-                afterToken = noLineBreak;
+                linebreaksAfter = noLineBreak;
                 spaceAfter = false;
             };
             value elements = CeylonIterable(that.elementTypes).sequence;
@@ -635,8 +630,8 @@ shared class FormattingVisitor(
                 for (element in elements.rest) {
                     fWriter.writeToken {
                         ",";
-                        beforeToken = noLineBreak;
-                        afterToken = Indent(1);
+                        linebreaksBefore = noLineBreak;
+                        indentAfter = Indent(1);
                         spaceBefore = false;
                         spaceAfter = true;
                         innerContext;
@@ -647,7 +642,7 @@ shared class FormattingVisitor(
             }
             fWriter.writeToken {
                 that.mainEndToken; // "]"
-                beforeToken = noLineBreak;
+                linebreaksBefore = noLineBreak;
                 spaceBefore = false;
                 context = context;
             };
