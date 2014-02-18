@@ -5,4 +5,6 @@ void run() {
     [String+] s4;
     [String[], [String, {String*}]] s5;
     String? s6;
+    String|String|String s7;
+    String&String&String s8;
 }

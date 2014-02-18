@@ -332,6 +332,26 @@ shared class FormattingVisitor(
     shared actual void visitInterfaceLiteral(InterfaceLiteral that)
             => writeMetaLiteral(fWriter, this, that, "interface");
     
+    shared actual void visitIntersectionType(IntersectionType that) {
+        writeOptionallyGrouped(fWriter, () {
+            value types = CeylonIterable(that.staticTypes).sequence;
+            "Empty union type not allowed"
+            assert (nonempty types);
+            types.first.visit(this);
+            for (type in types.rest) {
+                fWriter.writeToken {
+                    "&";
+                    linebreaksBefore = noLineBreak;
+                    linebreaksAfter = noLineBreak;
+                    spaceBefore = false;
+                    spaceAfter = false;
+                };
+                type.visit(this);
+            }
+            return null;
+        });
+    }
+    
     shared actual void visitInvocationExpression(InvocationExpression that) {
         that.primary.visit(this);
         if (exists PositionalArgumentList list = that.positionalArgumentList) {
@@ -658,6 +678,26 @@ shared class FormattingVisitor(
     
     shared actual void visitTypeParameterLiteral(TypeParameterLiteral that)
             => writeMetaLiteral(fWriter, this, that, "given");
+    
+    shared actual void visitUnionType(UnionType that) {
+        writeOptionallyGrouped(fWriter, () {
+            value types = CeylonIterable(that.staticTypes).sequence;
+            "Empty union type not allowed"
+            assert (nonempty types);
+            types.first.visit(this);
+            for (type in types.rest) {
+                fWriter.writeToken {
+                    "|";
+                    linebreaksBefore = noLineBreak;
+                    linebreaksAfter = noLineBreak;
+                    spaceBefore = false;
+                    spaceAfter = false;
+                };
+                type.visit(this);
+            }
+            return null;
+        });
+    }
     
     shared actual void visitValueLiteral(ValueLiteral that)
             => writeMetaLiteral(fWriter, this, that, "value");

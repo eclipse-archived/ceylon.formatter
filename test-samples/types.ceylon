@@ -12,4 +12,10 @@ void run(
         String[],        [String, {String*}]
     ] s5;
     String ? s6;
+    String|
+            String
+            |String s7;
+    String
+            &String&
+            String s8;
 }
