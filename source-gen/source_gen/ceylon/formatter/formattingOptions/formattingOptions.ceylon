@@ -127,6 +127,33 @@
            import java.lang { JString = String }
            ~~~""";
         "Boolean"; "spaceAroundImportAliasEqualsSign"; "false";
+    },
+    FormattingOption {
+        "The range of line breaks allowed before a line comment (`// comment`).";
+        "Range<Integer>"; "beforeLineCommentLineBreaks"; /* = */ "0..3";
+    },
+    FormattingOption {
+        "The range of line breaks allowed after a line comment (`// comment`).
+         
+         Note that the minimum value of the range must be `> 0`;
+         allowing having no line breaks after a line comment would obviously produce syntactically invalid code.";
+        "Range<Integer>"; "afterLineCommentLineBreaks"; /* = */ "1..3";
+    },
+    FormattingOption {
+        "The range of line breaks allowed before a single-line multi comment (`/* comment */`).";
+        "Range<Integer>"; "beforeSingleCommentLineBreaks"; /* = */ "0..3";
+    },
+    FormattingOption {
+        "The range of line breaks allowed after a single-line multi comment (`/* comment */`).";
+        "Range<Integer>"; "afterSingleCommentLineBreaks"; /* = */ "0..3";
+    },
+    FormattingOption {
+        "The range of line breaks allowed before a multi-line comment (`/* comment... \\n ... \\n comment */`).";
+        "Range<Integer>"; "beforeMultiCommentLineBreaks"; /* = */ "1..3";
+    },
+    FormattingOption {
+        "The range of line breaks allowed after a multi-line comment (`/* comment... \\n ... \\n comment */`).";
+        "Range<Integer>"; "afterMultiCommentLineBreaks"; /* = */ "1..3";
     }
 };
 

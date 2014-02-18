@@ -274,20 +274,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         }
     }
     
-    "Range of line breaks allowed before a line comment (`// comment`)."
-    Range<Integer> beforeLineCommentLineBreaks = 0..3; // TODO options
-    "Range of line breaks allowed after a line comment (`// comment`)."
-    Range<Integer> afterLineCommentLineBreaks = 1..3;
-    "Must not allow no line breaks after a multi-line comment, breaks syntax"
-    assert (min(afterLineCommentLineBreaks) > 0);
-    "Range of line breaks allowed before a single-line multi comment (`/* comment */`)."
-    Range<Integer> beforeSingleCommentLineBreaks = 0..3;
-    "Range of line breaks allowed after a single-line multi comment (`/* comment */`)."
-    Range<Integer> afterSingleCommentLineBreaks = 0..3;
-    "Range of line breaks allowed before a multi-line comment (`/* comment\\ncomment\\ncomment */`)."
-    Range<Integer> beforeMultiCommentLineBreaks = 1..3;
-    "Range of line breaks allowed after a multi-line comment (`/* comment\\ncomment\\ncomment */`)."
-    Range<Integer> afterMultiCommentLineBreaks = 1..3;
+    "Must not allow no line breaks after a line comment, breaks syntax"
+    assert (min(options.afterLineCommentLineBreaks) > 0);
     
     "Write a token, respecting [[FormattingOptions.maxLineLength]] and non-AST tokens (comments).
      
@@ -376,15 +364,15 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                     Range<Integer> before;
                     Range<Integer> after;
                     if (current.type == lineComment) {
-                        before = beforeLineCommentLineBreaks;
-                        after = afterLineCommentLineBreaks;
+                        before = options.beforeLineCommentLineBreaks;
+                        after = options.afterLineCommentLineBreaks;
                     } else {
                         if (current.text.contains('\n') && !isEmpty) {
-                            before = beforeMultiCommentLineBreaks;
-                            after = afterMultiCommentLineBreaks;
+                            before = options.beforeMultiCommentLineBreaks;
+                            after = options.afterMultiCommentLineBreaks;
                         } else {
-                            before = beforeSingleCommentLineBreaks;
-                            after = afterSingleCommentLineBreaks;
+                            before = options.beforeSingleCommentLineBreaks;
+                            after = options.afterSingleCommentLineBreaks;
                         }
                     }
                     intersectAllowedLineBreaks(before);
