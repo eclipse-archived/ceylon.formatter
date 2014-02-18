@@ -151,3 +151,13 @@ VariableOptions variableFormattingFile(String filename, FormattingOptions baseOp
         throw Exception("File '``filename``' not found!");
     }
 }
+
+shared Range<Integer>? parseIntegerRange(String string) {
+    value parts = string.split('.'.equals).sequence;
+    if (parts.size == 2,
+        exists first=parseInteger(parts[0] else "invalid"),
+        exists last=parseInteger(parts[1] else "invalid")) {
+        return first..last;
+    }
+    return null;
+}

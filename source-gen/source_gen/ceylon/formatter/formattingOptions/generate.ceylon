@@ -234,6 +234,13 @@ class Generator() satisfies Closeable {
                         "if (!``comprehension``.empty) {
                                          options.``option.name`` = ``comprehension``;
                                      } else ");
+                } else if (type.startsWith("Range<")) {
+                    "Only [[Integer]] ranges allowed for now"
+                    assert (type == "Range<Integer>");
+                    writer.write(
+                        "if (exists option = parseIntegerRange(optionValue)) {
+                                         options.``option.name`` = option;
+                                     } else ");
                 } else {
                     writer.write(
                         "if (exists option = parse``type``(optionValue)) {
