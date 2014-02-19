@@ -154,6 +154,10 @@
     FormattingOption {
         "The range of line breaks allowed after a multi-line comment (`/* comment... \\n ... \\n comment */`).";
         "Range<Integer>"; "afterMultiCommentLineBreaks"; /* = */ "1..3";
+    },
+    FormattingOption {
+        "The range of line breaks allowed in a type parameter list.";
+        "Range<Integer>"; "typeParameterListLineBreaks"; /* = */ "0..1";
     }
 };
 
