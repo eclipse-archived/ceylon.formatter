@@ -413,6 +413,15 @@ shared class FormattingVisitor(
     shared actual void visitModuleLiteral(ModuleLiteral that)
             => writeMetaLiteral(fWriter, this, that, "module");
     
+    shared actual void visitNegativeOp(NegativeOp that) {
+        fWriter.writeToken {
+            that.mainToken; // "-"
+            spaceAfter = false;
+            linebreaksAfter = noLineBreak;
+        };
+        that.term.visit(this);
+    }
+    
     shared actual void visitPackageLiteral(PackageLiteral that)
             => writeMetaLiteral(fWriter, this, that, "package");
     
@@ -528,6 +537,15 @@ shared class FormattingVisitor(
             assert (that.positionalArguments.empty);
             return;
         }
+    }
+    
+    shared actual void visitPositiveOp(PositiveOp that) {
+        fWriter.writeToken {
+            that.mainToken; // "-"
+            spaceAfter = false;
+            linebreaksAfter = noLineBreak;
+        };
+        that.term.visit(this);
     }
     
     shared actual void visitQualifiedMemberExpression(QualifiedMemberExpression that) {

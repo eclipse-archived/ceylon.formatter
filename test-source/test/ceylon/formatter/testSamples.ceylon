@@ -156,3 +156,8 @@ test
 shared void testSimpleClass() {
     testFile("simpleClass");
 }
+
+test
+shared void testPositiveNegativeOp() {
+    testFile("positiveNegativeOp");
+}
