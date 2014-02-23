@@ -166,3 +166,8 @@ test
 shared void testSequencedArguments() {
     testFile("sequencedArguments");
 }
+
+test
+shared void testRangeOp() {
+    testFile("rangeOp");
+}

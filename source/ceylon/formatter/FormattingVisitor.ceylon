@@ -554,6 +554,18 @@ shared class FormattingVisitor(
         that.identifier.visit(this);
     }
     
+    shared actual void visitRangeOp(RangeOp that) {
+        that.leftTerm.visit(this);
+        fWriter.writeToken {
+            that.mainToken; // ".."
+            linebreaksBefore = noLineBreak;
+            linebreaksAfter = noLineBreak;
+            spaceBefore = false;
+            spaceAfter = false;
+        };
+        that.rightTerm.visit(this);
+    }
+    
     shared actual void visitReturn(Return that) {
         value context = fWriter.writeToken {
             that.mainToken; // "return"
