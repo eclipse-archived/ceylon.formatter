@@ -591,6 +591,22 @@ shared class FormattingVisitor(
         fWriter.closeContext(context);
     }
     
+    shared actual void visitSequencedArgument(SequencedArgument that) {
+        value elements = CeylonIterable(that.positionalArguments).sequence;
+        "Empty sequenced argument not allowed"
+        assert (nonempty elements);
+        elements.first.visit(this);
+        for (element in elements.rest) {
+            fWriter.writeToken {
+                ",";
+                spaceBefore = false;
+                spaceAfter = true;
+                linebreaksBefore = noLineBreak;
+            };
+            element.visit(this);
+        }
+    }
+    
     shared actual void visitSequencedType(SequencedType that) {
         // String* is a SequencedType
         writeOptionallyGrouped(fWriter, () {
@@ -604,6 +620,20 @@ shared class FormattingVisitor(
             };
             return null;
         });
+    }
+    
+    shared actual void visitSequenceEnumeration(SequenceEnumeration that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "{"
+            spaceAfter = options.spaceAfterSequenceEnumerationOpeningBrace;
+            indentAfter = Indent(1);
+        };
+        that.sequencedArgument.visit(this);
+        fWriter.writeToken {
+            that.mainEndToken; // "}"
+            context;
+            spaceBefore = options.spaceBeforeSequenceEnumerationClosingBrace;
+        };
     }
     
     shared actual void visitSequenceType(SequenceType that) {

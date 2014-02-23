@@ -158,6 +158,18 @@
     FormattingOption {
         "The range of line breaks allowed in a type parameter list.";
         "Range<Integer>"; "typeParameterListLineBreaks"; /* = */ "0..1";
+    },
+    FormattingOption {
+        "Decide whether there should be a space after the opening brace of a sequence enumeration.
+         
+         For example: `{ 1, 2, 3 }` vs `{1, 2, 3}`";
+        "Boolean"; "spaceAfterSequenceEnumerationOpeningBrace"; /* = */ "true";
+    },
+    FormattingOption {
+        "Decide whether there should be a space before the closing brace of a sequence enumeration.
+         
+         For example: `{ 1, 2, 3 }` vs `{1, 2, 3}`";
+        "Boolean"; "spaceBeforeSequenceEnumerationClosingBrace"; /* = */ "true";
     }
 };
 

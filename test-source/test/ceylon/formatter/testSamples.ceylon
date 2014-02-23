@@ -161,3 +161,8 @@ test
 shared void testPositiveNegativeOp() {
     testFile("positiveNegativeOp");
 }
+
+test
+shared void testSequencedArguments() {
+    testFile("sequencedArguments");
+}

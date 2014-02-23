@@ -37,7 +37,6 @@ void writeEquals(FormattingWriter writer, Token|String equals) {
     writer.writeToken {
         equals;
         linebreaksBefore = noLineBreak;
-        indentAfter = Indent(1);
         spaceBefore = true;
         spaceAfter = true;
     };
