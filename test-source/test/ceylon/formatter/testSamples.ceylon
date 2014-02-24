@@ -191,3 +191,8 @@ test
 shared void testBinaryOperators() {
     testFile("binaryOperators");
 }
+
+test
+shared void testPostfixOperators() {
+    testFile("postfixOperators");
+}

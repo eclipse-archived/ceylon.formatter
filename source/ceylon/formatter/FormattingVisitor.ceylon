@@ -590,6 +590,15 @@ shared class FormattingVisitor(
         that.term.visit(this);
     }
     
+    shared actual void visitPostfixOperatorExpression(PostfixOperatorExpression that) {
+        that.term.visit(this);
+        fWriter.writeToken {
+            that.mainToken; // "++" or "--"
+            spaceBefore = false;
+            linebreaksBefore = noLineBreak;
+        };
+    }
+    
     shared actual void visitQualifiedMemberExpression(QualifiedMemberExpression that) {
         that.primary.visit(this);
         that.memberOperator.visit(this);
