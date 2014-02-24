@@ -186,3 +186,8 @@ test
 shared void testIf() {
     testFile("if");
 }
+
+test
+shared void testBinaryOperators() {
+    testFile("binaryOperators");
+}

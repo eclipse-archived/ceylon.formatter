@@ -154,6 +154,16 @@ shared class FormattingVisitor(
         that.block.visit(this);
     }
     
+    shared actual void visitBinaryOperatorExpression(BinaryOperatorExpression that) {
+        that.leftTerm.visit(this);
+        fWriter.writeToken {
+            that.mainToken;
+            spaceBefore = true;
+            spaceAfter = true;
+        };
+        that.rightTerm.visit(this);
+    }
+    
     shared actual void visitBody(Body that) {
         value context = fWriter.writeToken {
             that.mainToken; // "{"
