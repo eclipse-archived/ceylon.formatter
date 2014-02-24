@@ -228,6 +228,15 @@ shared class FormattingVisitor(
         });
     }
     
+    shared actual void visitExistsOrNonemptyCondition(ExistsOrNonemptyCondition that) {
+        fWriter.writeToken {
+            that.mainToken; // "exists" or "nonempty"
+            spaceAfter = true;
+            linebreaksAfter = noLineBreak;
+        };
+        that.visitChildren(this);
+    }
+    
     shared actual void visitExtendedType(ExtendedType that) {
         fWriter.writeToken {
             that.mainToken; // "extends"
@@ -257,6 +266,15 @@ shared class FormattingVisitor(
             that.mainToken;
             linebreaksBefore = 0..2;
         };
+    }
+    
+    shared actual void visitIfClause(IfClause that) {
+        fWriter.writeToken {
+            that.mainToken; // "if"
+            linebreaksAfter = noLineBreak;
+            spaceAfter = options.spaceBeforeIfOpeningParenthesis;
+        };
+        that.visitChildren(this);
     }
     
     shared actual void visitImport(Import that) {
@@ -834,6 +852,9 @@ shared class FormattingVisitor(
             // the variables in a for (x in xs, y in ys) apparently have a ValueModifier without token
         }
     }
+    
+    shared actual void visitVariable(Variable that)
+            => that.visitChildren(this);
     
     shared actual void visitVoidModifier(VoidModifier that) {
         writeModifier(fWriter, that.mainToken);

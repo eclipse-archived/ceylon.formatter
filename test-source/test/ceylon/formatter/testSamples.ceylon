@@ -181,3 +181,8 @@ test
 shared void testFor() {
     testFile("for");
 }
+
+test
+shared void testIf() {
+    testFile("if");
+}

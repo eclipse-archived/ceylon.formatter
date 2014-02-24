@@ -188,6 +188,12 @@
            
            For example: `for ( c in "text" ) { ... }` vs `for (c in "text") { ... }`""";
         "Boolean"; "spaceBeforeValueIteratorClosingParenthesis"; /* = */ "false";
+    },
+    FormattingOption {
+        """Decide whether there should be a space before the opening parenthesis of an if clause.
+           
+           For example: `if ('c' in "text") { ... }` vs `if('c' in "text") { ... }`""";
+        "Boolean"; "spaceBeforeIfOpeningParenthesis"; /* = */ "true";
     }
 };
 
