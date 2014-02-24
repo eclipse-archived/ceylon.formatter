@@ -149,6 +149,11 @@ shared class FormattingVisitor(
         }
     }
     
+    shared actual void visitAttributeGetterDefinition(AttributeGetterDefinition that) {
+        visitAnyAttribute(that);
+        that.block.visit(this);
+    }
+    
     shared actual void visitBody(Body that) {
         value context = fWriter.writeToken {
             that.mainToken; // "{"

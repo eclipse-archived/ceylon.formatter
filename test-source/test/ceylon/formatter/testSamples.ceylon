@@ -171,3 +171,8 @@ test
 shared void testRangeOp() {
     testFile("rangeOp");
 }
+
+test
+shared void testAttributeGetterDeclaration() {
+    testFile("attributeGetterDeclaration");
+}
