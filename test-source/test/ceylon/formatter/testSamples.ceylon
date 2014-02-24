@@ -176,3 +176,8 @@ test
 shared void testAttributeGetterDeclaration() {
     testFile("attributeGetterDeclaration");
 }
+
+test
+shared void testFor() {
+    testFile("for");
+}

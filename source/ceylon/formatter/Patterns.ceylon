@@ -28,14 +28,9 @@ void writeBacktickClosing(FormattingWriter writer, Token backtick, FormattingWri
     };
 }
 
-void writeEquals(FormattingWriter writer, Token|String equals) {
-    if(is Token equals) {
-        assert (equals.text == "=");
-    } else {
-        assert (equals == "=");
-    }
+void writeSpecifierMainToken(FormattingWriter writer, Token|String token) {
     writer.writeToken {
-        equals;
+        token;
         linebreaksBefore = noLineBreak;
         spaceBefore = true;
         spaceAfter = true;

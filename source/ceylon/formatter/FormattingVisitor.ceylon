@@ -240,6 +240,15 @@ shared class FormattingVisitor(
         that.invocationExpression.visit(this);
     }
     
+    shared actual void visitForClause(ForClause that) {
+        fWriter.writeToken {
+            that.mainToken; // "for"
+            linebreaksAfter = noLineBreak;
+            spaceAfter = options.spaceBeforeForOpeningParenthesis;
+        };
+        that.visitChildren(this);
+    }
+    
     shared actual void visitFunctionLiteral(FunctionLiteral that)
             => writeMetaLiteral(fWriter, this, that, "function");
     
@@ -682,7 +691,7 @@ shared class FormattingVisitor(
     
     shared actual void visitSpecifierExpression(SpecifierExpression that) {
         if (exists mainToken = that.mainToken) {
-            writeEquals(fWriter, that.mainToken);
+            writeSpecifierMainToken(fWriter, mainToken);
         }
         that.expression.visit(this);
     }
@@ -690,7 +699,7 @@ shared class FormattingVisitor(
     shared actual void visitSpecifierStatement(SpecifierStatement that) {
         value context = fWriter.openContext();
         that.baseMemberExpression.visit(this);
-        writeEquals(fWriter, "="); // I can’t find the "=" in the AST anywhere
+        writeSpecifierMainToken(fWriter, "="); // I can’t find the "=" in the AST anywhere
         that.specifierExpression.visit(this);
         writeSemicolon(fWriter, that.mainEndToken, context);
     }
@@ -698,7 +707,12 @@ shared class FormattingVisitor(
     shared actual void visitStatement(Statement that) {
         value context = fWriter.openContext();
         that.visitChildren(this);
-        writeSemicolon(fWriter, that.mainEndToken, context);
+        if (exists mainEndToken = that.mainEndToken) {
+            writeSemicolon(fWriter, mainEndToken, context);
+        } else {
+            // complex statements like loops, ifs, etc. don’t end in a semicolon
+            fWriter.closeContext(context);
+        }
     }
     
     shared actual void visitTupleType(TupleType that) {
@@ -766,7 +780,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitTypedDeclaration(TypedDeclaration that) {
-        that.annotationList.visit(this);
+        that.annotationList?.visit(this);
         that.type.visit(this);
         that.identifier.visit(this);
     }
@@ -794,11 +808,31 @@ shared class FormattingVisitor(
         });
     }
     
+    shared actual void visitValueIterator(ValueIterator that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "("
+            spaceAfter = options.spaceAfterValueIteratorOpeningParenthesis;
+            linebreaksAfter = noLineBreak;
+        };
+        that.variable.visit(this);
+        that.specifierExpression.visit(this);
+        fWriter.writeToken {
+            that.mainEndToken; // ")"
+            context;
+            spaceBefore = options.spaceBeforeValueIteratorClosingParenthesis;
+            linebreaksBefore = noLineBreak;
+        };
+    }
+    
     shared actual void visitValueLiteral(ValueLiteral that)
             => writeMetaLiteral(fWriter, this, that, "value");
     
     shared actual void visitValueModifier(ValueModifier that) {
-        writeModifier(fWriter, that.mainToken);
+        if (exists mainToken = that.mainToken) {
+            writeModifier(fWriter, mainToken);
+        } else {
+            // the variables in a for (x in xs, y in ys) apparently have a ValueModifier without token
+        }
     }
     
     shared actual void visitVoidModifier(VoidModifier that) {

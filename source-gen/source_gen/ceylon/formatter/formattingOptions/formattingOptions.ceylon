@@ -170,6 +170,24 @@
          
          For example: `{ 1, 2, 3 }` vs `{1, 2, 3}`";
         "Boolean"; "spaceBeforeSequenceEnumerationClosingBrace"; /* = */ "true";
+    },
+    FormattingOption {
+        """Decide whether there should be a space before the opening parenthesis of a for clause.
+           
+           For example: `for (c in "text") { ... }` vs `for(c in "text") { ... }`""";
+        "Boolean"; "spaceBeforeForOpeningParenthesis"; /* = */ "true";
+    },
+    FormattingOption {
+        """Decide whether there should be a space after the opening parenthesis of a value iterator.
+           
+           For example: `for ( c in "text" ) { ... }` vs `for (c in "text") { ... }`""";
+        "Boolean"; "spaceAfterValueIteratorOpeningParenthesis"; /* = */ "false";
+    },
+    FormattingOption {
+        """Decide whether there should be a space before the closing parenthesis of a value iterator.
+           
+           For example: `for ( c in "text" ) { ... }` vs `for (c in "text") { ... }`""";
+        "Boolean"; "spaceBeforeValueIteratorClosingParenthesis"; /* = */ "false";
     }
 };
 
