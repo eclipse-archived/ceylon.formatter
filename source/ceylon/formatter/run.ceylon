@@ -77,7 +77,9 @@ shared void run() {
         CeylonLexer lexer = CeylonLexer(file.key);
         Tree.CompilationUnit cu = CeylonParser(CommonTokenStream(lexer)).compilationUnit();
         lexer.reset(); // FormattingVisitor needs to read the tokens again
-        cu.visit(FormattingVisitor(BufferedTokenStream(lexer), file.item, options[0]));
+        value formattingVisitor = FormattingVisitor(BufferedTokenStream(lexer), file.item, options[0]);
+        cu.visit(formattingVisitor);
+        formattingVisitor.close();
         file.item.close(null);
     }
     Instant end = now();
