@@ -453,15 +453,8 @@ shared class FormattingVisitor(
         }
     }
     
-    shared actual void visitMemberOp(MemberOp that) {
-        fWriter.writeToken {
-            that.mainToken; // "."
-            indentBefore = Indent(1);
-            linebreaksAfter = noLineBreak;
-            spaceBefore = false;
-            spaceAfter = false;
-        };
-    }
+    shared actual void visitMemberOp(MemberOp that)
+            => writeSomeMemberOp(fWriter, that.mainToken);
     
     shared actual void visitMetaLiteral(MetaLiteral that)
             => writeMetaLiteral(fWriter, this, that, null);
@@ -649,6 +642,9 @@ shared class FormattingVisitor(
         writeSemicolon(fWriter, that.mainEndToken, context);
     }
     
+    shared actual void visitSafeMemberOp(SafeMemberOp that)
+            => writeSomeMemberOp(fWriter, that.mainToken);
+    
     shared actual void visitSatisfiedTypes(SatisfiedTypes that) {
         value context = fWriter.writeToken {
             that.mainToken; // "satisfies"
@@ -761,6 +757,9 @@ shared class FormattingVisitor(
         that.specifierExpression.visit(this);
         writeSemicolon(fWriter, that.mainEndToken, context);
     }
+    
+    shared actual void visitSpreadOp(SpreadOp that)
+            => writeSomeMemberOp(fWriter, that.mainToken);
     
     shared actual void visitStatement(Statement that) {
         value context = fWriter.openContext();

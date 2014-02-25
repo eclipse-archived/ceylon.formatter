@@ -115,3 +115,14 @@ void writeOptionallyGrouped(FormattingWriter writer, Anything() inner) {
         };
     }
 }
+
+void writeSomeMemberOp(FormattingWriter writer, Token token) {
+    assert (token.text in { ".", "?.", "*." });
+    writer.writeToken {
+        token;
+        indentBefore = Indent(1);
+        linebreaksAfter = noLineBreak;
+        spaceBefore = false;
+        spaceAfter = false;
+    };
+}
