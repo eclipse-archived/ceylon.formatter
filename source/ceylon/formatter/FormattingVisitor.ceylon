@@ -268,6 +268,27 @@ shared class FormattingVisitor(
         that.visitChildren(this);
     }
     
+    shared actual void visitFunctionArgument(FunctionArgument that) {
+        that.type?.visit(this);
+        for (list in CeylonIterable(that.parameterLists)) {
+            list.visit(this);
+        }
+        if (exists expr = that.expression) {
+            fWriter.writeToken {
+                "=>";
+                spaceBefore = true;
+                spaceAfter = true;
+                linebreaksBefore = noLineBreak;
+                indentAfter = Indent(1);
+            };
+            expr.visit(this);
+        } else {
+            "Function argument must have either a specifier expression or a block"
+            assert (exists block = that.block);
+            block.visit(this);
+        }
+    }
+    
     shared actual void visitFunctionLiteral(FunctionLiteral that)
             => writeMetaLiteral(fWriter, this, that, "function");
     

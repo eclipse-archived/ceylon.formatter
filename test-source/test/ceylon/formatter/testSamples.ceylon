@@ -196,3 +196,8 @@ test
 shared void testPostfixOperators() {
     testFile("postfixOperators");
 }
+
+test
+shared void testFunctionArguments() {
+    testFile("functionArguments");
+}
