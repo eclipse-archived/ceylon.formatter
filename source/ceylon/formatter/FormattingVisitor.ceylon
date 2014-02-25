@@ -892,8 +892,15 @@ shared class FormattingVisitor(
         }
     }
     
-    shared actual void visitVariable(Variable that)
-            => that.visitChildren(this);
+    shared actual void visitVariable(Variable that) {
+        that.annotationList?.visit(this);
+        that.type.visit(this);
+        that.identifier.visit(this);
+        for (list in CeylonIterable(that.parameterLists)) {
+            list.visit(this);
+        }
+        that.specifierExpression?.visit(this);
+    }
     
     shared actual void visitVoidModifier(VoidModifier that) {
         writeModifier(fWriter, that.mainToken);
