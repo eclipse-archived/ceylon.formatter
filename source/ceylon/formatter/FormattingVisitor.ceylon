@@ -181,7 +181,7 @@ shared class FormattingVisitor(
         }
         fWriter.writeToken {
             that.mainEndToken; // "}"
-            linebreaksAfter = 1..3;
+            linebreaksAfter = 0..3;
             spaceBefore = false;
             spaceAfter = 5;
             context;
