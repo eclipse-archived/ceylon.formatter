@@ -833,6 +833,22 @@ shared class FormattingVisitor(
         }
     }
     
+    shared actual void visitStringTemplate(StringTemplate that) {
+        value literals = CeylonIterable(that.stringLiterals).sequence;
+        value expressions = CeylonIterable(that.expressions).sequence;
+        "String template must have at least one string literal"
+        assert  (nonempty literals);
+        "String template must have exactly more string literal than expressions"
+        assert (literals.size == expressions.size + 1);
+        literals.first.visit(this);
+        variable value i = 0;
+        for (literal in literals.rest) {
+            assert (exists expression = expressions[i++]);
+            expression.visit(this);
+            literal.visit(this);
+        }
+    }
+    
     shared actual void visitSwitchClause(SwitchClause that) {
         fWriter.writeToken {
             that.mainToken; // "switch"

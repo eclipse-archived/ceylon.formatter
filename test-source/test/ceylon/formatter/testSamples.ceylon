@@ -211,3 +211,8 @@ test
 shared void testThrow() {
     testFile("throw");
 }
+
+test
+shared void testStringTemplates() {
+    testFile("stringTemplates");
+}
