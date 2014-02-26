@@ -195,6 +195,30 @@ shared class FormattingVisitor(
         }
     }
     
+    shared actual void visitCaseClause(CaseClause that) {
+        fWriter.writeToken {
+            that.mainToken; // "case"
+            spaceBefore = true;
+            spaceAfter = true; // TODO option
+            linebreaksAfter = noLineBreak;
+        };
+        value context = fWriter.writeToken {
+            "("; // not in the AST – there’s a TODO in Ceylon.g that “we really should not throw away this token”;
+                 // for now, we produce it out of thin air :)
+            spaceAfter = false; // TODO option
+            indentAfter = Indent(1);
+            linebreaksAfter = noLineBreak;
+        };
+        that.caseItem?.visit(this); // nullsafe because the grammar allows case () { ... } – wtf?
+        fWriter.writeToken {
+            that.caseItem?.mainEndToken else ")";
+            context;
+            spaceBefore = false; // TODO option
+            linebreaksBefore = noLineBreak;
+        };
+        that.block.visit(this);
+    }
+    
     shared actual void visitClassLiteral(ClassLiteral that)
             => writeMetaLiteral(fWriter, this, that, "class");
     
@@ -439,6 +463,16 @@ shared class FormattingVisitor(
         }
     }
     
+    shared actual void visitIsCase(IsCase that) {
+        fWriter.writeToken {
+            that.mainToken; // "is"
+            spaceAfter = true;
+            linebreaksAfter = noLineBreak;
+        };
+        that.type.visit(this);
+        // Note: Do not visitChildren! compiler adds Variable to node (the variable whose type is tested), but that’s not in the code.
+    }
+    
     shared actual void visitIterableType(IterableType that) {
         writeOptionallyGrouped(fWriter, () {
             value context = fWriter.writeToken {
@@ -467,6 +501,9 @@ shared class FormattingVisitor(
             throw Error("Literal has end token ('``endToken``')! Investigate"); // breakpoint here
         }
     }
+    
+    shared actual void visitMatchCase(MatchCase that)
+            => that.visitChildren(this);
     
     shared actual void visitMemberOp(MemberOp that)
             => writeSomeMemberOp(fWriter, that.mainToken);
@@ -686,6 +723,15 @@ shared class FormattingVisitor(
         fWriter.closeContext(context);
     }
     
+    shared actual void visitSatisfiesCase(SatisfiesCase that) {
+        fWriter.writeToken {
+            that.mainToken; // "satisfies"
+            spaceAfter = true;
+            linebreaksAfter = noLineBreak;
+        };
+        that.visitChildren(this);
+    }
+    
     shared actual void visitSequencedArgument(SequencedArgument that) {
         value elements = CeylonIterable(that.positionalArguments).sequence;
         "Empty sequenced argument not allowed"
@@ -785,6 +831,29 @@ shared class FormattingVisitor(
             // complex statements like loops, ifs, etc. don’t end in a semicolon
             fWriter.closeContext(context);
         }
+    }
+    
+    shared actual void visitSwitchClause(SwitchClause that) {
+        fWriter.writeToken {
+            that.mainToken; // "switch"
+            spaceBefore = true;
+            spaceAfter = true; // TODO option
+            linebreaksAfter = noLineBreak;
+        };
+        value context = fWriter.writeToken {
+            "("; // nowhere in the AST
+            spaceAfter = false; // TODO option
+            indentAfter = Indent(1);
+            linebreaksAfter = noLineBreak;
+        };
+        that.expression.visit(this);
+        fWriter.writeToken {
+            ")"; // not in the AST as well
+            context;
+            spaceBefore = false; // TODO option
+            linebreaksBefore = noLineBreak;
+            linebreaksAfter = 1..2;
+        };
     }
     
     shared actual void visitTupleType(TupleType that) {

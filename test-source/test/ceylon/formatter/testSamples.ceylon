@@ -201,3 +201,8 @@ test
 shared void testFunctionArguments() {
     testFile("functionArguments");
 }
+
+test
+shared void testSwitch() {
+    testFile("switch");
+}
