@@ -165,27 +165,34 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitBody(Body that) {
-        value context = fWriter.writeToken {
-            that.mainToken; // "{"
-            indentAfter = Indent(1);
-            linebreaksBefore = options.braceOnOwnLine then 1..1 else noLineBreak;
-            linebreaksAfter = 1..2;
-            spaceBefore = 10;
-            spaceAfter = false;
-        };
+        FormattingWriter.FormattingContext? context;
+        if (exists token = that.mainToken) {
+            context = fWriter.writeToken {
+                token; // "{"
+                indentAfter = Indent(1);
+                linebreaksBefore = options.braceOnOwnLine then 1..1 else noLineBreak;
+                linebreaksAfter = 1..2;
+                spaceBefore = 10;
+                spaceAfter = false;
+            };
+        } else {
+            context = null;
+        }
         for (Statement statement in CeylonIterable(that.statements)) {
             statement.visit(this);
             if (that.statements.size() > 1) {
                 fWriter.requireAtLeastLineBreaks(1);
             }
         }
-        fWriter.writeToken {
-            that.mainEndToken; // "}"
-            linebreaksAfter = 0..3;
-            spaceBefore = false;
-            spaceAfter = 5;
-            context;
-        };
+        if (exists token = that.mainEndToken) {
+            fWriter.writeToken {
+                token; // "}"
+                linebreaksAfter = 0..3;
+                spaceBefore = false;
+                spaceAfter = 5;
+                context;
+            };
+        }
     }
     
     shared actual void visitClassLiteral(ClassLiteral that)
@@ -221,6 +228,14 @@ shared class FormattingVisitor(
             spaceAfter = 0;
             context;
         };
+    }
+    
+    shared actual void visitElseClause(ElseClause that) {
+        fWriter.writeToken {
+            that.mainToken; // "else"
+            linebreaksAfter = noLineBreak;
+        };
+        that.visitChildren(this);
     }
     
     shared actual void visitEntryType(EntryType that) {
