@@ -221,3 +221,8 @@ test
 shared void testNot() {
     testFile("not");
 }
+
+test
+shared void testComprehensions() {
+    testFile("comprehensions");
+}

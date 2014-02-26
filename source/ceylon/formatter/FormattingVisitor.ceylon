@@ -307,6 +307,16 @@ shared class FormattingVisitor(
         that.visitChildren(this);
     }
     
+    shared actual void visitForComprehensionClause(ForComprehensionClause that) {
+        fWriter.writeToken {
+            that.mainToken; // "for"
+            linebreaksAfter = noLineBreak;
+            spaceAfter = options.spaceBeforeForOpeningParenthesis;
+        };
+        that.forIterator.visit(this);
+        that.comprehensionClause.visit(this);
+    }
+    
     shared actual void visitFunctionArgument(FunctionArgument that) {
         that.type?.visit(this);
         for (list in CeylonIterable(that.parameterLists)) {
@@ -345,6 +355,16 @@ shared class FormattingVisitor(
             spaceAfter = options.spaceBeforeIfOpeningParenthesis;
         };
         that.visitChildren(this);
+    }
+    
+    shared actual void visitIfComprehensionClause(IfComprehensionClause that) {
+        fWriter.writeToken {
+            that.mainToken; // "if"
+            linebreaksAfter = noLineBreak;
+            spaceAfter = options.spaceBeforeIfOpeningParenthesis;
+        };
+        that.conditionList.visit(this);
+        that.comprehensionClause.visit(this);
     }
     
     shared actual void visitImport(Import that) {
