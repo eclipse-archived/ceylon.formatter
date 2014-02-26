@@ -518,6 +518,13 @@ shared class FormattingVisitor(
         }
     }
     
+    shared actual void visitMethodDefinition(MethodDefinition that) {
+        value context = fWriter.openContext();
+        visitAnyMethod(that);
+        fWriter.closeContext(context);
+        that.block.visit(this);
+    }
+    
     shared actual void visitModuleLiteral(ModuleLiteral that)
             => writeMetaLiteral(fWriter, this, that, "module");
     
@@ -539,16 +546,6 @@ shared class FormattingVisitor(
         that.term.visit(this);
     }
     
-    shared actual void visitPackageLiteral(PackageLiteral that)
-            => writeMetaLiteral(fWriter, this, that, "package");
-    
-    shared actual void visitMethodDefinition(MethodDefinition that) {
-        value context = fWriter.openContext();
-        visitAnyMethod(that);
-        fWriter.closeContext(context);
-        that.block.visit(this);
-    }
-    
     shared actual void visitOptionalType(OptionalType that) {
         writeOptionallyGrouped(fWriter, () {
             that.definiteType.visit(this);
@@ -560,6 +557,9 @@ shared class FormattingVisitor(
             return null;
         });
     }
+    
+    shared actual void visitPackageLiteral(PackageLiteral that)
+            => writeMetaLiteral(fWriter, this, that, "package");
     
     shared actual void visitParameterList(ParameterList that) {
         variable Boolean multiLine = false;
