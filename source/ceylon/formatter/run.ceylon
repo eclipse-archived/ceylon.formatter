@@ -74,16 +74,20 @@ shared void run() {
     }
     Instant start = now();
     for (CharStream->Writer file in files) {
+        Instant t1 = now();
         CeylonLexer lexer = CeylonLexer(file.key);
         Tree.CompilationUnit cu = CeylonParser(CommonTokenStream(lexer)).compilationUnit();
+        Instant t2 = now();
         lexer.reset(); // FormattingVisitor needs to read the tokens again
         value formattingVisitor = FormattingVisitor(BufferedTokenStream(lexer), file.item, options[0]);
         cu.visit(formattingVisitor);
         formattingVisitor.close();
         file.item.close(null);
+        Instant t3 = now();
+        process.writeErrorLine("Compiler: ``t1.durationTo(t2)``, formatter: ``t2.durationTo(t3)``");
     }
     Instant end = now();
-    process.writeErrorLine(start.durationTo(end).string);
+    process.writeErrorLine("Total: ``start.durationTo(end).string``");
 }
 
 File parseFile(Path|String path) {
