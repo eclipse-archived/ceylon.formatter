@@ -206,3 +206,8 @@ test
 shared void testSwitch() {
     testFile("switch");
 }
+
+test
+shared void testThrow() {
+    testFile("throw");
+}

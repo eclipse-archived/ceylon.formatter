@@ -856,6 +856,17 @@ shared class FormattingVisitor(
         };
     }
     
+    shared actual void visitThrow(Throw that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "throw"
+            spaceAfter = true;
+            linebreaksAfter = noLineBreak;
+        };
+        assert (exists context);
+        that.expression.visit(this);
+        writeSemicolon(fWriter, that.mainEndToken, context);
+    }
+    
     shared actual void visitTupleType(TupleType that) {
         writeOptionallyGrouped(fWriter, () {
             value context = fWriter.writeToken {
