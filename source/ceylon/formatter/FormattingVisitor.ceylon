@@ -516,6 +516,7 @@ shared class FormattingVisitor(
             that.mainToken;
             spaceBefore = 1;
             spaceAfter = 1;
+            linebreaksBefore = visitingAnnotation then 0..3 else 0..1;
         };
         if (exists Token endToken = that.mainEndToken) {
             throw Error("Literal has end token ('``endToken``')! Investigate"); // breakpoint here
