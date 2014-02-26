@@ -216,3 +216,8 @@ test
 shared void testStringTemplates() {
     testFile("stringTemplates");
 }
+
+test
+shared void testNot() {
+    testFile("not");
+}

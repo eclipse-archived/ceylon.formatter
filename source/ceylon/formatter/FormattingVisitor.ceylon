@@ -530,6 +530,15 @@ shared class FormattingVisitor(
         that.term.visit(this);
     }
     
+    shared actual void visitNotOp(NotOp that) {
+        fWriter.writeToken {
+            that.mainToken; // "!"
+            spaceAfter = false;
+            linebreaksAfter = noLineBreak;
+        };
+        that.term.visit(this);
+    }
+    
     shared actual void visitPackageLiteral(PackageLiteral that)
             => writeMetaLiteral(fWriter, this, that, "package");
     
