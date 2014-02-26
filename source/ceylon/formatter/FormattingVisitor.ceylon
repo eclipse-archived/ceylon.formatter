@@ -787,7 +787,7 @@ shared class FormattingVisitor(
                 linebreaksBefore = noLineBreak;
                 linebreaksAfter = noLineBreak;
                 spaceBefore = false;
-                spaceAfter = false;
+                spaceAfter = 10;
             };
             return null;
         });
