@@ -608,9 +608,15 @@ shared class FormattingVisitor(
             => writeMetaLiteral(fWriter, this, that, null);
     
     shared actual void visitMethodDeclaration(MethodDeclaration that) {
+        value context = fWriter.openContext();
         visitAnyMethod(that);
         if (exists SpecifierExpression expr = that.specifierExpression) {
             expr.visit(this);
+        }
+        if (exists semicolon = that.mainEndToken) {
+            writeSemicolon(fWriter, semicolon, context);
+        } else {
+            fWriter.closeContext(context);
         }
     }
     
@@ -640,6 +646,18 @@ shared class FormattingVisitor(
             linebreaksAfter = noLineBreak;
         };
         that.term.visit(this);
+    }
+    
+    shared actual void visitObjectDefinition(ObjectDefinition that) {
+        that.annotationList?.visit(this);
+        fWriter.writeToken {
+            that.mainToken; // "object"
+            spaceAfter = true;
+        };
+        that.identifier.visit(this);
+        that.extendedType?.visit(this);
+        that.satisfiedTypes?.visit(this);
+        that.classBody.visit(this);
     }
     
     shared actual void visitOptionalType(OptionalType that) {

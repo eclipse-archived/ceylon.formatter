@@ -231,3 +231,8 @@ test
 shared void testIndexExpressions() {
     testFile("indexExpressions");
 }
+
+test
+shared void testObjects() {
+    testFile("objects");
+}
