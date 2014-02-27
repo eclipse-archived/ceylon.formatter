@@ -254,6 +254,63 @@ shared class FormattingVisitor(
         };
     }
     
+    shared actual void visitElementRange(ElementRange that) {
+        // An ElementRange can be anything that goes into an index expression (except a single element),
+        // that is, ...upper, lower..., lower..upper, and lower:length.
+        // The ..., .. and : tokens are all lost because the grammar for this part kinda sucks
+        // (TODO go bug someone about that),
+        // so we just have to infer them from which fields are null and which aren’t
+        // (for example, use : if there’s a length).
+        Expression? lower = that.lowerBound;
+        Expression? upper = that.upperBound;
+        Expression? length = that.length;
+        if (exists lower) {
+            if (exists length) {
+                "Range can’t have an upper bound when it has a length"
+                assert (is Null upper);
+                lower.visit(this);
+                fWriter.writeToken {
+                    ":";
+                    spaceBefore = false;
+                    spaceAfter = false;
+                    linebreaksBefore = noLineBreak;
+                    linebreaksAfter = noLineBreak;
+                };
+                length.visit(this);
+            } else if (exists upper) {
+                "Range can’t have a length when it has an upper bound"
+                assert (is Null length);
+                lower.visit(this);
+                fWriter.writeToken {
+                    "..";
+                    spaceBefore = false;
+                    spaceAfter = false;
+                    linebreaksBefore = noLineBreak;
+                    linebreaksAfter = noLineBreak;
+                };
+                upper.visit(this);
+            } else {
+                lower.visit(this);
+                fWriter.writeToken {
+                    "...";
+                    spaceBefore = false;
+                    linebreaksBefore = noLineBreak;
+                };
+            }
+        } else {
+            "Range can’t have a length without a lower bound"
+            assert (is Null length);
+            "Range can’t be unbounded"
+            assert (exists upper);
+            fWriter.writeToken {
+                "...";
+                spaceAfter = false;
+                linebreaksAfter = noLineBreak;
+            };
+            upper.visit(this);
+        }
+    }
+    
     shared actual void visitElseClause(ElseClause that) {
         fWriter.writeToken {
             that.mainToken; // "else"
@@ -448,6 +505,24 @@ shared class FormattingVisitor(
             linebreaksAfter = noLineBreak;
             spaceBefore = true;
             spaceAfter = true;
+        };
+    }
+    
+    shared actual void visitIndexExpression(IndexExpression that) {
+        that.primary.visit(this);
+        value context = fWriter.writeToken {
+            that.mainToken; // "["
+            spaceBefore = false;
+            spaceAfter = false;
+            linebreaksBefore = noLineBreak;
+            linebreaksAfter = noLineBreak;
+        };
+        that.elementOrRange.visit(this);
+        fWriter.writeToken {
+            that.mainEndToken; // "]"
+            context;
+            spaceBefore = false;
+            linebreaksBefore = noLineBreak;
         };
     }
     

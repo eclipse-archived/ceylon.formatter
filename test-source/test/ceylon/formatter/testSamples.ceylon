@@ -226,3 +226,8 @@ test
 shared void testComprehensions() {
     testFile("comprehensions");
 }
+
+test
+shared void testIndexExpressions() {
+    testFile("indexExpressions");
+}
