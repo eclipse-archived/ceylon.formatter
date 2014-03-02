@@ -236,3 +236,8 @@ test
 shared void testObjects() {
     testFile("objects");
 }
+
+test
+shared void testSelf() {
+    testFile("self");
+}

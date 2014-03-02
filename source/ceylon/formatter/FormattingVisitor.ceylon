@@ -855,6 +855,12 @@ shared class FormattingVisitor(
         that.visitChildren(this);
     }
     
+    shared actual void visitSelfExpression(SelfExpression that) {
+        fWriter.writeToken {
+            that.mainToken; // "this" or "super"
+        };
+    }
+    
     shared actual void visitSequencedArgument(SequencedArgument that) {
         value elements = CeylonIterable(that.positionalArguments).sequence;
         "Empty sequenced argument not allowed"
