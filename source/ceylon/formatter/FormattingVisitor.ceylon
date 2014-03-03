@@ -1139,7 +1139,15 @@ shared class FormattingVisitor(
         for (list in CeylonIterable(that.parameterLists)) {
             list.visit(this);
         }
-        that.specifierExpression?.visit(this);
+        if (exists t = that.specifierExpression?.mainToken) {
+            that.specifierExpression.visit(this);
+        } else {
+            // ignore; for a condition like
+            //     if (exists something)
+            // (without a specifier expression), the compiler just adds the identifier as expression
+            // in which case we shouldn’t visit this “virtual” expression
+            // (see #27)
+        }
     }
     
     shared actual void visitVoidModifier(VoidModifier that) {
