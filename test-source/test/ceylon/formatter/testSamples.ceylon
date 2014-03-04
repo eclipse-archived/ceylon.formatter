@@ -243,3 +243,8 @@ test
 shared void testSelf() {
     testFile("self");
 }
+
+test
+shared void testNamedArguments() {
+    testFile("namedArguments");
+}

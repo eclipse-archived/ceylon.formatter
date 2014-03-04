@@ -634,6 +634,25 @@ shared class FormattingVisitor(
     shared actual void visitModuleLiteral(ModuleLiteral that)
             => writeMetaLiteral(fWriter, this, that, "module");
     
+    shared actual void visitNamedArgumentList(NamedArgumentList that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "{"
+            spaceAfter = true;
+            linebreaksAfter = 1..0;
+            indentAfter = Indent(1);
+        };
+        for (arg in CeylonIterable(that.namedArguments)) {
+            arg.visit(this);
+        }
+        that.sequencedArgument?.visit(this);
+        fWriter.writeToken {
+            that.mainEndToken; // "}"
+            context;
+            spaceBefore = true;
+            linebreaksBefore = 1..0;
+        };
+    }
+    
     shared actual void visitNegativeOp(NegativeOp that) {
         fWriter.writeToken {
             that.mainToken; // "-"
@@ -935,6 +954,13 @@ shared class FormattingVisitor(
            that.visitChildren(this);
            return null; 
         });
+    }
+    
+    shared actual void visitSpecifiedArgument(SpecifiedArgument that) {
+        value context = fWriter.openContext();
+        that.identifier?.visit(this);
+        that.specifierExpression.visit(this);
+        writeSemicolon(fWriter, that.mainEndToken, context);
     }
     
     shared actual void visitSpecifierExpression(SpecifierExpression that) {
