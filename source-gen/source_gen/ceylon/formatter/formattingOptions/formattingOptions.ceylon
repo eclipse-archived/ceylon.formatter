@@ -194,6 +194,14 @@
            
            For example: `if ('c' in "text") { ... }` vs `if('c' in "text") { ... }`""";
         "Boolean"; "spaceBeforeIfOpeningParenthesis"; /* = */ "true";
+    },
+    FormattingOption {
+        """Decide whether, in the case of an error, the formatter should attempt to recover and
+           continue or immediately exit.
+           
+           This is mostly for internal use; in the finished formatter, there shouldn’t be any errors
+           when formatting syntactically valid code.""";
+        "Boolean"; "failFast"; /* = */ "false";
     }
 };
 

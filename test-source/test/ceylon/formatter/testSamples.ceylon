@@ -4,7 +4,7 @@ import com.redhat.ceylon.compiler.typechecker.tree { Tree { CompilationUnit } }
 import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer, CeylonParser }
 import org.antlr.runtime { ANTLRFileStream, CommonTokenStream, BufferedTokenStream }
 import ceylon.formatter { FormattingVisitor }
-import ceylon.formatter.options { FormattingOptions, formattingFile }
+import ceylon.formatter.options { FormattingOptions, formattingFile, CombinedOptions, SparseFormattingOptions }
 
 "Tests that the formatter transforms `test-samples/<filename>.ceylon`
  into `test-samples/<filename>.ceylon.formatted`. If a file
@@ -33,7 +33,9 @@ void testFile(String filename) {
             options = FormattingOptions();
         }
         FormattingVisitor visitor = FormattingVisitor(BufferedTokenStream(lexer), // don't use CommonTokenStream - we don't want to skip comments
-            output, options);
+            output, CombinedOptions(options, SparseFormattingOptions {
+                failFast = true;
+            }));
         cu.visit(visitor);
         visitor.close();
         variable String actual = output.string;

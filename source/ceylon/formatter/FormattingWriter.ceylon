@@ -528,8 +528,20 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 } else if (current.text == tokenText) {
                     return {stopAndConsume}; // end fast-forwarding
                 } else {
-                    // TODO it would be really cool if we could recover here
-                    throw Exception("Unexpected token '``current.text``', expected '``tokenText``' instead");
+                    value ex = Exception("Unexpected token '``current.text``', expected '``tokenText``' instead");
+                    if (options.failFast) {
+                        throw ex;
+                    } else {
+                        ex.printStackTrace();
+                        // attempt to recover by just writing out tokens until we find the right one
+                        return { OpeningToken {
+                            current.text;
+                            allowLineBreakBefore = true;
+                            postIndent = 0;
+                            wantsSpaceBefore = 0;
+                            wantsSpaceAfter = 0;
+                        } };
+                    }
                 }
             } else {
                 return {stopAndDontConsume}; // end fast-forwarding

@@ -32,7 +32,11 @@ shared class FormattingVisitor(
     shared actual void handleException(Exception? e, Node that) {
         // set breakpoint here
         if (exists e) {
-            e.printStackTrace();
+            if (options.failFast) {
+                throw e;
+            } else {
+                e.printStackTrace();
+            }
         }
     }
     
