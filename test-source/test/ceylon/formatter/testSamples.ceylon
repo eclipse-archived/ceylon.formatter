@@ -248,3 +248,8 @@ test
 shared void testNamedArguments() {
     testFile("namedArguments");
 }
+
+test
+shared void testIs() {
+    testFile("is");
+}

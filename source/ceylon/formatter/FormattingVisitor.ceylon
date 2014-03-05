@@ -572,6 +572,23 @@ shared class FormattingVisitor(
         // Note: Do not visitChildren! compiler adds Variable to node (the variable whose type is tested), but that’s not in the code.
     }
     
+    shared actual void visitIsCondition(IsCondition that) {
+        if (that.not) {
+            fWriter.writeToken {
+                that.mainToken; // "!"
+                spaceAfter = false;
+                linebreaksAfter = noLineBreak;
+            };
+        }
+        fWriter.writeToken {
+            "is";
+            spaceAfter = true;
+            linebreaksAfter = noLineBreak;
+        };
+        that.type.visit(this);
+        that.variable.visit(this);
+    }
+    
     shared actual void visitIterableType(IterableType that) {
         writeOptionallyGrouped(fWriter, () {
             value context = fWriter.writeToken {
