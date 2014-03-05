@@ -7,4 +7,5 @@ void run() {
     String? s6;
     String|String|String s7;
     String&String&String s8;
+    <Outer.Inner>.Type t;
 }

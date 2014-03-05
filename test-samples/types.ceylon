@@ -18,4 +18,7 @@ void run(
     String
             &String&
             String s8;
+    <Outer
+            .Inner>
+            .Type t;
 }

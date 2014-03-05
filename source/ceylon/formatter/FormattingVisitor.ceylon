@@ -834,6 +834,20 @@ shared class FormattingVisitor(
         that.identifier.visit(this);
     }
     
+    shared actual void visitQualifiedType(QualifiedType that) {
+        writeOptionallyGrouped(fWriter, void () {
+            that.outerType.visit(this);
+            fWriter.writeToken {
+                that.mainToken; // "."
+                spaceBefore = false;
+                spaceAfter = false;
+                linebreaksBefore = noLineBreak;
+                linebreaksAfter = noLineBreak;
+            };
+            that.identifier.visit(this);
+        });
+    }
+    
     shared actual void visitRangeOp(RangeOp that) {
         that.leftTerm.visit(this);
         fWriter.writeToken {
