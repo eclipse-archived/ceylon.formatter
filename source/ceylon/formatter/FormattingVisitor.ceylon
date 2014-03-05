@@ -886,7 +886,7 @@ shared class FormattingVisitor(
             spaceAfter = true;
         };
         assert (exists context);
-        that.expression.visit(this);
+        that.expression?.visit(this);
         writeSemicolon(fWriter, that.mainEndToken, context);
     }
     

@@ -258,3 +258,8 @@ test
 shared void testExpressions() {
     testFile("expressions");
 }
+
+test
+shared void testReturn() {
+    testFile("return");
+}
