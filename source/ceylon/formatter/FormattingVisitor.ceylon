@@ -347,6 +347,25 @@ shared class FormattingVisitor(
         that.visitChildren(this);
     }
     
+    shared actual void visitExpression(Expression that) {
+        if (exists token = that.mainToken) {
+            assert (exists endToken = that.mainEndToken);
+            value context = fWriter.writeToken {
+                token; // "("
+                indentAfter = Indent(1);
+                spaceAfter = false;
+            };
+            that.term.visit(this);
+            fWriter.writeToken {
+                endToken; // ")"
+                context;
+                spaceBefore = false;
+            };
+        } else {
+            that.term.visit(this);
+        }
+    }
+    
     shared actual void visitExtendedType(ExtendedType that) {
         fWriter.writeToken {
             that.mainToken; // "extends"
