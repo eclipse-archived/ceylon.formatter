@@ -338,6 +338,17 @@ shared class FormattingVisitor(
         });
     }
     
+    shared actual void visitExists(Exists that) {
+        value context = fWriter.openContext();
+        that.term.visit(this);
+        fWriter.writeToken {
+            that.mainToken; // "exists"
+            context;
+            spaceBefore = true;
+            linebreaksBefore = noLineBreak;
+        };
+    }
+    
     shared actual void visitExistsOrNonemptyCondition(ExistsOrNonemptyCondition that) {
         fWriter.writeToken {
             that.mainToken; // "exists" or "nonempty"
@@ -696,6 +707,17 @@ shared class FormattingVisitor(
             linebreaksAfter = noLineBreak;
         };
         that.term.visit(this);
+    }
+    
+    shared actual void visitNonempty(Nonempty that) {
+        value context = fWriter.openContext();
+        that.term.visit(this);
+        fWriter.writeToken {
+            that.mainToken; // "nonempty"
+            context;
+            spaceBefore = true;
+            linebreaksBefore = noLineBreak;
+        };
     }
     
     shared actual void visitNotOp(NotOp that) {

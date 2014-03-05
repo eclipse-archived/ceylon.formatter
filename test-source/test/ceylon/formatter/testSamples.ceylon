@@ -263,3 +263,8 @@ test
 shared void testReturn() {
     testFile("return");
 }
+
+test
+shared void testExistsNonempty() {
+    testFile("existsNonempty");
+}
