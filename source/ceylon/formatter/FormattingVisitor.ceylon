@@ -4,6 +4,7 @@ import java.lang { Error, Exception }
 import ceylon.file { Writer }
 import ceylon.interop.java { CeylonIterable }
 import ceylon.formatter.options { FormattingOptions, multiLine }
+import ceylon.collection { MutableList, ArrayList }
 
 "A [[com.redhat.ceylon.compiler.typechecker.tree::Visitor]] that writes a formatted version of the
  element (typically a [[com.redhat.ceylon.compiler.typechecker.tree::Tree.CompilationUnit]]) to a
@@ -224,6 +225,35 @@ shared class FormattingVisitor(
             linebreaksBefore = noLineBreak;
         };
         that.block.visit(this);
+    }
+    
+    shared actual void visitCaseTypes(CaseTypes that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "of"
+            spaceBefore = true;
+            spaceAfter = true;
+            indentBefore = Indent(1);
+            indentAfter = Indent(1);
+        };
+        assert (exists context);
+        // TODO replace casesList with ceylon-spec#947’s solution
+        // TODO should be MutableList<StaticType|BaseMemberExpression>, ceylon-compiler#1572
+        MutableList<Node> casesList = ArrayList<Node>();
+        casesList.addAll(CeylonIterable(that.types));
+        casesList.addAll(CeylonIterable(that.baseMemberExpressions));
+        assert (nonempty cases = casesList.sort(byIncreasing(compose(Token.tokenIndex, Node.token))));
+        cases.first.visit(this);
+        for (item in cases.rest) {
+            fWriter.writeToken {
+                "|";
+                spaceBefore = false; // TODO option
+                spaceAfter = false;
+                linebreaksBefore = noLineBreak;
+                linebreaksAfter = noLineBreak;
+            };
+            item.visit(this);
+        }
+        fWriter.closeContext(context);
     }
     
     shared actual void visitClassLiteral(ClassLiteral that)

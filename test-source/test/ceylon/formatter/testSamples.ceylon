@@ -273,3 +273,8 @@ test
 shared void testTuples() {
     testFile("tuples");
 }
+
+test
+shared void testCaseTypes() {
+    testFile("caseTypes");
+}
