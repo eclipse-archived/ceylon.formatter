@@ -22,6 +22,11 @@ Building
 Due to some quirks in the Ceylon IDE, compilation might fail because the compiler can’t find the ANTLR runtime (which comes with the ceylon compiler).
 I don’t have a reliable way to fix this, but cleaning the project and/or restarting the IDE has always worked for me after a few times.
 
+Contact
+-------
+
+If you have found a bug or want to suggest a feature, file an issue. You can also send me an e-mail (address is on my Github page), or join [![Gitter chat](https://badges.gitter.im/lucaswerkmeister/ceylon.formatter.png)](https://gitter.im/lucaswerkmeister/ceylon.formatter).
+
 License
 -------
 
