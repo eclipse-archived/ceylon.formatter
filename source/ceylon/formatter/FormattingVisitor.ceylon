@@ -175,7 +175,7 @@ shared class FormattingVisitor(
                 token; // "{"
                 indentAfter = Indent(1);
                 linebreaksBefore = options.braceOnOwnLine then 1..1 else noLineBreak;
-                linebreaksAfter = 1..2;
+                linebreaksAfter = 0..2;
                 spaceBefore = 10;
                 spaceAfter = false;
             };
@@ -183,6 +183,9 @@ shared class FormattingVisitor(
             context = null;
         }
         for (Statement statement in CeylonIterable(that.statements)) {
+            if (that.statements.size() > 1) {
+                fWriter.requireAtLeastLineBreaks(1);
+            }
             statement.visit(this);
             if (that.statements.size() > 1) {
                 fWriter.requireAtLeastLineBreaks(1);
