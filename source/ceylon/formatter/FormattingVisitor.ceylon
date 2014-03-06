@@ -1114,6 +1114,20 @@ shared class FormattingVisitor(
         writeSemicolon(fWriter, that.mainEndToken, context);
     }
     
+    shared actual void visitTuple(Tuple that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "["
+            spaceAfter = -1000;
+            indentAfter = Indent(1);
+        };
+        that.sequencedArgument?.visit(this); // warning: can be null for the empty tuple []
+        fWriter.writeToken {
+            that.mainEndToken; // "]"
+            context;
+            spaceBefore = -1000;
+        };
+    }
+    
     shared actual void visitTupleType(TupleType that) {
         writeOptionallyGrouped(fWriter, () {
             value context = fWriter.writeToken {

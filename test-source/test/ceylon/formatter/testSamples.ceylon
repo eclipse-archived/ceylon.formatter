@@ -268,3 +268,8 @@ test
 shared void testExistsNonempty() {
     testFile("existsNonempty");
 }
+
+test
+shared void testTuples() {
+    testFile("tuples");
+}
