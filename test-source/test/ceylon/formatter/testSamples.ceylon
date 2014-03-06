@@ -278,3 +278,8 @@ test
 shared void testCaseTypes() {
     testFile("caseTypes");
 }
+
+test
+shared void testInterfaces() {
+    testFile("interfaces");
+}

@@ -109,6 +109,31 @@ shared class FormattingVisitor(
         }
     }
     
+    shared actual void visitAnyInterface(AnyInterface that) {
+        that.annotationList.visit(this);
+        fWriter.writeToken {
+            that.mainToken; // "interface"
+            linebreaksAfter = noLineBreak;
+            spaceBefore = true;
+            spaceAfter = true;
+        };
+        that.identifier.visit(this);
+        that.typeParameterList?.visit(this);
+        that.caseTypes?.visit(this);
+        that.satisfiedTypes?.visit(this);
+        that.typeConstraintList?.visit(this);
+        if (is InterfaceDefinition that) {
+            that.interfaceBody.visit(this);
+        } else if (is InterfaceDeclaration that) {
+            that.typeSpecifier?.visit(this);
+            fWriter.writeToken {
+                that.mainEndToken; // ";"
+                linebreaksBefore = noLineBreak;
+                spaceBefore = false;
+            };
+        }
+    }
+    
     shared actual void visitAnyMethod(AnyMethod that) {
         // override the default Walker's order
         that.annotationList.visit(this);
