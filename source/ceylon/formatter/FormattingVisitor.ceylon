@@ -1234,6 +1234,17 @@ shared class FormattingVisitor(
     shared actual void visitTypeParameterLiteral(TypeParameterLiteral that)
             => writeMetaLiteral(fWriter, this, that, "given");
     
+    shared actual void visitTypeSpecifier(TypeSpecifier that) {
+        fWriter.writeToken {
+            that.mainToken; // "=>"
+            spaceBefore = true;
+            spaceAfter = true;
+            linebreaksBefore = noLineBreak;
+            indentAfter = Indent(1);
+        };
+        that.type.visit(this);
+    }
+    
     shared actual void visitUnionType(UnionType that) {
         writeOptionallyGrouped(fWriter, () {
             value types = CeylonIterable(that.staticTypes).sequence;
