@@ -811,6 +811,12 @@ shared class FormattingVisitor(
         });
     }
     
+    shared actual void visitOuter(Outer that) {
+        fWriter.writeToken {
+            that.mainToken;
+        };
+    }
+    
     shared actual void visitPackageLiteral(PackageLiteral that)
             => writeMetaLiteral(fWriter, this, that, "package");
     

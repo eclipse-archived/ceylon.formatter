@@ -283,3 +283,8 @@ test
 shared void testInterfaces() {
     testFile("interfaces");
 }
+
+test
+shared void testOuter() {
+    testFile("outer");
+}
