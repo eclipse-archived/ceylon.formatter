@@ -293,3 +293,8 @@ test
 shared void testTypeAliases() {
     testFile("typeAliases");
 }
+
+test
+shared void testSpreadArguments() {
+    testFile("spreadArguments");
+}

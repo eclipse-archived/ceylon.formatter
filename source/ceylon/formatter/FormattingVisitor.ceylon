@@ -1114,6 +1114,17 @@ shared class FormattingVisitor(
         writeSemicolon(fWriter, that.mainEndToken, context);
     }
     
+    shared actual void visitSpreadArgument(SpreadArgument that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "*"
+            spaceAfter = false; // TODO option?
+            linebreaksAfter = noLineBreak;
+        };
+        assert (exists context);
+        that.expression.visit(this);
+        fWriter.closeContext(context);
+    }
+    
     shared actual void visitSpreadOp(SpreadOp that)
             => writeSomeMemberOp(fWriter, that.mainToken);
     
