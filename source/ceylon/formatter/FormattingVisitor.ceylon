@@ -1226,6 +1226,22 @@ shared class FormattingVisitor(
         });
     }
     
+    shared actual void visitTypeAliasDeclaration(TypeAliasDeclaration that) {
+        that.annotationList.visit(this);
+        value context = fWriter.writeToken {
+            that.mainToken; // "alias"
+            spaceBefore = true;
+            spaceAfter = true;
+            linebreaksAfter = noLineBreak;
+        };
+        assert (exists context);
+        that.identifier.visit(this);
+        that.typeParameterList?.visit(this);
+        that.typeConstraintList?.visit(this);
+        that.typeSpecifier?.visit(this);
+        writeSemicolon(fWriter, that.mainEndToken, context);
+    }
+    
     shared actual void visitTypeArgumentList(TypeArgumentList that) {
         value context = fWriter.openContext();
         fWriter.writeToken {

@@ -288,3 +288,8 @@ test
 shared void testOuter() {
     testFile("outer");
 }
+
+test
+shared void testTypeAliases() {
+    testFile("typeAliases");
+}
