@@ -228,6 +228,16 @@ shared class FormattingVisitor(
         }
     }
     
+    shared actual void visitBreak(Break that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "break"
+            spaceAfter = false;
+            linebreaksAfter = noLineBreak;
+        };
+        assert (exists context);
+        writeSemicolon(fWriter, that.mainEndToken, context);
+    }
+    
     shared actual void visitCaseClause(CaseClause that) {
         fWriter.writeToken {
             that.mainToken; // "case"

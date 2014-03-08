@@ -313,3 +313,8 @@ test
 shared void testContinue() {
     testFile("continue");
 }
+
+test
+shared void testBreak() {
+    testFile("break");
+}
