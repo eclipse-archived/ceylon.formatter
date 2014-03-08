@@ -308,3 +308,8 @@ test
 shared void testWhile() {
     testFile("while");
 }
+
+test
+shared void testContinue() {
+    testFile("continue");
+}

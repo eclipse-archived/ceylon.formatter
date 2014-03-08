@@ -341,6 +341,16 @@ shared class FormattingVisitor(
         };
     }
     
+    shared actual void visitContinue(Continue that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "continue"
+            spaceAfter = false;
+            linebreaksAfter = noLineBreak;
+        };
+        assert (exists context);
+        writeSemicolon(fWriter, that.mainEndToken, context);
+    }
+    
     shared actual void visitElementRange(ElementRange that) {
         // An ElementRange can be anything that goes into an index expression (except a single element),
         // that is, ...upper, lower..., lower..upper, and lower:length.
