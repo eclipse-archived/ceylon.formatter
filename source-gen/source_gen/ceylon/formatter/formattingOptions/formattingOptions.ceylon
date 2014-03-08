@@ -208,13 +208,18 @@
            
            For example: `try (w = file.Writer()) { ... }` vs `try(w = file.Writer()) { ... }`""";
         "Boolean"; "spaceBeforeResourceList"; /* = */ "true";
-    }
-    ,
+    },
     FormattingOption {
         """Decide whether there should be a space before a `catch` variable.
            
            For example: `catch (Exception e) { ... }` vs `catch(Exception e) { ... }`""";
         "Boolean"; "spaceBeforeCatchVariable"; /* = */ "true";
+    },
+    FormattingOption {
+        """Decide whether there should be a space before the opening parenthesis of a while clause.
+           
+           For example: `while (bool)` vs `while(bool)`""";
+        "Boolean"; "spaceBeforeWhileOpeningParenthesis"; /* = */ "true";
     }
 };
 

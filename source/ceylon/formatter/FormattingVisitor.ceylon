@@ -1446,6 +1446,16 @@ shared class FormattingVisitor(
         writeModifier(fWriter, that.mainToken);
     }
     
+    shared actual void visitWhileClause(WhileClause that) {
+        fWriter.writeToken {
+            that.mainToken; // "while"
+            spaceAfter = options.spaceBeforeWhileOpeningParenthesis;
+            linebreaksAfter = noLineBreak;
+        };
+        that.conditionList.visit(this);
+        that.block.visit(this);
+    }
+    
     //TODO eventually, this will be unneeded, as each visitSomeSubclassOfNode should be overwritten here.
     shared actual void visitAny(Node that) {
         if (that.mainToken exists || that.mainEndToken exists) {
