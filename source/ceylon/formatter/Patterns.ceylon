@@ -1,5 +1,6 @@
 import org.antlr.runtime { Token }
-import com.redhat.ceylon.compiler.typechecker.tree { Tree { MetaLiteral } }
+import com.redhat.ceylon.compiler.typechecker.tree { Tree { ... } }
+import ceylon.formatter.options { LineBreakStrategy }
 
 
 // TODO
@@ -45,7 +46,31 @@ void writeMetaLiteral(FormattingWriter writer, FormattingVisitor visitor, MetaLi
     if (exists start) {
         writeMetaLiteralStart(writer, start);
     }
-    that.visitChildren(visitor);
+    if (is TypeLiteral that) {
+        assert (that.type exists != that.objectExpression exists); // exactly one of these should exist
+        that.type?.visit(visitor);
+        that.objectExpression?.visit(visitor);
+    } else if (is MemberLiteral that) {
+        if (that.type exists || that.objectExpression exists) {
+            assert (that.type exists != that.objectExpression exists); // only one of these should exist
+            that.type?.visit(visitor);
+            that.objectExpression?.visit(visitor);
+            writer.writeToken {
+                ".";
+                spaceBefore = false;
+                spaceAfter = false;
+                linebreaksBefore = noLineBreak;
+                linebreaksAfter = noLineBreak;
+            };
+        }
+        that.identifier.visit(visitor);
+        that.typeArgumentList?.visit(visitor);
+    } else if (is ModuleLiteral that) {
+        that.importPath.visit(visitor);
+    } else {
+        assert (is PackageLiteral that);
+        that.importPath.visit(visitor);
+    }
     writeBacktickClosing(writer, that.mainEndToken, context);
 }
 
