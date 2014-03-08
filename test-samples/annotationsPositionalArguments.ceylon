@@ -1,7 +1,7 @@
 by(  "Lucas Werkmeister" , "no one")
 throws (  `class String`  /* wat */) 
-   see (`module foo`) // TODO change to ceylon.language when implemented
-  see (`package bar` ) // TODO change to ceylon.language when implemented
+   see (`module ceylon.language`)
+  see (`package ceylon.language` )
  see (`class   Object`)
    see (`interface Iterable`)
   see(`alias Foo`) // ceylon.language doesn’t contain a single actual alias
