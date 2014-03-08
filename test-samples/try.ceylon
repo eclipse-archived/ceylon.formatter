@@ -21,3 +21,9 @@ void testTryCatchFinally() {
         print("Phew!");
     }
 }
+
+void testTryWithResources() {
+    try (s = String("Hi!")) {
+        print(s);
+    }
+}

@@ -285,7 +285,6 @@ shared class FormattingVisitor(
         fWriter.writeToken {
             that.mainToken; // "catch"
             spaceBefore = true;
-            spaceAfter = options.spaceAfterCatch;
         };
         that.catchVariable.visit(this);
         that.block.visit(this);
@@ -294,6 +293,7 @@ shared class FormattingVisitor(
     shared actual void visitCatchVariable(CatchVariable that) {
         value context = fWriter.writeToken {
             that.mainToken; // "("
+            spaceBefore = options.spaceBeforeCatchVariable;
             spaceAfter = false;
             linebreaksBefore = noLineBreak;
             indentAfter = Indent(1);
@@ -997,6 +997,34 @@ shared class FormattingVisitor(
             spaceAfter = false;
         };
         that.rightTerm.visit(this);
+    }
+    
+    shared actual void visitResourceList(ResourceList that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "("
+            spaceBefore = options.spaceBeforeResourceList;
+            spaceAfter = false;
+        };
+        value resources = CeylonIterable(that.resources).sequence;
+        if (nonempty resources) { // grammar allows empty resource list
+            variable Resource lastResource = resources.first;
+            lastResource.visit(this);
+            for (resource in resources.rest) {
+                fWriter.writeToken {
+                    lastResource.mainEndToken; // ","
+                    spaceBefore = false;
+                    spaceAfter = true;
+                    linebreaksBefore = noLineBreak;
+                };
+                lastResource = resource;
+                lastResource.visit(this);
+            }
+        }
+        fWriter.writeToken {
+            that.mainEndToken; // ")"
+            context;
+            spaceBefore = false;
+        };
     }
     
     shared actual void visitReturn(Return that) {

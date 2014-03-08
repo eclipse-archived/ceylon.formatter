@@ -204,10 +204,17 @@
         "Boolean"; "failFast"; /* = */ "false";
     },
     FormattingOption {
-        """Decide whether there should be a space after the `catch` keyword.
+        """Decide whether there should be a space before a try-with-resources resource list.
+           
+           For example: `try (w = file.Writer()) { ... }` vs `try(w = file.Writer()) { ... }`""";
+        "Boolean"; "spaceBeforeResourceList"; /* = */ "true";
+    }
+    ,
+    FormattingOption {
+        """Decide whether there should be a space before a `catch` variable.
            
            For example: `catch (Exception e) { ... }` vs `catch(Exception e) { ... }`""";
-        "Boolean"; "spaceAfterCatch"; /* = */ "true";
+        "Boolean"; "spaceBeforeCatchVariable"; /* = */ "true";
     }
 };
 
