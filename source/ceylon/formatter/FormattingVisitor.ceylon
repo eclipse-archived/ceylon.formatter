@@ -1476,6 +1476,22 @@ shared class FormattingVisitor(
         that.block.visit(this);
     }
     
+    shared actual void visitWithinOp(WithinOp that) {
+        that.lowerBound.visit(this);
+        fWriter.writeToken {
+            that.lowerBound is OpenBound then "<" else "<="; // no, there is no better way to get this information
+            spaceBefore = true;
+            spaceAfter = true;
+        };
+        that.term.visit(this);
+        fWriter.writeToken {
+            that.upperBound is OpenBound then "<" else "<=";
+            spaceBefore = true;
+            spaceAfter = true;
+        };
+        that.upperBound.visit(this);
+    }
+    
     //TODO eventually, this will be unneeded, as each visitSomeSubclassOfNode should be overwritten here.
     shared actual void visitAny(Node that) {
         if (that.mainToken exists || that.mainEndToken exists) {

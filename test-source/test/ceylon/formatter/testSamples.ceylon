@@ -318,3 +318,8 @@ test
 shared void testBreak() {
     testFile("break");
 }
+
+test
+shared void testWithinOps() {
+    testFile("withinOps");
+}
