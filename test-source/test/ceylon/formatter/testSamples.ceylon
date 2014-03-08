@@ -298,3 +298,8 @@ test
 shared void testSpreadArguments() {
     testFile("spreadArguments");
 }
+
+test
+shared void testTry() {
+    testFile("try");
+}

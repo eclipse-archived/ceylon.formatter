@@ -202,6 +202,12 @@
            This is mostly for internal use; in the finished formatter, there shouldn’t be any errors
            when formatting syntactically valid code.""";
         "Boolean"; "failFast"; /* = */ "false";
+    },
+    FormattingOption {
+        """Decide whether there should be a space after the `catch` keyword.
+           
+           For example: `catch (Exception e) { ... }` vs `catch(Exception e) { ... }`""";
+        "Boolean"; "spaceAfterCatch"; /* = */ "true";
     }
 };
 

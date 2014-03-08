@@ -281,6 +281,31 @@ shared class FormattingVisitor(
         fWriter.closeContext(context);
     }
     
+    shared actual void visitCatchClause(CatchClause that) {
+        fWriter.writeToken {
+            that.mainToken; // "catch"
+            spaceBefore = true;
+            spaceAfter = options.spaceAfterCatch;
+        };
+        that.catchVariable.visit(this);
+        that.block.visit(this);
+    }
+    
+    shared actual void visitCatchVariable(CatchVariable that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "("
+            spaceAfter = false;
+            linebreaksBefore = noLineBreak;
+            indentAfter = Indent(1);
+        };
+        that.variable?.visit(this); // nullsafe because the grammar allows catch ()
+        fWriter.writeToken {
+            that.mainEndToken; // ")"
+            context;
+            spaceBefore = false;
+        };
+    }
+    
     shared actual void visitClassLiteral(ClassLiteral that)
             => writeMetaLiteral(fWriter, this, that, "class");
     
@@ -445,6 +470,15 @@ shared class FormattingVisitor(
         };
         that.type.visit(this);
         that.invocationExpression.visit(this);
+    }
+    
+    shared actual void visitFinallyClause(FinallyClause that) {
+        fWriter.writeToken {
+            that.mainToken;
+            spaceBefore = true;
+            spaceAfter = true;
+        };
+        that.block.visit(this);
     }
     
     shared actual void visitForClause(ForClause that) {
@@ -1187,6 +1221,18 @@ shared class FormattingVisitor(
         assert (exists context);
         that.expression.visit(this);
         writeSemicolon(fWriter, that.mainEndToken, context);
+    }
+    
+    shared actual void visitTryClause(TryClause that) {
+        fWriter.writeToken {
+            that.mainToken; // "try"
+            spaceBefore = true;
+            spaceAfter = true;
+        };
+        if (exists resources = that.resourceList) {
+            resources.visit(this);
+        }
+        that.block.visit(this);
     }
     
     shared actual void visitTuple(Tuple that) {
