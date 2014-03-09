@@ -1022,6 +1022,15 @@ shared class FormattingVisitor(
         };
     }
     
+    shared actual void visitPrefixOperatorExpression(PrefixOperatorExpression that) {
+        fWriter.writeToken {
+            that.mainToken; // "++" or "--"
+            spaceAfter = false;
+            linebreaksAfter = noLineBreak;
+        };
+        that.term.visit(this);
+    }
+    
     shared actual void visitQualifiedMemberExpression(QualifiedMemberExpression that) {
         that.primary.visit(this);
         that.memberOperator.visit(this);

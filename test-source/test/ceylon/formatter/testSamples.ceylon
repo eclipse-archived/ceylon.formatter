@@ -333,3 +333,8 @@ test
 shared void testFunctionTypes() {
     testFile("functionTypes");
 }
+
+test
+shared void testPrefixOperators() {
+    testFile("prefixOperators");
+}
