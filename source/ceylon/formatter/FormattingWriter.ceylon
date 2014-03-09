@@ -377,7 +377,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         linebreaksAfter = 0..1,
         spaceBefore = 0,
         spaceAfter = 0,
-        optional = false) {
+        optional = false,
+        tokenInStream = token) {
         
         // parameters
         "The token."
@@ -416,6 +417,13 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
          in the future a more sophisticated method to avoid writing too many unnecessary optional
          tokens might be added.)"
         Boolean optional;
+        "The token that is expected to occur in the token stream for this token.
+         
+         In virtually all cases, this is the same as [[token]]; however, for identifiers, the
+         `\\i`/`\\I` that is sometimes part of the code isn’t included in the token text, so
+         in this case you would pass, for example, `\\iVALUE` as [[token]] and `value` as
+         [[tokenInStream]],"
+        AntlrToken|String tokenInStream;
         
         "Line break count range must be nonnegative"
         assert (linebreaksBefore.first >= 0 && linebreaksBefore.last >= 0);
@@ -426,6 +434,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         Integer spaceBeforeDesire;
         Integer spaceAfterDesire;
         String tokenText;
+        String tokenInStreamText;
         Boolean allowLineBreakBefore;
         Integer preIndent;
         Integer? postIndent;
@@ -436,6 +445,12 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         } else {
             assert (is String token); // the typechecker can't figure that out (yet), see ceylon-spec#74
             tokenText = token;
+        }
+        if (is AntlrToken tokenInStream) {
+            tokenInStreamText = tokenInStream.text;
+        } else {
+            assert (is String tokenInStream); // the typechecker can't figure that out (yet), see ceylon-spec#74
+            tokenInStreamText = tokenInStream;
         }
         allowLineBreakBefore = linebreaksBefore.any(0.smallerThan);
         preIndent = allowLineBreakBefore then indentBefore.level else 0;
@@ -451,7 +466,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                     if (currentToken.type in {lineComment, multiComment, ws}) {
                         continue;
                     }
-                    if (currentToken.text == tokenText) {
+                    if (currentToken.text == tokenInStreamText) {
                         break;
                     } else {
                         return null;
@@ -525,7 +540,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 } else if (current.type == -1) {
                     // EOF
                     return {stopAndDontConsume};
-                } else if (current.text == tokenText) {
+                } else if (current.text == tokenInStreamText) {
                     return {stopAndConsume}; // end fast-forwarding
                 } else {
                     value ex = Exception("Unexpected token '``current.text``', expected '``tokenText``' instead");

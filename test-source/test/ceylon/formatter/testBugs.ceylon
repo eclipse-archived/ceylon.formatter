@@ -6,3 +6,8 @@ test
 shared void test27() {
     testBug(27);
 }
+
+test
+shared void test30() {
+    testBug(30);
+}

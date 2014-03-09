@@ -1,5 +1,5 @@
 import com.redhat.ceylon.compiler.typechecker.tree { Tree { ... }, Node, VisitorAdaptor, NaturalVisitor }
-import org.antlr.runtime { TokenStream { la=\iLA }, Token }
+import org.antlr.runtime { TokenStream { la=\iLA }, Token, CommonToken }
 import java.lang { Error, Exception }
 import ceylon.file { Writer }
 import ceylon.interop.java { CeylonIterable }
@@ -27,6 +27,13 @@ shared class FormattingVisitor(
            print("<-- no space");"""
     variable Boolean visitingAnnotation = false;
     
+    "The lexer throws away the `\\i`, `\\I` part of variable names,
+     and the identifier itself doesn’t contain any information whether it’s used as an uppercase or lowercase identifier,
+     so we save that “context” in this variable.
+     
+     Don’t set this directly – use [[visitIdentifierUppercase]] and [[visitIdentifierLowercase]]."
+    variable Boolean? identifierUppercase = null;
+    
     // initialize TokenStream
     if (exists tokens) { tokens.la(1); }
     
@@ -42,7 +49,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitAlias(Alias that) {
-        that.identifier.visit(this);
+        visitIdentifierUppercase(that.identifier);
         fWriter.writeToken {
             that.mainToken; // "="
             linebreaksBefore = noLineBreak;
@@ -90,7 +97,7 @@ shared class FormattingVisitor(
             spaceBefore = true;
             spaceAfter = true;
         };
-        that.identifier.visit(this);
+        visitIdentifierUppercase(that.identifier);
         that.typeParameterList?.visit(this);
         that.parameterList?.visit(this);
         that.caseTypes?.visit(this);
@@ -117,7 +124,7 @@ shared class FormattingVisitor(
             spaceBefore = true;
             spaceAfter = true;
         };
-        that.identifier.visit(this);
+        visitIdentifierUppercase(that.identifier);
         that.typeParameterList?.visit(this);
         that.caseTypes?.visit(this);
         that.satisfiedTypes?.visit(this);
@@ -138,7 +145,7 @@ shared class FormattingVisitor(
         // override the default Walker's order
         that.annotationList.visit(this);
         that.type.visit(this);
-        that.identifier.visit(this);
+        visitIdentifierLowercase(that.identifier);
         if (exists TypeParameterList typeParams = that.typeParameterList) {
             typeParams.visit(this);
         }
@@ -182,6 +189,23 @@ shared class FormattingVisitor(
     shared actual void visitAttributeGetterDefinition(AttributeGetterDefinition that) {
         visitAnyAttribute(that);
         that.block.visit(this);
+    }
+    
+    shared actual void visitBaseMemberExpression(BaseMemberExpression that)
+            => visitIdentifierLowercase(that.identifier);
+    
+    shared actual void visitBaseType(BaseType that) {
+        writeOptionallyGrouped(fWriter, void() {
+            visitIdentifierUppercase(that.identifier);
+            that.typeArgumentList?.visit(this);
+        });
+    }
+    
+    shared actual void visitBaseTypeExpression(BaseTypeExpression that) {
+        writeOptionallyGrouped(fWriter, void() {
+            visitIdentifierUppercase(that.identifier);
+            that.typeArguments.visit(this);
+        });
     }
     
     shared actual void visitBinaryOperatorExpression(BinaryOperatorExpression that) {
@@ -580,10 +604,37 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitIdentifier(Identifier that) {
+        String tokenText;
+        assert (is CommonToken token = that.mainToken); // need CommonToken’s start and stop fields
+        value diff = token.stopIndex - token.startIndex - token.text.size + 1;
+        if (diff == 0) {
+            // normal identifier
+            tokenText = token.text;
+        } else {
+            // \iidentifier or \Iidentifier
+            assert (diff == 2);
+            assert (exists upper = identifierUppercase);
+            tokenText = (upper then "\\I" else "\\i") + token.text;
+        }
         fWriter.writeToken {
-            that.mainToken;
+            tokenText;
+            tokenInStream = that.mainToken;
             linebreaksBefore = 0..2;
         };
+    }
+    
+    void visitIdentifierLowercase(Identifier that) {
+        assert (is Null i = identifierUppercase);
+        identifierUppercase = false;
+        visitIdentifier(that);
+        identifierUppercase = null;
+    }
+    
+    void visitIdentifierUppercase(Identifier that) {
+        assert (is Null i = identifierUppercase);
+        identifierUppercase = true;
+        visitIdentifier(that);
+        identifierUppercase = null;
     }
     
     shared actual void visitIfClause(IfClause that) {
@@ -882,7 +933,7 @@ shared class FormattingVisitor(
             that.mainToken; // "object"
             spaceAfter = true;
         };
-        that.identifier.visit(this);
+        visitIdentifierLowercase(that.identifier);
         that.extendedType?.visit(this);
         that.satisfiedTypes?.visit(this);
         that.classBody.visit(this);
@@ -1034,7 +1085,7 @@ shared class FormattingVisitor(
     shared actual void visitQualifiedMemberExpression(QualifiedMemberExpression that) {
         that.primary.visit(this);
         that.memberOperator.visit(this);
-        that.identifier.visit(this);
+        visitIdentifierLowercase(that.identifier);
     }
     
     shared actual void visitQualifiedType(QualifiedType that) {
@@ -1047,7 +1098,7 @@ shared class FormattingVisitor(
                 linebreaksBefore = noLineBreak;
                 linebreaksAfter = noLineBreak;
             };
-            that.identifier.visit(this);
+            visitIdentifierUppercase(that.identifier);
         });
     }
     
@@ -1220,7 +1271,9 @@ shared class FormattingVisitor(
     
     shared actual void visitSpecifiedArgument(SpecifiedArgument that) {
         value context = fWriter.openContext();
-        that.identifier?.visit(this);
+        if (exists identifier = that.identifier) {
+            visitIdentifierLowercase(identifier);
+        }
         that.specifierExpression.visit(this);
         writeSemicolon(fWriter, that.mainEndToken, context);
     }
@@ -1384,7 +1437,7 @@ shared class FormattingVisitor(
             linebreaksAfter = noLineBreak;
         };
         assert (exists context);
-        that.identifier.visit(this);
+        visitIdentifierUppercase(that.identifier);
         that.typeParameterList?.visit(this);
         that.typeConstraintList?.visit(this);
         that.typeSpecifier?.visit(this);
@@ -1424,7 +1477,7 @@ shared class FormattingVisitor(
     shared actual void visitTypedDeclaration(TypedDeclaration that) {
         that.annotationList?.visit(this);
         that.type.visit(this);
-        that.identifier.visit(this);
+        visitIdentifierLowercase(that.identifier);
     }
     
     shared actual void visitTypeOperatorExpression(TypeOperatorExpression that) {
@@ -1503,7 +1556,7 @@ shared class FormattingVisitor(
     shared actual void visitVariable(Variable that) {
         that.annotationList?.visit(this);
         that.type.visit(this);
-        that.identifier.visit(this);
+        visitIdentifierLowercase(that.identifier);
         for (list in CeylonIterable(that.parameterLists)) {
             list.visit(this);
         }
