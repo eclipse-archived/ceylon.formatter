@@ -1,6 +1,6 @@
 import
         java.lang
-{ Thread, JString
+{ Thread { \iNORM_PRIORITY }, JString
          = String , Runtime {    runtime } }
 
 import java.util { Collections { ... } }

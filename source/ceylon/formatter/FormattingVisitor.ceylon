@@ -613,8 +613,20 @@ shared class FormattingVisitor(
         } else {
             // \iidentifier or \Iidentifier
             assert (diff == 2);
-            assert (exists upper = identifierUppercase);
-            tokenText = (upper then "\\I" else "\\i") + token.text;
+            if (exists upper = identifierUppercase) {
+                tokenText = (upper then "\\I" else "\\i") + token.text;
+            } else {
+                // we don’t know if it’s \iidentifier or \Iidentifier
+                // this is only tolerable in an import
+                variable Boolean hadImport = false;
+                printStackTrace(Exception(), void(String line) {
+                    if (line.contains("Import")) {
+                        hadImport = true;
+                    }
+                });
+                assert (hadImport);
+                tokenText = token.text;
+            }
         }
         fWriter.writeToken {
             tokenText;
