@@ -1,5 +1,6 @@
 shared class 
-SampleClass        ()      extends Object()
+SampleClass        ()     
+         extends Object()
          satisfies 
 Identifiable {
     string             = "hi";

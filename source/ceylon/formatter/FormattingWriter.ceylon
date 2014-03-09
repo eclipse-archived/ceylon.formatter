@@ -309,6 +309,9 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     "Remembers if anything was ever enqueued."
     variable Boolean isEmpty = true;
     
+    "Must not allow no line breaks after a line comment, breaks syntax"
+    assert (min(options.afterLineCommentLineBreaks) > 0);
+    
     Boolean equalsOrSameText(QueueElement self)(QueueElement? other) {
         if (exists other) {
             if (self == other) {
@@ -323,10 +326,40 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     
     variable Range<Integer> currentlyAllowedLinebreaks = 0..0;
     
+    variable Integer? givenLineBreaks = tokens exists then 0;
+    
     "Intersect the range of allowed line breaks between the latest token and the next one to be [[written|writeToken]]
      with the given range."
     see (`function requireAtLeastLineBreaks`)
-    shared void intersectAllowedLineBreaks(Range<Integer> other) {
+    shared void intersectAllowedLineBreaks(Range<Integer> other,
+        "If [[true]], [[FormattingWriter.fastForward]] the token stream before intersecting the line breaks.
+         This makes a difference if there are comments between the latest and the next token; with fast-forwarding,
+         the intersection will be applied between the comments and the next token, while without it, the intersection
+         will be applied between the latest token and the comments."
+        Boolean fastForwardFirst = true) {
+        if (fastForwardFirst) {
+            fastForward((AntlrToken? current) {
+                if (exists current) {
+                    if (current.type == lineComment || current.type == multiComment) {
+                        value result = fastForwardComment(current, givenLineBreaks);
+                        givenLineBreaks = result[0];
+                        return result[1];
+                    } else if (current.type == ws) {
+                        value lineBreaks = current.text.count('\n'.equals);
+                        if (exists g=givenLineBreaks) {
+                            givenLineBreaks = g + lineBreaks;
+                        } else {
+                            givenLineBreaks = lineBreaks;
+                        }
+                        return empty;
+                    } else {
+                        return {stopAndDontConsume}; // end fast-forwarding
+                    }
+                } else {
+                    return {stopAndDontConsume}; // end fast-forwarding
+                }
+            });
+        }
         value inc1 = currentlyAllowedLinebreaks.decreasing then currentlyAllowedLinebreaks.reversed else currentlyAllowedLinebreaks;
         value inc2 = other.decreasing then other.reversed else other;
         value intersect = max{inc1.first, inc2.first}..min{inc1.last, inc2.last};
@@ -337,13 +370,14 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     }
     "Require at leasts [[limit]] line breaks between the latest token and the next one to be [[written|writeToken]]."
     see (`function intersectAllowedLineBreaks`)
-    shared void requireAtLeastLineBreaks(Integer limit) {
-        if (currentlyAllowedLinebreaks.decreasing) {
-            currentlyAllowedLinebreaks = currentlyAllowedLinebreaks.first..max{currentlyAllowedLinebreaks.last, limit};
-        } else {
-            currentlyAllowedLinebreaks = max{currentlyAllowedLinebreaks.first, limit}..currentlyAllowedLinebreaks.last;
-        }
-    }
+    shared void requireAtLeastLineBreaks(Integer limit,
+        "If [[true]], [[FormattingWriter.fastForward]] the token stream before intersecting the line breaks.
+         This makes a difference if there are comments between the latest and the next token; with fast-forwarding,
+         the intersection will be applied between the comments and the next token, while without it, the intersection
+         will be applied between the latest token and the comments."
+        see (`function intersectAllowedLineBreaks`)
+        Boolean fastForwardFirst = true)
+            => intersectAllowedLineBreaks(limit..runtime.maxIntegerValue, fastForwardFirst);
     
     "Based on [[currently allowed line breaks|currentlyAllowedLinebreaks]]
      and the [[given amount of line breaks|givenLineBreaks]],
@@ -358,9 +392,6 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             return currentlyAllowedLinebreaks.first;
         }
     }
-    
-    "Must not allow no line breaks after a line comment, breaks syntax"
-    assert (min(options.afterLineCommentLineBreaks) > 0);
     
     "Add a single token, then try to write out a line.
      
@@ -480,55 +511,15 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         
         // handle the part before this token:
         // fast-forward, intersect allowed line breaks, write out line breaks
-        intersectAllowedLineBreaks(linebreaksBefore);
-        variable Integer? givenLineBreaks = tokens exists then 0 else null;
+        intersectAllowedLineBreaks(linebreaksBefore, false);
         fastForward((AntlrToken? current) {
             if (exists current) {
                 if (current.type == lineComment || current.type == multiComment) {
                     // we treat comments as regular tokens
                     // just with the difference that their before- and afterToken range isn’t given, but an option instead
-                    Range<Integer> before;
-                    Range<Integer> after;
-                    if (current.type == lineComment) {
-                        before = options.beforeLineCommentLineBreaks;
-                        after = options.afterLineCommentLineBreaks;
-                    } else {
-                        if (current.text.contains('\n') && !isEmpty) {
-                            before = options.beforeMultiCommentLineBreaks;
-                            after = options.afterMultiCommentLineBreaks;
-                        } else {
-                            before = options.beforeSingleCommentLineBreaks;
-                            after = options.afterSingleCommentLineBreaks;
-                        }
-                    }
-                    intersectAllowedLineBreaks(before);
-                    for (i in 0:lineBreakAmount(givenLineBreaks)) {
-                        tokenQueue.add(LineBreak());
-                    }
-                    currentlyAllowedLinebreaks = after;
-                    givenLineBreaks = givenLineBreaks exists then 0;
-                    // that’s it for the surrounding line breaks.
-                    // now we need to produce the following pattern: for each line in the comment,
-                    // line, line break, line, line break, ..., line.
-                    // notice how there’s no line break after the last line, which is why this gets
-                    // a little ugly...
-                    value lines = current.text
-                            .trim('\n'.equals) // line comments include the trailing line break
-                            .split('\n'.equals);
-                    String? firstLine = lines.first;
-                    assert (exists firstLine);
-                    SequenceAppender<QueueElement> ret = SequenceAppender<QueueElement>{
-                        OpeningToken(
-                            firstLine.trimTrailing('\r'.equals),
-                            true, 0, maxDesire - 1, maxDesire - 1)};
-                    ret.appendAll({
-                        for (line in lines
-                                .rest
-                                .map((String l) => l.trimTrailing('\r'.equals)))
-                            for (element in {LineBreak(), OpeningToken(line, true, 0, maxDesire, maxDesire)})
-                                element
-                    });
-                    return ret.sequence;
+                    value result = fastForwardComment(current, givenLineBreaks);
+                    givenLineBreaks = result[0];
+                    return result[1];
                 } else if (current.type == ws) {
                     value lineBreaks = current.text.count('\n'.equals);
                     if (exists g=givenLineBreaks) {
@@ -565,6 +556,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         for (i in 0:lineBreakAmount(givenLineBreaks)) {
             tokenQueue.add(LineBreak());
         }
+        givenLineBreaks = tokens exists then 0;
         // handle this token:
         // set allowed line breaks, add token
         currentlyAllowedLinebreaks = linebreaksAfter; 
@@ -968,6 +960,52 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 resultTokens = tokenConsumer(currentToken);
             }
         }
+    }
+    
+    [Integer?, {QueueElement|Stop*}] fastForwardComment(AntlrToken current, variable Integer? givenLineBreaks) {
+        Range<Integer> before;
+        Range<Integer> after;
+        if (current.type == lineComment) {
+            before = options.beforeLineCommentLineBreaks;
+            after = options.afterLineCommentLineBreaks;
+        } else {
+            if (current.text.contains('\n') && !isEmpty) {
+                before = options.beforeMultiCommentLineBreaks;
+                after = options.afterMultiCommentLineBreaks;
+            } else {
+                before = options.beforeSingleCommentLineBreaks;
+                after = options.afterSingleCommentLineBreaks;
+            }
+        }
+        intersectAllowedLineBreaks(before, false);
+        for (i in 0:lineBreakAmount(givenLineBreaks)) {
+            tokenQueue.add(LineBreak());
+        }
+        currentlyAllowedLinebreaks = after;
+        givenLineBreaks = givenLineBreaks exists then 0;
+        // that’s it for the surrounding line breaks.
+        // now we need to produce the following pattern: for each line in the comment,
+        // line, line break, line, line break, ..., line.
+        // notice how there’s no line break after the last line, which is why this gets
+        // a little ugly...
+        value lines = current.text
+                .trim('\n'.equals) // line comments include the trailing line break
+                .split('\n'.equals);
+        String? firstLine = lines.first;
+        assert (exists firstLine);
+        SequenceAppender<QueueElement> ret = SequenceAppender<QueueElement> {
+            OpeningToken(
+                firstLine.trimTrailing('\r'.equals),
+                true, 0, maxDesire - 1, maxDesire - 1)
+        };
+        ret.appendAll({
+            for (line in lines
+                    .rest
+                    .map((String l) => l.trimTrailing('\r'.equals)))
+                for (element in {LineBreak(), OpeningToken(line, true, 0, maxDesire, maxDesire)})
+                    element
+        });
+        return [givenLineBreaks, ret.sequence];
     }
     
     "Enqueue a line break if the last queue element isn’t a line break, then flush the queue."

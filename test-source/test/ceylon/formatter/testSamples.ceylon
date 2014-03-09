@@ -343,3 +343,8 @@ test
 shared void testSmallBlocks() {
     testFile("smallBlocks");
 }
+
+test
+shared void testCommentsAfterStatements() {
+    testFile("commentsAfterStatements");
+}

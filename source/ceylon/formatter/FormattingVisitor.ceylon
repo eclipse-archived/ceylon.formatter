@@ -1056,7 +1056,6 @@ shared class FormattingVisitor(
             fWriter.writeToken {
                 that.mainEndToken; // ")"
                 linebreaksBefore = noLineBreak;
-                linebreaksAfter = noLineBreak;
                 spaceBefore = false;
                 spaceAfter = 5;
                 context;
