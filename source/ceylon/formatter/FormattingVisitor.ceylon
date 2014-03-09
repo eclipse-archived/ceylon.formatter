@@ -1457,33 +1457,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitTypeArgumentList(TypeArgumentList that) {
-        value context = fWriter.openContext();
-        fWriter.writeToken {
-            that.mainToken; // "<"
-            indentAfter = Indent(1);
-            linebreaksAfter = noLineBreak;
-            spaceBefore = false;
-            spaceAfter = false;
-        };
-        value params = CeylonIterable(that.types).sequence;
-        assert (nonempty params);
-        params.first.visit(this);
-        for (param in params.rest) {
-            fWriter.writeToken {
-                ",";
-                spaceAfter = true;
-                linebreaksAfter = options.typeParameterListLineBreaks;
-            };
-            param.visit(this);
-        }
-        fWriter.writeToken {
-            that.mainEndToken; // ">"
-            context;
-            linebreaksBefore = noLineBreak;
-            spaceBefore = false;
-            optional = true; // an optionally grouped type might already have eaten the closing angle bracket
-        };
-        fWriter.closeContext(context);
+        writeTypeArgumentOrParameterList(fWriter, this, that, options);
     }
     
     shared actual void visitTypedDeclaration(TypedDeclaration that) {
@@ -1502,6 +1476,10 @@ shared class FormattingVisitor(
             linebreaksAfter = noLineBreak;
         };
         that.type.visit(this);
+    }
+    
+    shared actual void visitTypeParameterList(TypeParameterList that) {
+        writeTypeArgumentOrParameterList(fWriter, this, that, options);
     }
     
     shared actual void visitTypeParameterLiteral(TypeParameterLiteral that)

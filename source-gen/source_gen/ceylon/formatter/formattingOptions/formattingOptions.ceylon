@@ -220,6 +220,12 @@
            
            For example: `while (bool)` vs `while(bool)`""";
         "Boolean"; "spaceBeforeWhileOpeningParenthesis"; /* = */ "true";
+    },
+    FormattingOption {
+        """Decide whether there should be a space after the comma in a type argument or parameter list.
+           
+           For example: `Map<Key,Value>` vs `Map<Key, Value>`""";
+        "Boolean"; "spaceAfterTypeArgOrParamListComma"; /* = */ "false";
     }
 };
 

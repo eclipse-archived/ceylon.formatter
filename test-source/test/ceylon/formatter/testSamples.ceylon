@@ -348,3 +348,8 @@ test
 shared void testCommentsAfterStatements() {
     testFile("commentsAfterStatements");
 }
+
+test
+shared void testTypeArguments() {
+    testFile("typeArguments");
+}

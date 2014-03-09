@@ -1,6 +1,7 @@
 import org.antlr.runtime { Token }
-import com.redhat.ceylon.compiler.typechecker.tree { Tree { ... } }
-import ceylon.formatter.options { LineBreakStrategy }
+import com.redhat.ceylon.compiler.typechecker.tree { Tree { ... }, Visitor }
+import ceylon.formatter.options { LineBreakStrategy, FormattingOptions }
+import ceylon.interop.java { CeylonIterable }
 
 
 // TODO
@@ -150,4 +151,41 @@ void writeSomeMemberOp(FormattingWriter writer, Token token) {
         spaceBefore = false;
         spaceAfter = false;
     };
+}
+
+void writeTypeArgumentOrParameterList(FormattingWriter writer, Visitor visitor, TypeArgumentList|TypeParameterList list, FormattingOptions options) {
+    value context = writer.openContext();
+        writer.writeToken {
+            list.mainToken; // "<"
+            indentAfter = Indent(1);
+            linebreaksAfter = noLineBreak;
+            spaceBefore = false;
+            spaceAfter = false;
+        };
+        [Type|TypeParameterDeclaration*] params;
+        if (is TypeArgumentList list) {
+            params = CeylonIterable(list.types).sequence;
+        } else {
+            assert (is TypeParameterList list); // TODO remove
+            params = CeylonIterable(list.typeParameterDeclarations).sequence;
+        }
+        assert (nonempty params);
+        params.first.visit(visitor);
+        for (param in params.rest) {
+            writer.writeToken {
+                ",";
+                spaceBefore = false;
+                spaceAfter = options.spaceAfterTypeArgOrParamListComma;
+                linebreaksAfter = options.typeParameterListLineBreaks;
+            };
+            param.visit(visitor);
+        }
+        writer.writeToken {
+            list.mainEndToken; // ">"
+            context;
+            linebreaksBefore = noLineBreak;
+            spaceBefore = false;
+            optional = true; // an optionally grouped type might already have eaten the closing angle bracket
+        };
+        writer.closeContext(context);
 }
