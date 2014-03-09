@@ -90,8 +90,8 @@ void writeModifier(FormattingWriter writer, Token modifier) {
     writer.writeToken {
         modifier;
         linebreaksBefore = 0..2;
-        spaceBefore = true;
-        spaceAfter = true;
+        spaceBefore = maxDesire - 1;
+        spaceAfter = maxDesire - 1;
     };
 }
 

@@ -18,7 +18,7 @@ shared Integer maxDesire = runtime.maxIntegerValue / 2;
 "The minimum value that is safe to use as [[FormattingWriter.writeToken]]’s `space[Before|After]` argument.
  
  Using a smaller value risks inverting the intended result due to overflow."
-shared Integer minDesire = runtime.minIntegerValue / 2;
+shared Integer minDesire = runtime.minIntegerValue / 2 + 1;
 
 "Parses a `Boolean` or `Integer` value into a desire in range [[minDesire]]`..`[[maxDesire]].
  
@@ -134,7 +134,7 @@ object stopAndDontConsume extends Stop() { consume = false; }
  The fast-forwarding of the token stream (if given) was already mentioned in the “Line Breaking” section.
  If comment tokens are encountered during the fast-forwarding, they are written out like tokens with
  
- * `spaceBefore = true, spaceAfter = true`
+ * `spaceBefore = maxDesire - 1, spaceAfter = maxDesire - 1`
  * `indentBefore = Indent(0), indentAfter = Indent(0)`
  * `linebreaksBefore, linebreaksAfter` as determined by the [[options]]
      * [[beforeLineCommentLineBreaks|FormattingOptions.beforeLineCommentLineBreaks]] and
@@ -520,7 +520,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                     SequenceAppender<QueueElement> ret = SequenceAppender<QueueElement>{
                         OpeningToken(
                             firstLine.trimTrailing('\r'.equals),
-                            true, 0, maxDesire, maxDesire)};
+                            true, 0, maxDesire - 1, maxDesire - 1)};
                     ret.appendAll({
                         for (line in lines
                                 .rest

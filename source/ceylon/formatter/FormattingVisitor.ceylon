@@ -720,7 +720,7 @@ shared class FormattingVisitor(
             that.mainEndToken; // "}"
             linebreaksAfter = 0..3;
             spaceBefore = true;
-            spaceAfter = true;
+            spaceAfter = 1000;
             context;
         };
     }
@@ -1158,7 +1158,7 @@ shared class FormattingVisitor(
         value context = fWriter.writeToken {
             that.mainToken; // "return"
             indentAfter = Indent(1);
-            spaceAfter = true;
+            spaceAfter = that.expression exists;
         };
         assert (exists context);
         that.expression?.visit(this);
