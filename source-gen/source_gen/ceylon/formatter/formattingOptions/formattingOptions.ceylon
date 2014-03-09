@@ -226,6 +226,22 @@
            
            For example: `Map<Key,Value>` vs `Map<Key, Value>`""";
         "Boolean"; "spaceAfterTypeArgOrParamListComma"; /* = */ "false";
+    },
+    FormattingOption {
+        """By how many levels the `extends` and `satisfies` should be indented.
+           
+           For example:
+           
+               // 2
+               class Foo()
+                       extends Bar()
+                       satisfies Baz {}
+               // vs
+               // 1
+               class Foo()
+                   extends Bar()
+                   satisfies Baz {}""";
+        "Integer"; "extendsSatisfiesPreIndent"; /* = */ "2";
     }
 };
 

@@ -508,7 +508,7 @@ shared class FormattingVisitor(
     shared actual void visitExtendedType(ExtendedType that) {
         fWriter.writeToken {
             that.mainToken; // "extends"
-            indentBefore = Indent(1);
+            indentBefore = Indent(options.extendsSatisfiesPreIndent);
             linebreaksAfter = noLineBreak;
             spaceBefore = true;
             spaceAfter = true;
@@ -1171,7 +1171,7 @@ shared class FormattingVisitor(
     shared actual void visitSatisfiedTypes(SatisfiedTypes that) {
         value context = fWriter.writeToken {
             that.mainToken; // "satisfies"
-            indentBefore = Indent(1);
+            indentBefore = Indent(options.extendsSatisfiesPreIndent);
             linebreaksAfter = noLineBreak;
             spaceBefore = true;
             spaceAfter = true;
