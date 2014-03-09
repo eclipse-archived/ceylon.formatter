@@ -544,6 +544,12 @@ shared class FormattingVisitor(
     shared actual void visitFunctionLiteral(FunctionLiteral that)
             => writeMetaLiteral(fWriter, this, that, "function");
     
+    shared actual void visitFunctionModifier(FunctionModifier that) {
+        if (exists token = that.mainToken) {
+            writeModifier(fWriter, token);
+        }
+    }
+    
     shared actual void visitIdentifier(Identifier that) {
         fWriter.writeToken {
             that.mainToken;
@@ -1475,7 +1481,9 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitVoidModifier(VoidModifier that) {
-        writeModifier(fWriter, that.mainToken);
+        if (exists token = that.mainToken) {
+            writeModifier(fWriter, token);
+        }
     }
     
     shared actual void visitWhileClause(WhileClause that) {
