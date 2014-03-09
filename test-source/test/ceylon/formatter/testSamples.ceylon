@@ -328,3 +328,8 @@ test
 shared void testTypeOperatorExpressions() {
     testFile("typeOperatorExpressions");
 }
+
+test
+shared void testFunctionTypes() {
+    testFile("functionTypes");
+}

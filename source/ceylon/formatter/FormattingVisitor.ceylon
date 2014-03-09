@@ -550,6 +550,35 @@ shared class FormattingVisitor(
         }
     }
     
+    shared actual void visitFunctionType(FunctionType that) {
+        that.returnType.visit(this);
+        value context = fWriter.writeToken {
+            "(";
+            spaceBefore = false;
+            spaceAfter = false;
+            linebreaksBefore = noLineBreak;
+            indentAfter = Indent(1);
+        };
+        value argumentTypes = CeylonIterable(that.argumentTypes).sequence;
+        if (nonempty argumentTypes) {
+            argumentTypes.first.visit(this);
+            for (argumentType in argumentTypes.rest) {
+                fWriter.writeToken {
+                    ",";
+                    spaceBefore = false;
+                    spaceAfter = true;
+                    linebreaksBefore = noLineBreak;
+                };
+                argumentType.visit(this);
+            }
+        }
+        fWriter.writeToken {
+            that.mainEndToken; // ")"
+            context;
+            spaceBefore = false;
+        };
+    }
+    
     shared actual void visitIdentifier(Identifier that) {
         fWriter.writeToken {
             that.mainToken;
