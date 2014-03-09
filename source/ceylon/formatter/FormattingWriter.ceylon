@@ -498,7 +498,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                     // notice how there’s no line break after the last line, which is why this gets
                     // a little ugly...
                     value lines = current.text
-                            .trim('\n'.equals) // line comments include the trailine line break
+                            .trim('\n'.equals) // line comments include the trailing line break
                             .split('\n'.equals);
                     String? firstLine = lines.first;
                     assert (exists firstLine);
