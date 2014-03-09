@@ -323,3 +323,8 @@ test
 shared void testWithinOps() {
     testFile("withinOps");
 }
+
+test
+shared void testTypeOperatorExpressions() {
+    testFile("typeOperatorExpressions");
+}

@@ -1383,6 +1383,18 @@ shared class FormattingVisitor(
         that.identifier.visit(this);
     }
     
+    shared actual void visitTypeOperatorExpression(TypeOperatorExpression that) {
+        that.term.visit(this);
+        fWriter.writeToken {
+            that.mainToken; // "is", "extends", "satisfies" or "of"
+            spaceBefore = true;
+            spaceAfter = true;
+            linebreaksBefore = noLineBreak;
+            linebreaksAfter = noLineBreak;
+        };
+        that.type.visit(this);
+    }
+    
     shared actual void visitTypeParameterLiteral(TypeParameterLiteral that)
             => writeMetaLiteral(fWriter, this, that, "given");
     
