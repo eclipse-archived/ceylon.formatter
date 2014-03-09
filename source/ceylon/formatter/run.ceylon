@@ -32,8 +32,14 @@ shared void run() {
         // or recursively from first directory to second directory
         assert(exists inFileName = options[1][0], exists outFileName = options[1][1]);
         if (is Directory dir = parsePath(inFileName).resource) {
-            if (!is Directory d = parsePath(outFileName).resource) {
-                throw Exception("Can’t format files from source directory '``inFileName``' to target file '``outFileName``'!");
+            Directory target;
+            Resource r = parsePath(outFileName).resource;
+            if (is Directory r){
+                target = r;
+            } else if (is Nil r) {
+                target = r.createDirectory();
+            } else {
+                throw Exception("Can’t format files from source directory '``inFileName``' to target resource '``outFileName``'!");
             }
             MutableMap<CharStream, Writer> mutableFiles = HashMap<CharStream, Writer>();
             dir.path.visit {
@@ -127,6 +133,11 @@ File parseFile(Path|String path) {
                     break;
                 } else {
                     r.createDirectory();
+                }
+            }
+            case (is Directory) {
+                if (childP == lastPart) {
+                    throw Exception("Output is a directory!");
                 }
             }
             else { 
