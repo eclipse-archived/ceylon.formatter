@@ -338,3 +338,8 @@ test
 shared void testPrefixOperators() {
     testFile("prefixOperators");
 }
+
+test
+shared void testSmallBlocks() {
+    testFile("smallBlocks");
+}

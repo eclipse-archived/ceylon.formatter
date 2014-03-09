@@ -219,6 +219,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitBody(Body that) {
+        value statements = CeylonIterable(that.statements).sequence;
         FormattingWriter.FormattingContext? context;
         if (exists token = that.mainToken) {
             context = fWriter.writeToken {
@@ -227,17 +228,17 @@ shared class FormattingVisitor(
                 linebreaksBefore = options.braceOnOwnLine then 1..1 else noLineBreak;
                 linebreaksAfter = 0..2;
                 spaceBefore = 10;
-                spaceAfter = false;
+                spaceAfter = statements nonempty;
             };
         } else {
             context = null;
         }
-        for (Statement statement in CeylonIterable(that.statements)) {
-            if (that.statements.size() > 1) {
+        for (Statement statement in statements) {
+            if (statements.longerThan(1)) {
                 fWriter.requireAtLeastLineBreaks(1);
             }
             statement.visit(this);
-            if (that.statements.size() > 1) {
+            if (statements.longerThan(1)) {
                 fWriter.requireAtLeastLineBreaks(1);
             }
         }
@@ -245,7 +246,7 @@ shared class FormattingVisitor(
             fWriter.writeToken {
                 token; // "}"
                 linebreaksAfter = 0..3;
-                spaceBefore = false;
+                spaceBefore = statements nonempty;
                 spaceAfter = 5;
                 context;
             };
