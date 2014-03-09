@@ -58,7 +58,7 @@ void testFile(String filename) {
             actual = actual[0..actual.size - 2];
         }
         // now test that they're equal
-        assertEquals(expected, actual);
+        assertEquals(actual, expected);
     } else {
         fail("File ``parsePath(fullFilename).absolutePath.string`` not found!");
     }
