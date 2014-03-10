@@ -358,3 +358,8 @@ test
 shared void testTypeConstraints() {
     testFile("typeConstraints");
 }
+
+test
+shared void testQualifiedMemberOrTypeExpressions() {
+    testFile("qualifiedMemberOrTypeExpressions");
+}

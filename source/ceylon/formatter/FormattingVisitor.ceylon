@@ -1105,10 +1105,11 @@ shared class FormattingVisitor(
         that.term.visit(this);
     }
     
-    shared actual void visitQualifiedMemberExpression(QualifiedMemberExpression that) {
+    shared actual void visitQualifiedMemberOrTypeExpression(QualifiedMemberOrTypeExpression that) {
         that.primary.visit(this);
         that.memberOperator.visit(this);
         visitIdentifierLowercase(that.identifier);
+        that.typeArguments.visit(this);
     }
     
     shared actual void visitQualifiedType(QualifiedType that) {
