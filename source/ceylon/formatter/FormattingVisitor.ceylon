@@ -998,6 +998,27 @@ shared class FormattingVisitor(
         that.term.visit(this);
     }
     
+    shared actual void visitObjectArgument(ObjectArgument that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "object"
+            spaceAfter = true;
+            linebreaksAfter = noLineBreak;
+        };
+        assert (exists context);
+        visitIdentifierLowercase(that.identifier);
+        that.extendedType?.visit(this);
+        that.satisfiedTypes?.visit(this);
+        if (exists body = that.classBody) {
+            body.visit(this);
+            fWriter.closeContext(context);
+        } else {
+            // If I understand the grammar correctly, it’s possible to replace the body with a semicolon.
+            // In that case, the parser will add a recognition error, but then continue parsing.
+            // I guess that qualifies as syntactically valid-ish code, so we support it here.
+            writeSemicolon(fWriter, that.mainEndToken, context);
+        }
+    }
+    
     shared actual void visitObjectDefinition(ObjectDefinition that) {
         that.annotationList?.visit(this);
         fWriter.writeToken {

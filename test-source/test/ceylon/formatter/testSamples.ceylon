@@ -373,3 +373,8 @@ test
 shared void testModule() {
     testFile("module");
 }
+
+test
+shared void testObjectArguments() {
+    testFile("objectArguments");
+}
