@@ -6,6 +6,11 @@ import ceylon.interop.java { CeylonIterable }
 import ceylon.formatter.options { FormattingOptions, multiLine }
 import ceylon.collection { MutableList, ArrayList }
 
+[String+] keywords  = [
+"assembly", "module", "package", "import", "alias", "class", "interface", "object", "given", "value", "assign", "void", "function", "new", "of", "extends", "satisfies", "abstracts", "in", "out", "return",
+"break", "continue", "throw", "assert", "dynamic", "if", "else", "switch", "case", "for", "while", "try", "catch", "finally", "then", "let", "this", "outer", "super", "is", "exists", "nonempty"
+];
+
 "A [[com.redhat.ceylon.compiler.typechecker.tree::Visitor]] that writes a formatted version of the
  element (typically a [[com.redhat.ceylon.compiler.typechecker.tree::Tree.CompilationUnit]]) to a
  [[java.io::Writer]]."
@@ -637,7 +642,13 @@ shared class FormattingVisitor(
                     }
                 });
                 assert (hadImport);
-                tokenText = token.text;
+                if (token.text in keywords) {
+                    // needs a \i for syntactical correctness
+                    tokenText = "\\i" + token.text;
+                } else {
+                    // \i or \I doesnt matter
+                    tokenText = token.text;
+                }
             }
         }
         fWriter.writeToken {

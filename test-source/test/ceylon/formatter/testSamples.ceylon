@@ -378,3 +378,8 @@ test
 shared void testObjectArguments() {
     testFile("objectArguments");
 }
+
+test
+shared void testImportKeywords() {
+    testFile("importKeywords");
+}
