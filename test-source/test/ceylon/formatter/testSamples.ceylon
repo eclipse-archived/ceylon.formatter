@@ -368,3 +368,8 @@ test
 shared void testPackage() {
     testFile("package");
 }
+
+test
+shared void testModule() {
+    testFile("module");
+}

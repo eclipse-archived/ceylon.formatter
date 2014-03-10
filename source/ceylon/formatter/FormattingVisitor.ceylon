@@ -737,6 +737,40 @@ shared class FormattingVisitor(
         };
     }
     
+    shared actual void visitImportModule(ImportModule that) {
+        value context = fWriter.openContext();
+        that.annotationList.visit(this);
+        fWriter.writeToken {
+            that.mainToken; // "import"
+            spaceBefore = true;
+            spaceAfter = true;
+            linebreaksAfter = noLineBreak;
+        };
+        that.importPath?.visit(this); // nullsafe because might be quoted…
+        that.quotedLiteral?.visit(this); // …like this
+        that.version?.visit(this); // version not mandatory in the grammar
+        writeSemicolon(fWriter, that.mainEndToken, context);
+    }
+    
+    shared actual void visitImportModuleList(ImportModuleList that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "{"
+            spaceBefore = true;
+            spaceAfter = true;
+            linebreaksBefore = options.braceOnOwnLine then 1..1 else noLineBreak;
+            linebreaksAfter = 1..2;
+            indentAfter = Indent(1);
+        };
+        for (importModule in CeylonIterable(that.importModules)) {
+            importModule.visit(this);
+        }
+        fWriter.writeToken {
+            that.mainEndToken; // "}"
+            context;
+            linebreaksBefore = 1..1;
+        };
+    }
+    
     shared actual void visitImportPath(ImportPath that) {
         value identifiers = CeylonIterable(that.identifiers).sequence;
         "Import can’t have empty import path"
@@ -898,6 +932,19 @@ shared class FormattingVisitor(
         visitAnyMethod(that);
         fWriter.closeContext(context);
         that.block.visit(this);
+    }
+    
+    shared actual void visitModuleDescriptor(ModuleDescriptor that) {
+        that.annotationList.visit(this);
+        fWriter.writeToken {
+            that.mainToken; // "module"
+            spaceBefore = true;
+            spaceAfter = true;
+            linebreaksAfter = noLineBreak;
+        };
+        that.importPath.visit(this);
+        that.version.visit(this);
+        that.importModuleList.visit(this);
     }
     
     shared actual void visitModuleLiteral(ModuleLiteral that)
