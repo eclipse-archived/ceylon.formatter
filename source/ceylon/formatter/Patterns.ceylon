@@ -33,7 +33,7 @@ void writeBacktickClosing(FormattingWriter writer, Token backtick, FormattingWri
 void writeSpecifierMainToken(FormattingWriter writer, Token|String token) {
     writer.writeToken {
         token;
-        linebreaksBefore = noLineBreak;
+        indentBefore = Indent(2); // TODO option
         spaceBefore = true;
         spaceAfter = true;
     };
