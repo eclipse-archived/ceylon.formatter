@@ -981,6 +981,19 @@ shared class FormattingVisitor(
         };
     }
     
+    shared actual void visitPackageDescriptor(PackageDescriptor that) {
+        value context = fWriter.openContext();
+        that.annotationList.visit(this);
+        fWriter.writeToken {
+            that.mainToken; // "import"
+            spaceBefore = true;
+            spaceAfter = true;
+            linebreaksAfter = noLineBreak;
+        };
+        that.importPath.visit(this);
+        writeSemicolon(fWriter, that.mainEndToken, context);
+    }
+    
     shared actual void visitPackageLiteral(PackageLiteral that)
             => writeMetaLiteral(fWriter, this, that, "package");
     

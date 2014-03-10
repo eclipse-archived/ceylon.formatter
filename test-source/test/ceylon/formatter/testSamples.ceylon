@@ -363,3 +363,8 @@ test
 shared void testQualifiedMemberOrTypeExpressions() {
     testFile("qualifiedMemberOrTypeExpressions");
 }
+
+test
+shared void testPackage() {
+    testFile("package");
+}
