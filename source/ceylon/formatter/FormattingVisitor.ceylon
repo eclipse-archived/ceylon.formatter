@@ -48,6 +48,17 @@ shared class FormattingVisitor(
         }
     }
     
+    shared actual void visitAbstractedType(AbstractedType that) {
+        fWriter.writeToken {
+            that.mainToken; // "abstracts"
+            indentBefore = Indent(options.extendsSatisfiesPreIndent);
+            linebreaksAfter = noLineBreak;
+            spaceBefore = true;
+            spaceAfter = true;
+        };
+        that.type.visit(this);
+    }
+    
     shared actual void visitAlias(Alias that) {
         visitIdentifierUppercase(that.identifier);
         fWriter.writeToken {
@@ -292,7 +303,7 @@ shared class FormattingVisitor(
             that.mainToken; // "of"
             spaceBefore = true;
             spaceAfter = true;
-            indentBefore = Indent(1);
+            indentBefore = Indent(options.extendsSatisfiesPreIndent);
             indentAfter = Indent(1);
         };
         assert (exists context);
@@ -1458,6 +1469,29 @@ shared class FormattingVisitor(
     
     shared actual void visitTypeArgumentList(TypeArgumentList that) {
         writeTypeArgumentOrParameterList(fWriter, this, that, options);
+    }
+    
+    shared actual void visitTypeConstraint(TypeConstraint that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "given"
+            spaceAfter = true;
+            indentBefore = Indent(options.extendsSatisfiesPreIndent);
+            indentAfter = Indent(options.extendsSatisfiesPreIndent);
+        };
+        assert (exists context);
+        visitIdentifierUppercase(that.identifier);
+        that.parameterList?.visit(this);
+        that.caseTypes?.visit(this);
+        that.satisfiedTypes?.visit(this);
+        that.abstractedType?.visit(this);
+        fWriter.closeContext(context);
+    }
+    
+    shared actual void visitTypeConstraintList(TypeConstraintList that) {
+        for (constraint in CeylonIterable(that.typeConstraints)) {
+            fWriter.requireAtLeastLineBreaks(1);
+            constraint.visit(this);
+        }
     }
     
     shared actual void visitTypedDeclaration(TypedDeclaration that) {

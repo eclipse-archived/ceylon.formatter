@@ -353,3 +353,8 @@ test
 shared void testTypeArguments() {
     testFile("typeArguments");
 }
+
+test
+shared void testTypeConstraints() {
+    testFile("typeConstraints");
+}
