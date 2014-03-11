@@ -383,3 +383,8 @@ test
 shared void testImportKeywords() {
     testFile("importKeywords");
 }
+
+test
+shared void testComments() {
+    testFile("comments");
+}

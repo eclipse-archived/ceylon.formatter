@@ -971,7 +971,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             ret.append(LineBreak());
         }
         currentlyAllowedLinebreaks = after;
-        givenLineBreaks = 0;
+        givenLineBreaks = current.type == lineComment then 1 else 0;
         // that’s it for the surrounding line breaks.
         // now we need to produce the following pattern: for each line in the comment,
         // line, line break, line, line break, ..., line.
