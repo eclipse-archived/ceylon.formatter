@@ -979,18 +979,17 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         // a little ugly...
         value lines = current.text
                 .trim('\n'.equals) // line comments include the trailing line break
-                .split('\n'.equals);
+                .split('\n'.equals)
+                .map((String s) => s.trimTrailing('\r'.equals));
         String? firstLine = lines.first;
         assert (exists firstLine);
         ret.append(
             OpeningToken(
-                firstLine.trimTrailing('\r'.equals),
+                firstLine,
                 true, 0, maxDesire - 1, maxDesire - 1)
         );
         ret.appendAll({
-            for (line in lines
-                    .rest
-                    .map((String l) => l.trimTrailing('\r'.equals)))
+            for (line in lines.rest)
                 for (element in {LineBreak(), OpeningToken(line, true, 0, maxDesire, maxDesire)})
                     element
         });
