@@ -402,6 +402,17 @@ shared class FormattingVisitor(
         writeSemicolon(fWriter, that.mainEndToken, context);
     }
     
+    shared actual void visitDefaultOp(DefaultOp that) {
+        that.leftTerm.visit(this);
+        fWriter.writeToken {
+            that.mainToken; // "else"
+            indentBefore = Indent(2);
+            spaceBefore = true;
+            spaceAfter = true;
+        };
+        that.rightTerm.visit(this);
+    }
+    
     shared actual void visitElementRange(ElementRange that) {
         // An ElementRange can be anything that goes into an index expression (except a single element),
         // that is, ...upper, lower..., lower..upper, and lower:length.
@@ -1471,6 +1482,17 @@ shared class FormattingVisitor(
             linebreaksBefore = noLineBreak;
             linebreaksAfter = 1..2;
         };
+    }
+    
+    shared actual void visitThenOp(ThenOp that) {
+        that.leftTerm.visit(this);
+        fWriter.writeToken {
+            that.mainToken; // "then"
+            indentBefore = Indent(2);
+            spaceBefore = true;
+            spaceAfter = true;
+        };
+        that.rightTerm.visit(this);
     }
     
     shared actual void visitThrow(Throw that) {
