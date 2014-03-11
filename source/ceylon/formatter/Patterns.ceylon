@@ -33,7 +33,7 @@ void writeBacktickClosing(FormattingWriter writer, Token backtick, FormattingWri
 void writeSpecifierMainToken(FormattingWriter writer, Token|String token) {
     writer.writeToken {
         token;
-        indentBefore = Indent(2); // TODO option
+        indentBefore = 2; // TODO option
         spaceBefore = true;
         spaceAfter = true;
     };
@@ -81,7 +81,7 @@ void writeMetaLiteralStart(FormattingWriter writer, String start) {
     writer.writeToken {
         start;
         linebreaksBefore = noLineBreak;
-        indentAfter = Indent(1);
+        indentAfter = 1;
         spaceBefore = false;
         spaceAfter = true;
     };
@@ -146,7 +146,7 @@ void writeSomeMemberOp(FormattingWriter writer, Token token) {
     assert (token.text in { ".", "?.", "*." });
     writer.writeToken {
         token;
-        indentBefore = Indent(1);
+        indentBefore = 1;
         linebreaksAfter = noLineBreak;
         spaceBefore = false;
         spaceAfter = false;
@@ -157,7 +157,7 @@ void writeTypeArgumentOrParameterList(FormattingWriter writer, Visitor visitor, 
     value context = writer.openContext();
         writer.writeToken {
             list.mainToken; // "<"
-            indentAfter = Indent(1);
+            indentAfter = 1;
             linebreaksAfter = noLineBreak;
             spaceBefore = false;
             spaceAfter = false;

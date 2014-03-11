@@ -38,7 +38,6 @@ shared Integer desire(Boolean|Integer desire) {
     return 0;
 }
 
-shared class Indent(shared Integer level) { }
 shared Range<Integer> noLineBreak = 0..0;
 
 "Used in [[FormattingWriter.fastForward]]."
@@ -396,8 +395,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     shared FormattingContext? writeToken(
         token,
         context = null,
-        indentBefore = Indent(0),
-        indentAfter = Indent(0),
+        indentBefore = 0,
+        indentAfter = 0,
         linebreaksBefore = 0..2,
         linebreaksAfter = 0..1,
         spaceBefore = 0,
@@ -412,10 +411,10 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
          itself open a new context, and the method will therefore return `null`."
         FormattingContext? context;
         "The indentation that should be applied to a line if this token is the first of its line."
-        Indent indentBefore;
+        Integer indentBefore;
         "The indentation that should be applied to all subsequent lines until the token’s context
          is closed."
-        Indent indentAfter;
+        Integer indentAfter;
         "The amount of line breaks that is allowed before this token."
         see (`value noLineBreak`)
         Range<Integer> linebreaksBefore;
@@ -478,8 +477,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             tokenInStreamText = tokenInStream;
         }
         allowLineBreakBefore = linebreaksBefore.any(0.smallerThan);
-        preIndent = allowLineBreakBefore then indentBefore.level else 0;
-        postIndent = linebreaksAfter.any(0.smallerThan) then indentAfter.level;
+        preIndent = allowLineBreakBefore then indentBefore else 0;
+        postIndent = linebreaksAfter.any(0.smallerThan) then indentAfter;
         
         // look for optional token
         // if it’s not there, return immediately
