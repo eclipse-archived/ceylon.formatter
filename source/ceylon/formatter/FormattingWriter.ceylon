@@ -398,7 +398,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         context = null,
         indentBefore = Indent(0),
         indentAfter = Indent(0),
-        linebreaksBefore = 0..1,
+        linebreaksBefore = 0..2,
         linebreaksAfter = 0..1,
         spaceBefore = 0,
         spaceAfter = 0,
