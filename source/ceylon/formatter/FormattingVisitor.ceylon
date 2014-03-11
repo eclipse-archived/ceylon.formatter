@@ -261,6 +261,7 @@ shared class FormattingVisitor(
         if (exists token = that.mainEndToken) {
             fWriter.writeToken {
                 token; // "}"
+                linebreaksBefore = 0..1;
                 linebreaksAfter = 0..3;
                 spaceBefore = statements nonempty;
                 spaceAfter = 5;
