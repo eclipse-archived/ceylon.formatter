@@ -981,18 +981,16 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 .trim('\n'.equals) // line comments include the trailing line break
                 .split('\n'.equals)
                 .map((String s) => s.trimTrailing('\r'.equals));
-        String? firstLine = lines.first;
-        assert (exists firstLine);
-        ret.append(
-            OpeningToken(
-                firstLine,
-                true, 0, maxDesire - 1, maxDesire - 1)
-        );
-        ret.appendAll({
-            for (line in lines.rest)
-                for (element in {LineBreak(), OpeningToken(line, true, 0, maxDesire, maxDesire)})
-                    element
-        });
+        value tokens = [
+            for (line in lines)
+                OpeningToken(line, true, 0, maxDesire - 1, maxDesire - 1)
+        ];
+        assert (nonempty tokens);
+        ret.append(tokens.first);
+        for (token in tokens.rest) {
+            ret.append(LineBreak());
+            ret.append(token);
+        }
         return ret.sequence;
     }
     
