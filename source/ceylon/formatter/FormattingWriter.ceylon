@@ -340,17 +340,13 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         if (fastForwardFirst) {
             fastForward((AntlrToken? current) {
                 if (exists current) {
+                    assert (exists lineBreaks = givenLineBreaks);
                     if (current.type == lineComment || current.type == multiComment) {
-                        value result = fastForwardComment(current, givenLineBreaks);
+                        value result = fastForwardComment(current, lineBreaks);
                         givenLineBreaks = result[0];
                         return result[1];
                     } else if (current.type == ws) {
-                        value lineBreaks = current.text.count('\n'.equals);
-                        if (exists g=givenLineBreaks) {
-                            givenLineBreaks = g + lineBreaks;
-                        } else {
-                            givenLineBreaks = lineBreaks;
-                        }
+                        givenLineBreaks = lineBreaks + current.text.count('\n'.equals);
                         return empty;
                     } else {
                         return {stopAndDontConsume}; // end fast-forwarding
@@ -514,19 +510,15 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         intersectAllowedLineBreaks(linebreaksBefore, false);
         fastForward((AntlrToken? current) {
             if (exists current) {
+                assert (exists lineBreaks = givenLineBreaks);
                 if (current.type == lineComment || current.type == multiComment) {
                     // we treat comments as regular tokens
                     // just with the difference that their before- and afterToken range isn’t given, but an option instead
-                    value result = fastForwardComment(current, givenLineBreaks);
+                    value result = fastForwardComment(current, lineBreaks);
                     givenLineBreaks = result[0];
                     return result[1];
                 } else if (current.type == ws) {
-                    value lineBreaks = current.text.count('\n'.equals);
-                    if (exists g=givenLineBreaks) {
-                        givenLineBreaks = g + lineBreaks;
-                    } else {
-                        givenLineBreaks = lineBreaks;
-                    }
+                    givenLineBreaks = lineBreaks + current.text.count('\n'.equals);
                     return empty;
                 } else if (current.type == -1) {
                     // EOF
@@ -962,7 +954,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         }
     }
     
-    [Integer?, {QueueElement|Stop*}] fastForwardComment(AntlrToken current, variable Integer? givenLineBreaks) {
+    [Integer?, {QueueElement|Stop*}] fastForwardComment(AntlrToken current, variable Integer givenLineBreaks) {
         Range<Integer> before;
         Range<Integer> after;
         if (current.type == lineComment) {
@@ -983,7 +975,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             ret.append(LineBreak());
         }
         currentlyAllowedLinebreaks = after;
-        givenLineBreaks = givenLineBreaks exists then 0;
+        givenLineBreaks = 0;
         // that’s it for the surrounding line breaks.
         // now we need to produce the following pattern: for each line in the comment,
         // line, line break, line, line break, ..., line.
