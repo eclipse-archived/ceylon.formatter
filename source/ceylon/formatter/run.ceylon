@@ -46,7 +46,7 @@ shared void run() {
                 object visitor extends Visitor() {
                     shared actual void file(File file) {
                         if(file.name.endsWith(".ceylon")) {
-                            mutableFiles.put(ANTLRFileStream(file.path.string), parseFile(parsePath(outFileName).childPath(file.path)).Overwriter());
+                            mutableFiles.put(ANTLRFileStream(file.path.string), parseFile(parsePath(outFileName).childPath(file.path.relativePath(file.path.elementPaths.first else nothing))).Overwriter());
                         }
                     }
                 }
