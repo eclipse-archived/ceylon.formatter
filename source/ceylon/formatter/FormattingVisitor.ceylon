@@ -706,6 +706,7 @@ shared class FormattingVisitor(
     shared actual void visitImport(Import that) {
         fWriter.writeToken {
             that.mainToken;
+            linebreaksBefore = 1..0;
             linebreaksAfter = noLineBreak;
             spaceBefore = false;
             spaceAfter = true;
