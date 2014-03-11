@@ -972,25 +972,24 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         }
         currentlyAllowedLinebreaks = after;
         givenLineBreaks = current.type == lineComment then 1 else 0;
-        // that’s it for the surrounding line breaks.
-        // now we need to produce the following pattern: for each line in the comment,
-        // line, line break, line, line break, ..., line.
-        // notice how there’s no line break after the last line, which is why this gets
-        // a little ugly...
-        value lines = current.text
-                .trim('\n'.equals) // line comments include the trailing line break
-                .split('\n'.equals)
-                .map((String s) => s.trimTrailing('\r'.equals));
-        value tokens = [
-            for (line in lines)
-                OpeningToken(line, true, 0, maxDesire - 1, maxDesire - 1)
-        ];
-        assert (nonempty tokens);
-        ret.append(tokens.first);
-        for (token in tokens.rest) {
-            ret.append(LineBreak());
-            ret.append(token);
-        }
+        
+        value token = OpeningToken {
+            text = current.text.trimTrailing('\n'.equals).trimTrailing('\r'.equals);
+            allowLineBreakBefore = true;
+            postIndent = 0;
+            wantsSpaceBefore = maxDesire - 1;
+            wantsSpaceAfter = maxDesire - 1;
+            charPositionInLine =
+                // TODO
+                // this should just be current.charPositionInLine…
+                // … but due to a bug in ANTLR we need a special case for the first token
+                current.tokenIndex == 0
+                    // sometimes, the very first token has a charPositionInLine of != 0
+                    // I have no idea why or when this happens
+                    then 0
+                    else current.charPositionInLine;
+        };
+        ret.append(token);
         return ret.sequence;
     }
     
