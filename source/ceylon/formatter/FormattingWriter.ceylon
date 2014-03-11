@@ -978,8 +978,9 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             }
         }
         intersectAllowedLineBreaks(before, false);
+        SequenceBuilder<QueueElement> ret = SequenceBuilder<QueueElement>();
         for (i in 0:lineBreakAmount(givenLineBreaks)) {
-            tokenQueue.add(LineBreak());
+            ret.append(LineBreak());
         }
         currentlyAllowedLinebreaks = after;
         givenLineBreaks = givenLineBreaks exists then 0;
@@ -993,11 +994,11 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 .split('\n'.equals);
         String? firstLine = lines.first;
         assert (exists firstLine);
-        SequenceAppender<QueueElement> ret = SequenceAppender<QueueElement> {
+        ret.append(
             OpeningToken(
                 firstLine.trimTrailing('\r'.equals),
                 true, 0, maxDesire - 1, maxDesire - 1)
-        };
+        );
         ret.appendAll({
             for (line in lines
                     .rest
