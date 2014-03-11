@@ -342,9 +342,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 if (exists current) {
                     assert (exists lineBreaks = givenLineBreaks);
                     if (current.type == lineComment || current.type == multiComment) {
-                        value result = fastForwardComment(current, lineBreaks);
-                        givenLineBreaks = result[0];
-                        return result[1];
+                        return fastForwardComment(current);
                     } else if (current.type == ws) {
                         givenLineBreaks = lineBreaks + current.text.count('\n'.equals);
                         return empty;
@@ -514,9 +512,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 if (current.type == lineComment || current.type == multiComment) {
                     // we treat comments as regular tokens
                     // just with the difference that their before- and afterToken range isn’t given, but an option instead
-                    value result = fastForwardComment(current, lineBreaks);
-                    givenLineBreaks = result[0];
-                    return result[1];
+                    return fastForwardComment(current);
                 } else if (current.type == ws) {
                     givenLineBreaks = lineBreaks + current.text.count('\n'.equals);
                     return empty;
@@ -954,7 +950,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         }
     }
     
-    [Integer?, {QueueElement|Stop*}] fastForwardComment(AntlrToken current, variable Integer givenLineBreaks) {
+    {QueueElement|Stop*} fastForwardComment(AntlrToken current) {
         Range<Integer> before;
         Range<Integer> after;
         if (current.type == lineComment) {
@@ -998,7 +994,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 for (element in {LineBreak(), OpeningToken(line, true, 0, maxDesire, maxDesire)})
                     element
         });
-        return [givenLineBreaks, ret.sequence];
+        return ret.sequence;
     }
     
     "Enqueue a line break if the last queue element isn’t a line break, then flush the queue."
