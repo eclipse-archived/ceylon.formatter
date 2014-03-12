@@ -1,6 +1,6 @@
 import java.lang {
     Thread {
-        NORM_PRIORITY
+        \iNORM_PRIORITY
     },
     JString=String,
     Runtime {
