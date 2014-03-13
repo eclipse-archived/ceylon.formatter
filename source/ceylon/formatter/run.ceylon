@@ -10,22 +10,22 @@ import ceylon.collection { MutableMap, HashMap }
 
 "Run the module `ceylon.formatter`."
 shared void run() {
-    [FormattingOptions, String[]] options = commandLineOptions();
+    variable [FormattingOptions, String[]] options = commandLineOptions();
+    if (exists inFileName = options[1][0], options[1].size == 1) {
+        // input = output
+        options = [options[0], [inFileName, inFileName]];
+    }
     {<CharStream->Writer>*} files;
     switch (options[1].size<=>2)
     case (smaller) {
-        // one or zero input files, write to stdout
+        // no input or output files, pipe mode
         object sysoutWriter satisfies Writer {
             shared actual void destroy() => flush();
             shared actual void flush() => process.flush();
             shared actual void write(String string) => process.write(string);
             shared actual void writeLine(String line) => process.writeLine(line);
         }
-        if (exists inFileName = options[1][0]) {
-            files = { ANTLRFileStream(inFileName)->sysoutWriter };
-        } else {
-            files = { ANTLRInputStream(sysin)->sysoutWriter };
-        }
+        files = { ANTLRInputStream(sysin)->sysoutWriter };
     }
     case (equal) {
         // read from first file, write to second file
