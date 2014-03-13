@@ -98,6 +98,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitAnyClass(AnyClass that) {
+        value context = fWriter.openContext();
         that.annotationList.visit(this);
         fWriter.writeToken {
             that.mainToken; // "class"
@@ -116,15 +117,12 @@ shared class FormattingVisitor(
             that.classBody.visit(this);
         } else if (is ClassDeclaration that) {
             that.classSpecifier?.visit(this);
-            fWriter.writeToken {
-                that.mainEndToken; // ";"
-                linebreaksBefore = noLineBreak;
-                spaceBefore = false;
-            };
+            writeSemicolon(fWriter, that.mainEndToken, context);
         }
     }
     
     shared actual void visitAnyInterface(AnyInterface that) {
+        value context = fWriter.openContext();
         that.annotationList.visit(this);
         fWriter.writeToken {
             that.mainToken; // "interface"
@@ -141,11 +139,7 @@ shared class FormattingVisitor(
             that.interfaceBody.visit(this);
         } else if (is InterfaceDeclaration that) {
             that.typeSpecifier?.visit(this);
-            fWriter.writeToken {
-                that.mainEndToken; // ";"
-                linebreaksBefore = noLineBreak;
-                spaceBefore = false;
-            };
+            writeSemicolon(fWriter, that.mainEndToken, context);
         }
     }
     
@@ -172,13 +166,7 @@ shared class FormattingVisitor(
             spaceAfter = true;
         };
         that.conditionList.visit(this);
-        fWriter.writeToken {
-            that.mainEndToken; // ";"
-            linebreaksBefore = noLineBreak;
-            spaceBefore = false;
-            spaceAfter = true;
-            context;
-        };
+        writeSemicolon(fWriter, that.mainEndToken, context);
     }
     
     shared actual void visitAttributeDeclaration(AttributeDeclaration that) {
