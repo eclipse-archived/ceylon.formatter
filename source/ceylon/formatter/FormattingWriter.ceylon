@@ -161,9 +161,9 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     interface ClosingElement satisfies Element {}
     
     shared abstract class Empty() of EmptyOpening|EmptyClosing {}
-    class EmptyOpening() extends Empty() satisfies OpeningElement {
+    class EmptyOpening(Integer postIndent = 0) extends Empty() satisfies OpeningElement {
         shared actual object context satisfies FormattingContext {
-            postIndent = 0;
+            postIndent = outer.postIndent;
         }
     }    
     class EmptyClosing(context) extends Empty() satisfies ClosingElement {
@@ -586,8 +586,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     }
     
     "Open a [[FormattingContext]] not associated with any token."
-    shared FormattingContext openContext() {
-        value noToken = EmptyOpening();
+    shared FormattingContext openContext(Integer indentAfter = 0) {
+        value noToken = EmptyOpening(indentAfter);
         tokenQueue.add(noToken);
         return noToken.context;
     }
