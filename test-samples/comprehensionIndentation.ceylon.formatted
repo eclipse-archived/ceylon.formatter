@@ -1,0 +1,8 @@
+void testComprehensionIndentation() {
+    value v = {
+        for (i1 in 1..100)
+            for (i2 in 1..100)
+                if (i1 < i2)
+                    i1 -> i2
+    };
+}

@@ -388,3 +388,8 @@ test
 shared void testComments() {
     testFile("comments");
 }
+
+test
+shared void testComprehensionIndentation() {
+    testFile("comprehensionIndentation");
+}

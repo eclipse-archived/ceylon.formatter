@@ -550,7 +550,9 @@ shared class FormattingVisitor(
             spaceAfter = options.spaceBeforeForOpeningParenthesis;
         };
         that.forIterator.visit(this);
+        value context = fWriter.openContext(1);
         that.comprehensionClause.visit(this);
+        fWriter.closeContext(context);
     }
     
     shared actual void visitFunctionArgument(FunctionArgument that) {
@@ -655,7 +657,9 @@ shared class FormattingVisitor(
             spaceAfter = options.spaceBeforeIfOpeningParenthesis;
         };
         that.conditionList.visit(this);
+        value context = fWriter.openContext(1);
         that.comprehensionClause.visit(this);
+        fWriter.closeContext(context);
     }
     
     shared actual void visitImport(Import that) {
