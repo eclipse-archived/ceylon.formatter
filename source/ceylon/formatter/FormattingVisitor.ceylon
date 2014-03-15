@@ -944,6 +944,7 @@ shared class FormattingVisitor(
             that.mainToken; // "{"
             spaceAfter = true;
             linebreaksAfter = 1..0;
+            indentBefore = 1;
             indentAfter = 1;
         };
         for (arg in CeylonIterable(that.namedArguments)) {

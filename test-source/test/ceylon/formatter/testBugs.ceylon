@@ -11,3 +11,8 @@ test
 shared void test30() {
     testBug(30);
 }
+
+test
+shared void test38() {
+    testBug(38);
+}
