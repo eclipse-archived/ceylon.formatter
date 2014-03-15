@@ -404,6 +404,9 @@ shared class FormattingVisitor(
         Expression? lower = that.lowerBound;
         Expression? upper = that.upperBound;
         Expression? length = that.length;
+        
+        variable Boolean wantsSpaces = wantsSpecialSpaces({ lower?.term, upper?.term, length?.term }.coalesced);
+        
         if (exists lower) {
             if (exists length) {
                 "Range can’t have an upper bound when it has a length"
@@ -411,8 +414,8 @@ shared class FormattingVisitor(
                 lower.visit(this);
                 fWriter.writeToken {
                     ":";
-                    spaceBefore = false;
-                    spaceAfter = false;
+                    spaceBefore = wantsSpaces;
+                    spaceAfter = wantsSpaces;
                     linebreaksBefore = noLineBreak;
                     linebreaksAfter = noLineBreak;
                 };
@@ -423,8 +426,8 @@ shared class FormattingVisitor(
                 lower.visit(this);
                 fWriter.writeToken {
                     "..";
-                    spaceBefore = false;
-                    spaceAfter = false;
+                    spaceBefore = wantsSpaces;
+                    spaceAfter = wantsSpaces;
                     linebreaksBefore = noLineBreak;
                     linebreaksAfter = noLineBreak;
                 };
@@ -433,7 +436,7 @@ shared class FormattingVisitor(
                 lower.visit(this);
                 fWriter.writeToken {
                     "...";
-                    spaceBefore = false;
+                    spaceBefore = wantsSpaces;
                     linebreaksBefore = noLineBreak;
                 };
             }
@@ -444,7 +447,7 @@ shared class FormattingVisitor(
             assert (exists upper);
             fWriter.writeToken {
                 "...";
-                spaceAfter = false;
+                spaceAfter = wantsSpaces;
                 linebreaksAfter = noLineBreak;
             };
             upper.visit(this);
@@ -458,6 +461,9 @@ shared class FormattingVisitor(
         };
         that.visitChildren(this);
     }
+    
+    shared actual void visitEntryOp(EntryOp that)
+            => writeBinaryOpWithSpecialSpaces(fWriter, this, that);
     
     shared actual void visitEntryType(EntryType that) {
         writeOptionallyGrouped(fWriter, () {
@@ -1190,17 +1196,8 @@ shared class FormattingVisitor(
         });
     }
     
-    shared actual void visitRangeOp(RangeOp that) {
-        that.leftTerm.visit(this);
-        fWriter.writeToken {
-            that.mainToken; // ".."
-            linebreaksBefore = noLineBreak;
-            linebreaksAfter = noLineBreak;
-            spaceBefore = false;
-            spaceAfter = false;
-        };
-        that.rightTerm.visit(this);
-    }
+    shared actual void visitRangeOp(RangeOp that)
+            => writeBinaryOpWithSpecialSpaces(fWriter, this, that);
     
     shared actual void visitResourceList(ResourceList that) {
         value context = fWriter.writeToken {
@@ -1278,6 +1275,9 @@ shared class FormattingVisitor(
         };
         that.visitChildren(this);
     }
+    
+    shared actual void visitSegmentOp(SegmentOp that)
+            => writeBinaryOpWithSpecialSpaces(fWriter, this, that);
     
     shared actual void visitSelfExpression(SelfExpression that) {
         fWriter.writeToken {

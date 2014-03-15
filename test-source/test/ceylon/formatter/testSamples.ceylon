@@ -393,3 +393,8 @@ test
 shared void testComprehensionIndentation() {
     testFile("comprehensionIndentation");
 }
+
+test
+shared void testRangeSpacing() {
+    testFile("rangeSpacing");
+}

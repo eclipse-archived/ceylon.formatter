@@ -189,3 +189,30 @@ void writeTypeArgumentOrParameterList(FormattingWriter writer, Visitor visitor, 
         };
         writer.closeContext(context);
 }
+
+void writeBinaryOpWithSpecialSpaces(FormattingWriter writer, Visitor visitor, RangeOp|SegmentOp|EntryOp that) {
+    Term left = (that of BinaryOperatorExpression).leftTerm;
+    Term right = (that of BinaryOperatorExpression).rightTerm;
+    Boolean wantsSpaces = wantsSpecialSpaces({ left, right });
+    left.visit(visitor);
+    writer.writeToken {
+        that.mainToken; // "..", ":" or "->"
+        linebreaksBefore = noLineBreak;
+        linebreaksAfter = noLineBreak;
+        spaceBefore = wantsSpaces;
+        spaceAfter = wantsSpaces;
+    };
+    right.visit(visitor);
+}
+
+"Special spacing rules for range operators: `1..2` and `3 - 2 .. 4 - 2` are both correctly formatted.
+ See issue [#35](https://github.com/lucaswerkmeister/ceylon.formatter/issues/35)."
+Boolean wantsSpecialSpaces({Term*} terms) {
+    variable Boolean wantsSpaces = false;
+    for (term in terms) {
+        if (!wantsSpaces) {
+            wantsSpaces = !(term is Atom|Primary);
+        }
+    }
+    return wantsSpaces;
+}

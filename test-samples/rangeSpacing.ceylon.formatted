@@ -1,0 +1,11 @@
+void run() {
+    value v1 = "a"[1..2];
+    value v2 = "a"[2 - 1 .. 4 - 2];
+    value v3 = "a"[foo.bar..foo.baz];
+    value v4 = "a"[foo..bar];
+    value v5 = 1..2;
+    value v6 = 1:"foo".length;
+    value v7 = 1 .. 2 - 1;
+    value v8 = "abc"[2 - 1 .. foo.bar];
+    value v9 = (1 - 2)..3;
+}
