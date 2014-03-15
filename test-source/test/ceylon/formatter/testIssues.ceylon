@@ -1,18 +1,18 @@
 import ceylon.test { test }
 
-void testBug(Integer number) => testFile("bugs/``number``");
+void testIssue(Integer number) => testFile("issues/``number``");
 
 test
 shared void test27() {
-    testBug(27);
+    testIssue(27);
 }
 
 test
 shared void test30() {
-    testBug(30);
+    testIssue(30);
 }
 
 test
 shared void test38() {
-    testBug(38);
+    testIssue(38);
 }
