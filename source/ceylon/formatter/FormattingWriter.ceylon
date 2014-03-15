@@ -61,7 +61,7 @@ object stopAndDontConsume extends Stop() { consume = false; }
  
  # Indentation
  
- Two [[Indent]]s are associated with each token: one before the token, and one after it.
+ Two indentation levels are associated with each token: one before the token, and one after it.
  Warning: they are not symmetrical!
  
  **The `indentAfter` of a token** introduces a *context* (instance of [[FormattingContext]]) that is
