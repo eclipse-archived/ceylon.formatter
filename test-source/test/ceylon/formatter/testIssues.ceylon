@@ -16,3 +16,8 @@ test
 shared void test38() {
     testIssue(38);
 }
+
+test
+shared void test36() {
+    testIssue(36);
+}
