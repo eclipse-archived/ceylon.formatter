@@ -1,6 +1,6 @@
 import org.antlr.runtime { Token }
 import com.redhat.ceylon.compiler.typechecker.tree { Tree { ... }, Visitor }
-import ceylon.formatter.options { LineBreakStrategy, FormattingOptions }
+import ceylon.formatter.options { FormattingOptions }
 import ceylon.interop.java { CeylonIterable }
 
 
