@@ -30,13 +30,17 @@ void writeBacktickClosing(FormattingWriter writer, Token backtick, FormattingWri
     };
 }
 
-void writeSpecifierMainToken(FormattingWriter writer, Token|String token) {
-    writer.writeToken {
+FormattingWriter.FormattingContext writeSpecifierMainToken(FormattingWriter writer, Token|String token) {
+    value context = writer.writeToken {
         token;
         indentBefore = 2; // TODO option
+        indentAfter = 1;
+        indentAfterOnlyWhenLineBreak = true; // see #37
         spaceBefore = true;
         spaceAfter = true;
     };
+    assert (exists context);
+    return context;
 }
 
 """Writes a meta literal, for example `` `class Object` `` (where [[start]] would be `"class"`)

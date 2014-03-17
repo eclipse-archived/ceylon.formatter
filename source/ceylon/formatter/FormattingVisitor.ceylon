@@ -1367,10 +1367,16 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitSpecifierExpression(SpecifierExpression that) {
+        FormattingWriter.FormattingContext? context;
         if (exists mainToken = that.mainToken) {
-            writeSpecifierMainToken(fWriter, mainToken);
+            context = writeSpecifierMainToken(fWriter, mainToken);
+        } else {
+            context = null;
         }
         that.expression.visit(this);
+        if (exists context) {
+            fWriter.closeContext(context);
+        }
     }
     
     shared actual void visitSpecifierStatement(SpecifierStatement that) {
