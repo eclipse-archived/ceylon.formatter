@@ -90,10 +90,14 @@ shared void run() {
         formattingVisitor.close();
         file.item.close(null);
         Instant t3 = now();
-        process.writeErrorLine("Compiler: ``t1.durationTo(t2)``, formatter: ``t2.durationTo(t3)``");
+        if (options[0].time) {
+            process.writeErrorLine("Compiler: ``t1.durationTo(t2)``, formatter: ``t2.durationTo(t3)``");
+        }
     }
     Instant end = now();
-    process.writeErrorLine("Total: ``start.durationTo(end).string``");
+    if (options[0].time) {
+        process.writeErrorLine("Total: ``start.durationTo(end).string``");
+    }
 }
 
 File parseFile(Path|String path) {

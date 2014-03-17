@@ -242,6 +242,12 @@
                    extends Bar()
                    satisfies Baz {}""";
         "Integer"; "extendsSatisfiesPreIndent"; /* = */ "2";
+    },
+    FormattingOption {
+        "If [[true]], print timing information to standard error.
+         The output is purely informational and its format may change at any time without notice;
+         it should not be used in scripts or something similar.";
+        "Boolean"; "time"; /* = */ "false";
     }
 };
 
