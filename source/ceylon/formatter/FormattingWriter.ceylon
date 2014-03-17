@@ -222,7 +222,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         shared Boolean allowLineBreakAfter => postIndent exists;
         shared actual String string => text;
     }    
-    class OpeningToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine = 0, alignSkip = 0, preIndent = 0)
+    class OpeningToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine = 0, alignSkip = 0, preIndent = 0, indentAfterOnlyWhenLineBreak = false)
         extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine, alignSkip, preIndent)
         satisfies OpeningElement {
         
@@ -234,6 +234,9 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         shared actual Integer charPositionInLine;
         shared actual Integer alignSkip;
         shared actual Integer preIndent;
+        "Apply [[postIndent]] only if token is last of its line;
+         see documentation of corresponding [[writeToken]] parameter."
+        shared default Boolean indentAfterOnlyWhenLineBreak;
         shared actual object context satisfies FormattingContext {
             postIndent = outer.postIndent else 0;
         }
@@ -402,7 +405,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         spaceBefore = 0,
         spaceAfter = 0,
         optional = false,
-        tokenInStream = token) {
+        tokenInStream = token,
+        indentAfterOnlyWhenLineBreak = false) {
         
         // parameters
         "The token."
@@ -448,6 +452,34 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
          in this case you would pass, for example, `\\iVALUE` as [[token]] and `value` as
          [[tokenInStream]],"
         AntlrToken|String tokenInStream;
+        "If [[true]], only apply and stack the [[indentAfter]] if this token is the last of its line.
+         
+         You normally don’t want this; one use case is the main token of a specifier expression:
+         ~~~
+         Html html =>
+             Html {
+                 head = ...;
+                 body = ...;
+             };
+         ~~~
+         Here, the `Html` constructor and named arguments should be indented; however, in
+         ~~~
+         Html html
+                 => Html
+             head = ...;
+             body = ...;
+         }
+         ~~~
+         and
+         ~~~
+         Html html => Html {
+             head = ...;
+             body = ...;
+         }
+         ~~~
+         there shouldn’t be any additional indentation (other than the indentation introduced by
+         the named arguments’ `{`)."
+        Boolean indentAfterOnlyWhenLineBreak;
         
         "Line break count range must be nonnegative"
         assert (linebreaksBefore.first >= 0 && linebreaksBefore.last >= 0);
@@ -570,10 +602,12 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             alignSkip = token.takingWhile('"'.equals).size;
         }
         if (exists context) {
+            "indentAfter doesn’t apply when closing a context"
+            assert (!indentAfterOnlyWhenLineBreak);
             t = ClosingToken(tokenText, allowLineBreakBefore, postIndent, spaceBeforeDesire, spaceAfterDesire, context, charPositionInLine, alignSkip, preIndent);
             ret = null;
         } else {
-            t = OpeningToken(tokenText, allowLineBreakBefore, postIndent, spaceBeforeDesire, spaceAfterDesire, charPositionInLine, alignSkip, preIndent);
+            t = OpeningToken(tokenText, allowLineBreakBefore, postIndent, spaceBeforeDesire, spaceAfterDesire, charPositionInLine, alignSkip, preIndent, indentAfterOnlyWhenLineBreak);
             assert (is OpeningToken t); // ...yeah
             ret = t.context;
         }
@@ -716,6 +750,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
      (Note that there may not appear any line breaks before token `i`.)"
     void writeLine(Integer i) {
         QueueElement? firstToken = tokenQueue[0..i].find((QueueElement elem) => elem is Token);
+        QueueElement? lastToken = tokenQueue[0..i].findLast((QueueElement elem) => elem is Token);
         QueueElement? lastElement = tokenQueue[i];
         "Tried to write too much into a line – not enough tokens!"
         assert(exists lastElement);
@@ -752,7 +787,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
          [[EmptyOpenings|EmptyOpening]]/[[-Closings|EmptyClosing]]."
         Anything(QueueElement) elementHandler;
         Boolean hasMultiLineToken;
-        if (is Token lastToken = tokenQueue[i], lastToken.text.split('\n'.equals).longerThan(1)) {
+        if (is Token lastToken, lastToken.text.split('\n'.equals).longerThan(1)) {
             hasMultiLineToken = true;
         } else {
             hasMultiLineToken = false;
@@ -800,6 +835,10 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         }
         for(token in elementsToHandle.sequence) {
             handleContext(token);
+        }
+        if (is OpeningToken lastToken, lastToken.indentAfterOnlyWhenLineBreak) {
+            // the token’s indentAfter was skipped by writeWithContext, open the context “manually”
+            tokenStack.add(lastToken.context);
         }
         
         if (hasMultiLineToken) {
@@ -901,7 +940,11 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
      if it’s a [[ClosingElement]], [[close|closeContext0]] its context."
     void handleContext(QueueElement element) {
         if (is OpeningElement element) {
-            tokenStack.add(element.context);
+            if (is OpeningToken element, element.indentAfterOnlyWhenLineBreak) {
+                // skip
+            } else {
+                tokenStack.add(element.context);
+            }
         } else if (is ClosingElement element) {
             closeContext0(element);
         }
