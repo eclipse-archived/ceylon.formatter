@@ -248,11 +248,53 @@
          The output is purely informational and its format may change at any time without notice;
          it should not be used in scripts or something similar.";
         "Boolean"; "time"; /* = */ "false";
+    },
+    FormattingOption {
+        """Decide how linebreaks after specifier expression’s main tokens should be handled.
+           
+           * [[stack]]:
+           ~~~
+           Html html =>
+               Html {
+                   head = ...;
+                   body = ...;
+               }
+           ~~~
+           * [[addIndentBefore]]:
+           ~~~
+           Html html =>
+                   Html {
+               head = ...;
+               body = ...;
+           }
+           ~~~
+           The Eclipse IDE’s “Correct Indentation” action produces [[addIndentBefore]].
+           See [#37](https://github.com/lucaswerkmeister/ceylon.formatter/issues/37) for more information.
+           
+           To clarify: this option only applies if you have a line break directly after the `=` or `=>` token.
+           Both
+           ~~~
+           Html html
+                   => Html {
+               head = ...;
+               body = ...;
+           }
+           ~~~
+           (line break *before* `=>`) and
+           ~~~
+           Html html => Html {
+               head = ...;
+               body = ...;
+           }
+           ~~~
+           (no line break around `=>` at all) are unaffected by this option.""";
+        "IndentationAfterSpecifierExpressionStart"; "indentationAfterSpecifierExpressionStart"; /* = */ "addIndentBefore";
     }
 };
 
 {Enum+} enums = {
     Enum("Unlimited"),
     Enum("All"),
-    Enum("ImportStyle", {"singleLine", "multiLine"})
+    Enum("ImportStyle", {"singleLine", "multiLine"}),
+    Enum("IndentationAfterSpecifierExpressionStart", {"stack", "addIndentBefore"})
 };

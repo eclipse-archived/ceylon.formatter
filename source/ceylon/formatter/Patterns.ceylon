@@ -1,6 +1,6 @@
 import org.antlr.runtime { Token }
 import com.redhat.ceylon.compiler.typechecker.tree { Tree { ... }, Visitor }
-import ceylon.formatter.options { FormattingOptions }
+import ceylon.formatter.options { FormattingOptions, stack, addIndentBefore }
 import ceylon.interop.java { CeylonIterable }
 
 
@@ -30,15 +30,28 @@ void writeBacktickClosing(FormattingWriter writer, Token backtick, FormattingWri
     };
 }
 
-FormattingWriter.FormattingContext writeSpecifierMainToken(FormattingWriter writer, Token|String token) {
-    value context = writer.writeToken {
-        token;
-        indentBefore = 2; // TODO option
-        indentAfter = 1;
-        indentAfterOnlyWhenLineBreak = true; // see #37
-        spaceBefore = true;
-        spaceAfter = true;
-    };
+FormattingWriter.FormattingContext writeSpecifierMainToken(FormattingWriter writer, Token|String token, FormattingOptions options) {
+    FormattingWriter.FormattingContext? context;
+    switch (options.indentationAfterSpecifierExpressionStart)
+    case (stack) {
+        context = writer.writeToken {
+            token;
+            indentBefore = 2; // TODO option
+            indentAfter = 1; // see #37
+            indentAfterOnlyWhenLineBreak = true; // see #37
+            spaceBefore = true;
+            spaceAfter = true;
+        };
+    }
+    case (addIndentBefore) {
+        context = writer.writeToken {
+            token;
+            indentBefore = 2; // TODO option
+            nextIndentBefore = 2; // see #37
+            spaceBefore = true;
+            spaceAfter = true;
+        };
+    }
     assert (exists context);
     return context;
 }

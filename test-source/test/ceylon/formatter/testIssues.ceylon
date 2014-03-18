@@ -1,6 +1,12 @@
 import ceylon.test { test }
 
-void testIssue(Integer number) => testFile("issues/``number``");
+void testIssue(Integer number, String? variant = null) {
+    if (exists variant) {
+        testFile("issues/``number``_``variant``");
+    } else {
+        testFile("issues/``number``");
+    }
+}
 
 test
 shared void test27() {
@@ -23,6 +29,11 @@ shared void test36() {
 }
 
 test
-shared void test37() {
-    testIssue(37);
+shared void test37Stack() {
+    testIssue(37, "stack");
+}
+
+test
+shared void test37AddIndentBefore() {
+    testIssue(37, "addIndentBefore");
 }

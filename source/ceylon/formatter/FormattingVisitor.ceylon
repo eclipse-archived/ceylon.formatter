@@ -1369,7 +1369,7 @@ shared class FormattingVisitor(
     shared actual void visitSpecifierExpression(SpecifierExpression that) {
         FormattingWriter.FormattingContext? context;
         if (exists mainToken = that.mainToken) {
-            context = writeSpecifierMainToken(fWriter, mainToken);
+            context = writeSpecifierMainToken(fWriter, mainToken, options);
         } else {
             context = null;
         }
@@ -1382,7 +1382,7 @@ shared class FormattingVisitor(
     shared actual void visitSpecifierStatement(SpecifierStatement that) {
         value context = fWriter.openContext();
         that.baseMemberExpression.visit(this);
-        writeSpecifierMainToken(fWriter, "="); // I can’t find the "=" in the AST anywhere
+        writeSpecifierMainToken(fWriter, "=", options); // I can’t find the "=" in the AST anywhere
         that.specifierExpression.visit(this);
         writeSemicolon(fWriter, that.mainEndToken, context);
     }
