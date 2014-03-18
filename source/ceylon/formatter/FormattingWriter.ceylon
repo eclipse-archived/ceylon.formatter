@@ -314,6 +314,9 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     "Must not allow no line breaks after a line comment, breaks syntax"
     assert (min(options.afterLineCommentLineBreaks) > 0);
     
+    "See documentation of the equally named parameter of [[writeToken]]"
+    variable Integer nextIndentBefore = 0;
+    
     Boolean equalsOrSameText(QueueElement self)(QueueElement? other) {
         if (exists other) {
             if (self == other) {
@@ -406,7 +409,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         spaceAfter = 0,
         optional = false,
         tokenInStream = token,
-        indentAfterOnlyWhenLineBreak = false) {
+        indentAfterOnlyWhenLineBreak = false,
+        nextIndentBefore = 0) {
         
         // parameters
         "The token."
@@ -480,6 +484,17 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
          there shouldn’t be any additional indentation (other than the indentation introduced by
          the named arguments’ `{`)."
         Boolean indentAfterOnlyWhenLineBreak;
+        "This is added to the next token’s [[indentBefore]]. Only currently known use case:
+         ~~~
+         Html html =>
+                 Html {
+             head = ...;
+             body = ...;
+         }
+         ~~~
+         As you can see, the `Html` token has an `indentBefore` of `2` – but logically, that comes
+         from the `=>` token."
+        Integer nextIndentBefore;
         
         "Line break count range must be nonnegative"
         assert (linebreaksBefore.first >= 0 && linebreaksBefore.last >= 0);
@@ -509,7 +524,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             tokenInStreamText = tokenInStream;
         }
         allowLineBreakBefore = linebreaksBefore.any(0.smallerThan);
-        preIndent = allowLineBreakBefore then indentBefore else 0;
+        preIndent = allowLineBreakBefore then indentBefore + this.nextIndentBefore else 0;
         postIndent = linebreaksAfter.any(0.smallerThan) then indentAfter;
         
         // look for optional token
@@ -533,6 +548,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 return null;
             }
         }
+        
+        this.nextIndentBefore = nextIndentBefore;
         
         // handle the part before this token:
         // fast-forward, intersect allowed line breaks, write out line breaks
