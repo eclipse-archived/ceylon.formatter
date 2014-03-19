@@ -6,6 +6,9 @@ import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer {
     multiComment=\iMULTI_COMMENT,
     ws=\iWS,
     stringLiteral=\iSTRING_LITERAL,
+    stringStart=\iSTRING_START,
+    stringMid=\iSTRING_MID,
+    stringEnd=\iSTRING_END,
     verbatimStringLiteral=\iVERBATIM_STRING
 } }
 import ceylon.formatter.options { FormattingOptions, Spaces, Tabs, Mixed }
@@ -150,121 +153,6 @@ object stopAndDontConsume extends Stop() { consume = false; }
        ~~~"
 shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOptions options) {
     
-    shared interface FormattingContext {
-        shared formal Integer postIndent;
-    }
-      
-    interface Element of OpeningElement|ClosingElement {
-        shared formal FormattingContext context;
-    }
-    interface OpeningElement satisfies Element {}
-    interface ClosingElement satisfies Element {}
-    
-    shared abstract class Empty() of EmptyOpening|EmptyClosing {}
-    class EmptyOpening(Integer postIndent = 0) extends Empty() satisfies OpeningElement {
-        shared actual object context satisfies FormattingContext {
-            postIndent = outer.postIndent;
-        }
-    }    
-    class EmptyClosing(context) extends Empty() satisfies ClosingElement {
-        shared actual FormattingContext context;
-    }
-    
-    shared class Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine = 0, alignSkip = 0, preIndent = 0) {
-        
-        shared default String text;
-        shared default Boolean allowLineBreakBefore;
-        shared default Integer? postIndent;
-        shared default Integer wantsSpaceBefore;
-        shared default Integer wantsSpaceAfter;
-        """The character position of the first character of the token in its line.
-           Analogous to [[AntlrToken.charPositionInLine]].
-           
-           Example:
-           ~~~ceylon
-           print ( "hello,
-                        world");
-           ~~~
-           Here, the `charPositionInLine` of the string token is 8, so 8 whitespace
-           characters will be removed from each subsequent line. After that, padding
-           occurs, producing an output like this:
-           ~~~ceylon
-           print("hello,
-                      world");
-           ~~~
-           where the first 6 spaces are alignment, then comes one space from [[alignSkip]],
-           and then come 4 spaces that are part of the string.
-           """
-        see (`value alignSkip`)
-        shared default Integer charPositionInLine;
-        """If [[text]] has several lines, the subsequent lines will be aligned to
-           the [[alignSkip]]<sup>th</sup> character of the first line;
-           in other words, this determines how many characters from the first line
-           are skipped when the subsequent lines are aligned.
-           
-           Example values: `1` for multi-line string literals (to exclude the initial quote),
-           `3` for multi-line verbatim string literals (to exclude the initial quotes).
-           ~~~
-           print("first line
-                  here’s where we have to align
-                 aligning here is a syntax error");
-           ~~~
-           To determine how much whitespace has to be trimmed from the subsequent lines before
-           they are padded to be aligned to the first line, [[charPositionInLine]] is used.
-           """
-        see (`value charPositionInLine`)
-        shared default Integer alignSkip;
-        "The amount of levels to indent before this token.
-         This is only effective if this is the first token in its line,
-         and the only affects this line."
-        shared default Integer preIndent;
-        
-        shared Boolean allowLineBreakAfter => postIndent exists;
-        shared actual String string => text;
-    }    
-    class OpeningToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine = 0, alignSkip = 0, preIndent = 0, indentAfterOnlyWhenLineBreak = false)
-        extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine, alignSkip, preIndent)
-        satisfies OpeningElement {
-        
-        shared actual String text;
-        shared actual Boolean allowLineBreakBefore;
-        shared actual Integer? postIndent;
-        shared actual Integer wantsSpaceBefore;
-        shared actual Integer wantsSpaceAfter;
-        shared actual Integer charPositionInLine;
-        shared actual Integer alignSkip;
-        shared actual Integer preIndent;
-        "Apply [[postIndent]] only if token is last of its line;
-         see documentation of corresponding [[writeToken]] parameter."
-        shared default Boolean indentAfterOnlyWhenLineBreak;
-        shared actual object context satisfies FormattingContext {
-            postIndent = outer.postIndent else 0;
-        }
-    }
-    class ClosingToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, context, charPositionInLine = 0, alignSkip = 0, preIndent = 0)
-            extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, charPositionInLine, alignSkip, preIndent)
-            satisfies ClosingElement {
-        
-        shared actual String text;
-        shared actual Boolean allowLineBreakBefore;
-        shared actual Integer? postIndent;
-        shared actual Integer wantsSpaceBefore;
-        shared actual Integer wantsSpaceAfter;
-        shared actual FormattingContext context;
-        shared actual Integer charPositionInLine;
-        shared actual Integer alignSkip;
-        shared actual Integer preIndent;
-    }
-    
-    shared class LineBreak() {}
-    
-    shared alias QueueElement => Token|Empty|LineBreak;
-    
-    "The `tokenQueue` holds all tokens that have not yet been written."
-    variable MutableList<QueueElement> tokenQueue = LinkedList<QueueElement>();
-    "The `tokenStack` holds all tokens that have been written, but whose context has not yet been closed."
-    MutableList<FormattingContext> tokenStack = LinkedList<FormattingContext>();
-    
     Integer tabWidth => 4; // TODO see ceylon/ceylon-spec#866
     "Keeps track of the length of the line that is currently being written.
      
@@ -308,6 +196,119 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         }
     }
     
+    shared interface FormattingContext {
+        shared formal Integer postIndent;
+    }
+      
+    interface Element of OpeningElement|ClosingElement {
+        shared formal FormattingContext context;
+    }
+    interface OpeningElement satisfies Element {}
+    interface ClosingElement satisfies Element {}
+    
+    shared abstract class Empty() of EmptyOpening|EmptyClosing {}
+    class EmptyOpening(Integer postIndent = 0) extends Empty() satisfies OpeningElement {
+        shared actual object context satisfies FormattingContext {
+            postIndent = outer.postIndent;
+        }
+    }    
+    class EmptyClosing(context) extends Empty() satisfies ClosingElement {
+        shared actual FormattingContext context;
+    }
+    
+    shared class Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth, preIndent = 0) {
+        
+        shared default String text;
+        shared default Boolean allowLineBreakBefore;
+        shared default Integer? postIndent;
+        shared default Integer wantsSpaceBefore;
+        shared default Integer wantsSpaceAfter;
+        """The column to which subsequent lines of a multi-line token are aligned in the source.
+           
+           Consider the string literal in the following example:
+           ~~~
+           print(
+             "Hello,
+                World!");
+           ~~~
+           Here, the source column is 3, because the content of the string starts at column three,
+           and the second line is aligned to that column.
+           Formatted, the code looks like this:
+           ~~~
+           print(
+               "Hello,
+                  World!");
+           ~~~
+           The [[targetColumn]] of the string literal is 5 (because of the corrected indentation),
+           therefore the second line should be aligned to that column.
+           When the second line is then written, 3 spaces are first trimmed from it, arriving at
+           `␣␣World!"`, which is the real content.
+           Then, 5 spaces are added, so that `␣␣␣␣␣␣␣World!` is actually written.
+           
+           Usually, this is [[AntlrToken.charPositionInLine]] plus some constant value depending on the token type,
+           like 1 for string literals and 3 for verbatim string literals.
+           However, for string templates, things get more complicated:
+           Later parts of the template are still aligned to the first part."""
+        see (`value targetColumn`)
+        see (`value AntlrToken.charPositionInLine`)
+        shared default Integer sourceColumn;
+        """The column to which subsequent lines of a multi-line token should be aligned in the target.
+           For an explanation of `source`- and `targetColumn`, see the [[sourceColumn]] documentation.
+           
+           (This needs to be lazily evaluated because it depends on [[countingWriter.currentWidth]]]."""
+        see (`value sourceColumn`)
+        shared default Integer() targetColumn;
+        "The amount of levels to indent before this token.
+         This is only effective if this is the first token in its line,
+         and the only affects this line."
+        shared default Integer preIndent;
+        
+        shared Boolean allowLineBreakAfter => postIndent exists;
+        shared actual String string => text;
+    }    
+    class OpeningToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth, preIndent = 0, indentAfterOnlyWhenLineBreak = false)
+        extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, sourceColumn, targetColumn, preIndent)
+        satisfies OpeningElement {
+        
+        shared actual String text;
+        shared actual Boolean allowLineBreakBefore;
+        shared actual Integer? postIndent;
+        shared actual Integer wantsSpaceBefore;
+        shared actual Integer wantsSpaceAfter;
+        shared actual Integer sourceColumn;
+        shared actual Integer() targetColumn;
+        shared actual Integer preIndent;
+        "Apply [[postIndent]] only if token is last of its line;
+         see documentation of corresponding [[writeToken]] parameter."
+        shared default Boolean indentAfterOnlyWhenLineBreak;
+        shared actual object context satisfies FormattingContext {
+            postIndent = outer.postIndent else 0;
+        }
+    }
+    class ClosingToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, context, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth, preIndent = 0)
+            extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, sourceColumn, targetColumn, preIndent)
+            satisfies ClosingElement {
+        
+        shared actual String text;
+        shared actual Boolean allowLineBreakBefore;
+        shared actual Integer? postIndent;
+        shared actual Integer wantsSpaceBefore;
+        shared actual Integer wantsSpaceAfter;
+        shared actual FormattingContext context;
+        shared actual Integer sourceColumn;
+        shared actual Integer() targetColumn;
+        shared actual Integer preIndent;
+    }
+    
+    shared class LineBreak() {}
+    
+    shared alias QueueElement => Token|Empty|LineBreak;
+    
+    "The `tokenQueue` holds all tokens that have not yet been written."
+    variable MutableList<QueueElement> tokenQueue = LinkedList<QueueElement>();
+    "The `tokenStack` holds all tokens that have been written, but whose context has not yet been closed."
+    MutableList<FormattingContext> tokenStack = LinkedList<FormattingContext>();
+    
     "Remembers if anything was ever enqueued."
     variable Boolean isEmpty = true;
     
@@ -316,6 +317,16 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     
     "See documentation of the equally named parameter of [[writeToken]]"
     variable Integer nextIndentBefore = 0;
+    
+    class ColumnStackEntry(sourceColumn) {
+        shared Integer sourceColumn;
+        shared variable Integer targetColumn = 0;
+    }
+    
+    "A stack to keep track of [[source|Token.sourceColumn]]- and [[targetColumn|Token.targetColumn]]s.
+     
+     See also issue [#39](https://github.com/lucaswerkmeister/ceylon.formatter/issues/39)."
+    MutableList<ColumnStackEntry> columnStack = LinkedList<ColumnStackEntry>();
     
     Boolean equalsOrSameText(QueueElement self)(QueueElement? other) {
         if (exists other) {
@@ -598,33 +609,60 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         currentlyAllowedLinebreaks = linebreaksAfter; 
         FormattingContext? ret;
         Token t;
-        see (`value Token.charPositionInLine`)
-        Integer charPositionInLine;
-        see (`value Token.alignSkip`)
-        Integer alignSkip;
+        see (`value Token.sourceColumn`)
+        Integer sourceColumn;
+        see (`value Token.targetColumn`)
+        Integer() targetColumn;
         if (is AntlrToken token) {
-            charPositionInLine = token.charPositionInLine;
-            if (token.type == stringLiteral) {
-                alignSkip = 1; // "string"
+            if (token.type == stringStart) {
+                // start of a string template:
+                // save this token’s source and target column,
+                // as the other parts are aligned to the same columns (not their own).
+                sourceColumn = token.charPositionInLine + 1;
+                variable value entry = ColumnStackEntry(sourceColumn);
+                columnStack.add(entry);
+                targetColumn = () {
+                    value target = countingWriter.currentWidth + 1;
+                    entry.targetColumn = target;
+                    return target;
+                };
+            } else if (token.type == stringMid) {
+                // middle part of a string template:
+                // reuse start’s source and target column
+                assert (exists entry = columnStack.last);
+                sourceColumn = entry.sourceColumn;
+                targetColumn = () => entry.targetColumn;
+            } else if (token.type == stringEnd) {
+                // end of a string template:
+                // reuse start’s source and target column,
+                // then remove them from the stack
+                assert (exists entry = columnStack.deleteLast());
+                sourceColumn = entry.sourceColumn;
+                targetColumn = () => entry.targetColumn;
+            } else if (token.type == stringLiteral) {
+                sourceColumn = token.charPositionInLine + 1;
+                targetColumn = () => countingWriter.currentWidth + 1;
             } else if (token.type == verbatimStringLiteral) {
-                alignSkip = 3; // """verbatim string"""
+                sourceColumn = token.charPositionInLine + 3;
+                targetColumn = () => countingWriter.currentWidth + 3;
             } else {
-                alignSkip = 0;
+                sourceColumn = token.charPositionInLine;
+                targetColumn = () => countingWriter.currentWidth;
             }
         } else {
-            charPositionInLine = 0; // meaningless
+            sourceColumn = 0; // meaningless
             // hack: for now we assume the only multi-line tokens are multi-line string literals,
-            // so we use the amount of leading quotes as alignSkip
+            // so we use the amount of leading quotes to know how much we have to skip
             assert (is String token);
-            alignSkip = token.takingWhile('"'.equals).size;
+            targetColumn = () => countingWriter.currentWidth + token.takingWhile('"'.equals).size;
         }
         if (exists context) {
             "indentAfter doesn’t apply when closing a context"
             assert (!indentAfterOnlyWhenLineBreak);
-            t = ClosingToken(tokenText, allowLineBreakBefore, postIndent, spaceBeforeDesire, spaceAfterDesire, context, charPositionInLine, alignSkip, preIndent);
+            t = ClosingToken(tokenText, allowLineBreakBefore, postIndent, spaceBeforeDesire, spaceAfterDesire, context, sourceColumn, targetColumn, preIndent);
             ret = null;
         } else {
-            t = OpeningToken(tokenText, allowLineBreakBefore, postIndent, spaceBeforeDesire, spaceAfterDesire, charPositionInLine, alignSkip, preIndent, indentAfterOnlyWhenLineBreak);
+            t = OpeningToken(tokenText, allowLineBreakBefore, postIndent, spaceBeforeDesire, spaceAfterDesire, sourceColumn, targetColumn, preIndent, indentAfterOnlyWhenLineBreak);
             assert (is OpeningToken t); // ...yeah
             ret = t.context;
         }
@@ -886,19 +924,19 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         write(token);
         handleContext(token);
     }
-    
+
     "Write the token’s text. If it contains more than one line, pad the subsequent lines.
      
-     The column to align to is determined by getting [[countingWriter.currentWidth]]
-     before writing the first line and adding [[token]].[[alignSkip|Token.alignSkip]] to it.
+     The [[source|Token.sourceColumn]]- and [[target|Token.targetColumn]] column are taken
+     from the token before writing the first line.
      The subsequent lines are [[trimmed|trimIndentation]], indented with the current indentation
      level (see [[tokenStack]]) using [[options]]`.`[[indentMode|FormattingOptions.indentMode]],
      then aligned to the column with spaces."
     void write(Token token) {
         "The column where the text was originally aligned to."
-        Integer sourceColumn = token.charPositionInLine + token.alignSkip;
+        Integer sourceColumn = token.sourceColumn;
         "The column where we want to align the text to."
-        Integer targetColumn = countingWriter.currentWidth + token.alignSkip;
+        Integer targetColumn = token.targetColumn();
         {String*} lines = token.text.split{
             splitting = '\n'.equals;
             groupSeparators = false; // keep empty lines
@@ -1038,7 +1076,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             postIndent = 0;
             wantsSpaceBefore = maxDesire - 1;
             wantsSpaceAfter = maxDesire - 1;
-            charPositionInLine =
+            sourceColumn =
                 // TODO
                 // this should just be current.charPositionInLine…
                 // … but due to a bug in ANTLR we need a special case for the first token

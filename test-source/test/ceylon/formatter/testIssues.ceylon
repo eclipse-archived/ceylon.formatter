@@ -37,3 +37,8 @@ test
 shared void test37AddIndentBefore() {
     testIssue(37, "addIndentBefore");
 }
+
+test
+shared void test39() {
+    testIssue(39);
+}
