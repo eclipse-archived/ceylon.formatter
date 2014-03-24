@@ -6,9 +6,7 @@ The goal of this project is to provide a formatter for Ceylon source code that c
 Current status
 --------------
 
-The architecture of the formatter ([`FormattingVisitor`](source/ceylon/formatter/FormattingVisitor.ceylon) and [`FormattingWriter`](source/ceylon/formatter/FormattingWriter.ceylon)) is mostly finished. Now I’m adding more and more language features to the Formatter. The target of this phase is “dogfooding”: when the formatter can format itself (and the formatted formatter formatting itself again doesn’t change anything), then this phase is done.
-
-This phase is probably the easiest if you want to help out: you only have to find out how your language feature looks in the Abstract Syntax Tree (for example by setting a breakpoint in `FormattingVisitor.visitAny`) and then override the necessary `visitX` method(s). For usage examples, you can look at the existing `visitX` methods. If you have any questions, don’t hesitate to ask!
+The formatter can format itself completely, and I’m currently working towards a first public beta before I can release a version 1.0.0.
 
 Building
 --------------------
