@@ -328,6 +328,18 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
      See also issue [#39](https://github.com/lucaswerkmeister/ceylon.formatter/issues/39)."
     MutableList<ColumnStackEntry> columnStack = LinkedList<ColumnStackEntry>();
     
+    """For multi-line tokens like
+       ~~~
+       "foo
+        bar ``1`` baz"
+       ~~~
+       The `wantsSpaceAfter` is lost because by the time the `1` is written, the multi-line token
+       is already vanished from the [[tokenQueue]], and only its context remains in the [[tokenStack]].
+       To remedy that, we have to remember that information in this variable.
+       
+       See also [#41](https://github.com/lucaswerkmeister/ceylon.formatter/issues/41)."""
+    variable Integer? multiLineWantsSpaceAfter = null;
+    
     Boolean equalsOrSameText(QueueElement self)(QueueElement? other) {
         if (exists other) {
             if (self == other) {
@@ -720,20 +732,30 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             return false;
         }).first;
         Integer? endIndex = tokenQueue.indexes(element.equals).first;
-        assert (exists endIndex);
         
-        if (exists startIndex) {
-            // first case: only affects token queue
-            filterQueue(startIndex, endIndex);
+        if (exists endIndex) {        
+            if (exists startIndex) {
+                // first case: only affects token queue
+                filterQueue(startIndex, endIndex);
+            } else {
+                // second case: affects token stack and queue
+                Integer? stackIndex = tokenStack.indexes(element.context.equals).first;
+                if (exists stackIndex) {
+                    for (i in stackIndex..tokenStack.size-1) {
+                        tokenStack.deleteLast();
+                    }
+                }
+                filterQueue(0, endIndex);
+            }
         } else {
-            // second case: affects token stack and queue
+            // third case: only affects token stack
+            assert (is Null startIndex);
             Integer? stackIndex = tokenStack.indexes(element.context.equals).first;
             if (exists stackIndex) {
                 for (i in stackIndex..tokenStack.size-1) {
                     tokenStack.deleteLast();
                 }
             }
-            filterQueue(0, endIndex);
         }
     }
     
@@ -887,7 +909,15 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             QueueElement? removing = tokenQueue.first;
             assert (exists removing);
             if (is Token currentToken = removing) {
-                if (exists p = previousToken, p.wantsSpaceAfter + currentToken.wantsSpaceBefore >= 0) {
+                Integer? wantsSpaceAfter;
+                if (exists p = previousToken) {
+                    wantsSpaceAfter = p.wantsSpaceAfter;
+                } else if (exists m = multiLineWantsSpaceAfter) {
+                    wantsSpaceAfter = m;
+                } else {
+                    wantsSpaceAfter = null;
+                }
+                if (exists wantsSpaceAfter, wantsSpaceAfter + currentToken.wantsSpaceBefore >= 0) {
                     countingWriter.write(" ");
                 }
                 if (exists firstToken, currentToken == firstToken, is ClosingToken currentToken) {
@@ -905,6 +935,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             } else {
                 // the element was already deleted somewhere in the elementHandler
             }
+            multiLineWantsSpaceAfter = null;
         }
         for(token in elementsToHandle.sequence) {
             handleContext(token);
@@ -916,6 +947,9 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         
         if (hasMultiLineToken) {
             // don’t write a line break
+            // but store wantsSpaceAfter information
+            assert (is Token lastToken);
+            multiLineWantsSpaceAfter = lastToken.wantsSpaceAfter;
         } else {
             countingWriter.writeLine();
         }

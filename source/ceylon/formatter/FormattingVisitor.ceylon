@@ -1423,12 +1423,34 @@ shared class FormattingVisitor(
         assert  (nonempty literals);
         "String template must have exactly more string literal than expressions"
         assert (literals.size == expressions.size + 1);
-        literals.first.visit(this);
+        variable Boolean? wantsSpace;
+        if (exists expression = expressions.first) {
+            wantsSpace = wantsSpecialSpaces { expression.term };
+        } else {
+            wantsSpace = null;
+        }
+        fWriter.writeToken {
+            literals.first.mainToken;
+            spaceBefore = 0;
+            spaceAfter = wantsSpace else 0;
+        };
         variable value i = 0;
         for (literal in literals.rest) {
             assert (exists expression = expressions[i++]);
+            assert (exists previousWantsSpace = wantsSpace);
+            Boolean? nextWantsSpace;
+            if (exists nextExpression = expressions[i]) {
+                nextWantsSpace = wantsSpecialSpaces { nextExpression.term };
+            } else {
+                nextWantsSpace = null;
+            }
             expression.visit(this);
-            literal.visit(this);
+            fWriter.writeToken {
+                literal.mainToken;
+                spaceBefore = previousWantsSpace;
+                spaceAfter = nextWantsSpace else 0;
+            };
+            wantsSpace = nextWantsSpace;
         }
     }
     
