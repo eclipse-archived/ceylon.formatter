@@ -274,7 +274,7 @@ class Generator() satisfies Closeable {
         writer.writeLine("shared object ``instance`` extends ``classname``() {}");
     }
     
-    shared actual Anything close(Exception? exception) => gitignore.close(exception);
+    shared actual Anything close(Throwable? t) => gitignore.close(t);
     
     shared actual Anything open() => gitignore.open();
     
