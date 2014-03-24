@@ -1,14 +1,24 @@
-import ceylon.formatter.options { FormattingOptions }
-import com.redhat.ceylon.compiler.typechecker.tree { Tree { CompilationUnit } }
-import org.antlr.runtime { TokenStream }
-import ceylon.file { Writer }
+import ceylon.formatter.options {
+    FormattingOptions
+}
+import com.redhat.ceylon.compiler.typechecker.tree {
+    Tree {
+        CompilationUnit
+    }
+}
+import org.antlr.runtime {
+    TokenStream
+}
+import ceylon.file {
+    Writer
+}
 
 object stdoutWriter satisfies Writer {
-    shared actual void destroy() => flush();    
-    shared actual void flush() {}    
+    shared actual void destroy() => flush();
+    shared actual void flush() {}
     shared actual void write(String string) {
         process.write(string);
-    }    
+    }
     shared actual void writeLine(String line) {
         process.writeLine(line);
     }
@@ -47,5 +57,4 @@ shared void format(
      (which is what you normally give to the compiler), because that skips comments.
      Use [[org.antlr.runtime::BufferedTokenStream]] instead."
     TokenStream? tokens = null)
-
         => compilationUnit.visit(FormattingVisitor(tokens, output, options));

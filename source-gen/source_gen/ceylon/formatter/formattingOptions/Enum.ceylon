@@ -1,4 +1,6 @@
-import java.lang { JChar=Character }
+import java.lang {
+    JChar=Character
+}
 
 "An enumerated type without any actual code.
  
@@ -8,7 +10,7 @@ import java.lang { JChar=Character }
  special value. You could use [[null]], but adding a dedicated object/type pair
  `unlimited` increases readability and decreases the chance of the user giving
  the wrong value without understanding what it means."
-class Enum(classname, instances = {lowercasedFirstChar(classname)}) {
+class Enum(classname, instances = { lowercasedFirstChar(classname) }) {
     
     shared String classname; // see ceylon/ceylon-compiler#1492
     

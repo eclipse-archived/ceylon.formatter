@@ -295,6 +295,6 @@
 {Enum+} enums = {
     Enum("Unlimited"),
     Enum("All"),
-    Enum("ImportStyle", {"singleLine", "multiLine"}),
-    Enum("IndentationAfterSpecifierExpressionStart", {"stack", "addIndentBefore"})
+    Enum("ImportStyle", { "singleLine", "multiLine" }),
+    Enum("IndentationAfterSpecifierExpressionStart", { "stack", "addIndentBefore" })
 };

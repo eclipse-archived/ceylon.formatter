@@ -1,18 +1,35 @@
-import ceylon.file { Writer }
-import ceylon.collection { MutableList, LinkedList }
-import org.antlr.runtime { AntlrToken=Token, TokenStream }
-import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer {
-    lineComment=\iLINE_COMMENT,
-    multiComment=\iMULTI_COMMENT,
-    ws=\iWS,
-    stringLiteral=\iSTRING_LITERAL,
-    stringStart=\iSTRING_START,
-    stringMid=\iSTRING_MID,
-    stringEnd=\iSTRING_END,
-    verbatimStringLiteral=\iVERBATIM_STRING
-} }
-import ceylon.formatter.options { FormattingOptions, Spaces, Tabs, Mixed }
-import ceylon.time.internal.math { floorDiv }
+import ceylon.file {
+    Writer
+}
+import ceylon.collection {
+    MutableList,
+    LinkedList
+}
+import org.antlr.runtime {
+    AntlrToken=Token,
+    TokenStream
+}
+import com.redhat.ceylon.compiler.typechecker.parser {
+    CeylonLexer {
+        lineComment=\iLINE_COMMENT,
+        multiComment=\iMULTI_COMMENT,
+        ws=\iWS,
+        stringLiteral=\iSTRING_LITERAL,
+        stringStart=\iSTRING_START,
+        stringMid=\iSTRING_MID,
+        stringEnd=\iSTRING_END,
+        verbatimStringLiteral=\iVERBATIM_STRING
+    }
+}
+import ceylon.formatter.options {
+    FormattingOptions,
+    Spaces,
+    Tabs,
+    Mixed
+}
+import ceylon.time.internal.math {
+    floorDiv
+}
 
 "The maximum value that is safe to use as [[FormattingWriter.writeToken]]’s `space[Before|After]` argument.
  
@@ -29,7 +46,7 @@ shared Integer minDesire = runtime.minIntegerValue / 2 + 1;
  value is [[minDesire]] for `false` and [[maxDesire]] for `true`."
 shared Integer desire(Boolean|Integer desire) {
     if (is Integer desire) {
-        return max{minDesire, min{maxDesire, desire}};
+        return max { minDesire, min { maxDesire, desire } };
     } else if (is Boolean desire) { // TODO unnecessary if here
         if (desire) {
             return maxDesire;
@@ -46,10 +63,10 @@ shared Range<Integer> noLineBreak = 0..0;
 "Used in [[FormattingWriter.fastForward]]."
 abstract class Stop() of stopAndConsume|stopAndDontConsume { shared formal Boolean consume; }
 "Stop fast-forwarding and [[consume|org.antlr.runtime::IntStream.consume]] the current token."
-see(`value stopAndDontConsume`)
+see (`value stopAndDontConsume`)
 object stopAndConsume extends Stop() { consume = true; }
 "Stop fast-forwarding and *don’t* consume the current token."
-see(`value stopAndConsume`)
+see (`value stopAndConsume`)
 object stopAndDontConsume extends Stop() { consume = false; }
 
 "Writes tokens to an underlying [[writer]], respecting certain formatting settings and a maximum line width.
@@ -181,8 +198,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 for (char in lines.last else "") {
                     if (char == '\t') {
                         m_CurrentWidth = (m_CurrentWidth % tabWidth == 0)
-                            then m_CurrentWidth + tabWidth
-                            else (floorDiv(m_CurrentWidth, tabWidth) + 1) * tabWidth;
+                                then m_CurrentWidth + tabWidth
+                                else (floorDiv(m_CurrentWidth, tabWidth) + 1) * tabWidth;
                     } else {
                         m_CurrentWidth += 1;
                     }
@@ -199,7 +216,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     shared interface FormattingContext {
         shared formal Integer postIndent;
     }
-      
+    
     interface Element of OpeningElement|ClosingElement {
         shared formal FormattingContext context;
     }
@@ -211,7 +228,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         shared actual object context satisfies FormattingContext {
             postIndent = outer.postIndent;
         }
-    }    
+    }
     class EmptyClosing(context) extends Empty() satisfies ClosingElement {
         shared actual FormattingContext context;
     }
@@ -265,10 +282,10 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         
         shared Boolean allowLineBreakAfter => postIndent exists;
         shared actual String string => text;
-    }    
+    }
     class OpeningToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth, preIndent = 0, indentAfterOnlyWhenLineBreak = false)
-        extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, sourceColumn, targetColumn, preIndent)
-        satisfies OpeningElement {
+            extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, sourceColumn, targetColumn, preIndent)
+            satisfies OpeningElement {
         
         shared actual String text;
         shared actual Boolean allowLineBreakBefore;
@@ -359,7 +376,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     "Intersect the range of allowed line breaks between the latest token and the next one to be [[written|writeToken]]
      with the given range."
     see (`function requireAtLeastLineBreaks`)
-    shared void intersectAllowedLineBreaks(Range<Integer> other,
+    shared void intersectAllowedLineBreaks(
+        Range<Integer> other,
         "If [[true]], [[FormattingWriter.fastForward]] the token stream before intersecting the line breaks.
          This makes a difference if there are comments between the latest and the next token; with fast-forwarding,
          the intersection will be applied between the comments and the next token, while without it, the intersection
@@ -367,24 +385,24 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         Boolean fastForwardFirst = true) {
         if (fastForwardFirst) {
             fastForward((AntlrToken? current) {
-                if (exists current) {
-                    assert (exists lineBreaks = givenLineBreaks);
-                    if (current.type == lineComment || current.type == multiComment) {
-                        return fastForwardComment(current);
-                    } else if (current.type == ws) {
-                        givenLineBreaks = lineBreaks + current.text.count('\n'.equals);
-                        return empty;
+                    if (exists current) {
+                        assert (exists lineBreaks = givenLineBreaks);
+                        if (current.type == lineComment || current.type == multiComment) {
+                            return fastForwardComment(current);
+                        } else if (current.type == ws) {
+                            givenLineBreaks = lineBreaks + current.text.count('\n'.equals);
+                            return empty;
+                        } else {
+                            return { stopAndDontConsume }; // end fast-forwarding
+                        }
                     } else {
-                        return {stopAndDontConsume}; // end fast-forwarding
+                        return { stopAndDontConsume }; // end fast-forwarding
                     }
-                } else {
-                    return {stopAndDontConsume}; // end fast-forwarding
-                }
-            });
+                });
         }
         value inc1 = currentlyAllowedLinebreaks.decreasing then currentlyAllowedLinebreaks.reversed else currentlyAllowedLinebreaks;
         value inc2 = other.decreasing then other.reversed else other;
-        value intersect = max{inc1.first, inc2.first}..min{inc1.last, inc2.last};
+        value intersect = max { inc1.first, inc2.first }..min { inc1.last, inc2.last };
         if (intersect.decreasing) {
             assert (false); // TODO
         }
@@ -392,7 +410,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     }
     "Require at leasts [[limit]] line breaks between the latest token and the next one to be [[written|writeToken]]."
     see (`function intersectAllowedLineBreaks`)
-    shared void requireAtLeastLineBreaks(Integer limit,
+    shared void requireAtLeastLineBreaks(
+        Integer limit,
         "If [[true]], [[FormattingWriter.fastForward]] the token stream before intersecting the line breaks.
          This makes a difference if there are comments between the latest and the next token; with fast-forwarding,
          the intersection will be applied between the comments and the next token, while without it, the intersection
@@ -409,7 +428,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
      or use the first value of the allowed range if they’re null."
     Integer lineBreakAmount(Integer? givenLineBreaks) {
         if (is Integer givenLineBreaks) {
-            return min{max{givenLineBreaks, min(currentlyAllowedLinebreaks)}, max(currentlyAllowedLinebreaks)};
+            return min { max { givenLineBreaks, min(currentlyAllowedLinebreaks) }, max(currentlyAllowedLinebreaks) };
         } else {
             return currentlyAllowedLinebreaks.first;
         }
@@ -559,7 +578,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             variable value i = 1;
             try {
                 while (exists currentToken = tokens.\iLT(i++)) {
-                    if (currentToken.type in {lineComment, multiComment, ws}) {
+                    if (currentToken.type in { lineComment, multiComment, ws }) {
                         continue;
                     }
                     if (currentToken.text == tokenInStreamText) {
@@ -582,42 +601,42 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
          */
         intersectAllowedLineBreaks(linebreaksBefore, false);
         fastForward((AntlrToken? current) {
-            if (exists current) {
-                assert (exists lineBreaks = givenLineBreaks);
-                if (current.type == lineComment || current.type == multiComment) {
-                    /*
-                     we treat comments as regular tokens
-                     just with the difference that their before- and afterToken range isn’t given, but an option instead
-                     */
-                    return fastForwardComment(current);
-                } else if (current.type == ws) {
-                    givenLineBreaks = lineBreaks + current.text.count('\n'.equals);
-                    return empty;
-                } else if (current.type == -1) {
-                    // EOF
-                    return {stopAndDontConsume};
-                } else if (current.text == tokenInStreamText) {
-                    return {stopAndConsume}; // end fast-forwarding
-                } else {
-                    value ex = Exception("Unexpected token '``current.text``', expected '``tokenText``' instead");
-                    if (options.failFast) {
-                        throw ex;
+                if (exists current) {
+                    assert (exists lineBreaks = givenLineBreaks);
+                    if (current.type == lineComment || current.type == multiComment) {
+                        /*
+                         we treat comments as regular tokens
+                         just with the difference that their before- and afterToken range isn’t given, but an option instead
+                         */
+                        return fastForwardComment(current);
+                    } else if (current.type == ws) {
+                        givenLineBreaks = lineBreaks + current.text.count('\n'.equals);
+                        return empty;
+                    } else if (current.type == -1) {
+                        // EOF
+                        return { stopAndDontConsume };
+                    } else if (current.text == tokenInStreamText) {
+                        return { stopAndConsume }; // end fast-forwarding
                     } else {
-                        ex.printStackTrace();
-                        // attempt to recover by just writing out tokens until we find the right one
-                        return { OpeningToken {
-                            current.text;
-                            allowLineBreakBefore = true;
-                            postIndent = 0;
-                            wantsSpaceBefore = 0;
-                            wantsSpaceAfter = 0;
-                        } };
+                        value ex = Exception("Unexpected token '``current.text``', expected '``tokenText``' instead");
+                        if (options.failFast) {
+                            throw ex;
+                        } else {
+                            ex.printStackTrace();
+                            // attempt to recover by just writing out tokens until we find the right one
+                            return { OpeningToken {
+                                        current.text;
+                                        allowLineBreakBefore = true;
+                                        postIndent = 0;
+                                        wantsSpaceBefore = 0;
+                                        wantsSpaceAfter = 0;
+                                    } };
+                        }
                     }
+                } else {
+                    return { stopAndDontConsume }; // end fast-forwarding
                 }
-            } else {
-                return {stopAndDontConsume}; // end fast-forwarding
-            }
-        });
+            });
         for (i in 0:lineBreakAmount(givenLineBreaks)) {
             tokenQueue.add(LineBreak());
         }
@@ -626,7 +645,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
          handle this token:
          set allowed line breaks, add token
          */
-        currentlyAllowedLinebreaks = linebreaksAfter; 
+        currentlyAllowedLinebreaks = linebreaksAfter;
         FormattingContext? ret;
         Token t;
         see (`value Token.sourceColumn`)
@@ -726,14 +745,14 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
          2. Go through the `tokenQueue` from the beginning until `element` and do the same as above."
     void closeContext0(ClosingElement&QueueElement element) {
         Integer? startIndex = tokenQueue.indexes((QueueElement e) {
-            if (is OpeningElement e, e.context == element.context) {
-                return true;
-            }
-            return false;
-        }).first;
+                if (is OpeningElement e, e.context == element.context) {
+                    return true;
+                }
+                return false;
+            }).first;
         Integer? endIndex = tokenQueue.indexes(element.equals).first;
         
-        if (exists endIndex) {        
+        if (exists endIndex) {
             if (exists startIndex) {
                 // first case: only affects token queue
                 filterQueue(startIndex, endIndex);
@@ -741,7 +760,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 // second case: affects token stack and queue
                 Integer? stackIndex = tokenStack.indexes(element.context.equals).first;
                 if (exists stackIndex) {
-                    for (i in stackIndex..tokenStack.size-1) {
+                    for (i in stackIndex .. tokenStack.size - 1) {
                         tokenStack.deleteLast();
                     }
                 }
@@ -752,7 +771,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             assert (is Null startIndex);
             Integer? stackIndex = tokenStack.indexes(element.context.equals).first;
             if (exists stackIndex) {
-                for (i in stackIndex..tokenStack.size-1) {
+                for (i in stackIndex .. tokenStack.size - 1) {
                     tokenStack.deleteLast();
                 }
             }
@@ -763,15 +782,15 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     void filterQueue(Integer start, Integer end) {
         variable Integer i = 0;
         tokenQueue = LinkedList(tokenQueue.map((QueueElement elem) {
-            if (start <= i++ <= end) {
-                if (is Empty elem) {
-                    return null;
-                } else if (is Token elem) {
-                    return Token(elem.text, elem.allowLineBreakBefore, elem.postIndent, elem.wantsSpaceBefore, elem.wantsSpaceAfter);
-                }
-            }
-            return elem;
-        }).coalesced);
+                    if (start <= i++ <= end) {
+                        if (is Empty elem) {
+                            return null;
+                        } else if (is Token elem) {
+                            return Token(elem.text, elem.allowLineBreakBefore, elem.postIndent, elem.wantsSpaceBefore, elem.wantsSpaceAfter);
+                        }
+                    }
+                    return elem;
+                }).coalesced);
     }
     
     "Write a line if there are enough tokens enqueued to determine where the next line break should occur.
@@ -797,14 +816,14 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 offset,
                 length);
         } else {
-            index = tokenQueue.indexes(function (QueueElement element) {
-                if (is LineBreak element) {
-                    return true;
-                } else if (is Token element, element.text.split('\n'.equals).longerThan(1)) {
-                    return true;
-                }
-                return false;
-            }).first;
+            index = tokenQueue.indexes(function(QueueElement element) {
+                    if (is LineBreak element) {
+                        return true;
+                    } else if (is Token element, element.text.split('\n'.equals).longerThan(1)) {
+                        return true;
+                    }
+                    return false;
+                }).first;
         }
         if (exists index) {
             if (!is LineBreak t = tokenQueue[index]) {
@@ -823,7 +842,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     "Write out lines as long as there are enough tokens enqueued to determine where the next
      line break should occur."
     void writeLines() {
-        while(tryNextLine()) {}
+        while (tryNextLine()) {}
     }
     
     "Write `i + 1` tokens from the queue, followed by a line break.
@@ -846,7 +865,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         QueueElement? lastToken = tokenQueue[0..i].findLast((QueueElement elem) => elem is Token);
         QueueElement? lastElement = tokenQueue[i];
         "Tried to write too much into a line – not enough tokens!"
-        assert(exists lastElement);
+        assert (exists lastElement);
         
         if (is ClosingToken firstToken) {
             /*
@@ -870,7 +889,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         
         if (exists tmpIndent) {
             value deleted = tokenStack.deleteLast();
-            assert(exists deleted, deleted == tmpIndent);
+            assert (exists deleted, deleted == tmpIndent);
         }
         
         variable Token? previousToken = null;
@@ -905,7 +924,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 return null;
             };
         }
-        while(tokenQueue.any(equalsOrSameText(lastElement))) {
+        while (tokenQueue.any(equalsOrSameText(lastElement))) {
             QueueElement? removing = tokenQueue.first;
             assert (exists removing);
             if (is Token currentToken = removing) {
@@ -937,7 +956,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             }
             multiLineWantsSpaceAfter = null;
         }
-        for(token in elementsToHandle.sequence) {
+        for (token in elementsToHandle.sequence) {
             handleContext(token);
         }
         if (is OpeningToken lastToken, lastToken.indentAfterOnlyWhenLineBreak) {
@@ -976,7 +995,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         write(token);
         handleContext(token);
     }
-
+    
     "Write the token’s text. If it contains more than one line, pad the subsequent lines.
      
      The [[source|Token.sourceColumn]]- and [[target|Token.targetColumn]] column are taken
@@ -989,7 +1008,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         Integer sourceColumn = token.sourceColumn;
         "The column where we want to align the text to."
         Integer targetColumn = token.targetColumn();
-        {String*} lines = token.text.split{
+        {String*} lines = token.text.split {
             splitting = '\n'.equals;
             groupSeparators = false; // keep empty lines
         };
@@ -1027,18 +1046,18 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             tabWidth = indentMode.tabs.width;
         }
         String trimmedLine = line.trimLeading((Character elem) {
-            if (column > 0) {
-                if (elem == '\t') {
-                    column -= tabWidth;
-                } else if (elem.whitespace) {
-                    column -= 1;
-                } else {
-                    return false;
+                if (column > 0) {
+                    if (elem == '\t') {
+                        column -= tabWidth;
+                    } else if (elem.whitespace) {
+                        column -= 1;
+                    } else {
+                        return false;
+                    }
+                    return true;
                 }
-                return true;
-            }
-            return false;
-        });
+                return false;
+            });
         String paddedLine = " ".repeat(-column) + trimmedLine;
         return paddedLine;
     }
@@ -1090,7 +1109,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                     break;
                 }
             } else {
-                if (exists tokens) {                    
+                if (exists tokens) {
                     tokens.consume();
                     currentToken = tokens.get(++i);
                 }
@@ -1129,16 +1148,16 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             wantsSpaceBefore = maxDesire - 1;
             wantsSpaceAfter = maxDesire - 1;
             sourceColumn =
-                /*
-                 TODO
-                 this should just be current.charPositionInLine…
-                 … but due to a bug in ANTLR we need a special case for the first token
-                 */
-                current.tokenIndex == 0
-                    /*
-                     sometimes, the very first token has a charPositionInLine of != 0
-                     I have no idea why or when this happens
-                     */
+            /*
+             TODO
+             this should just be current.charPositionInLine…
+             … but due to a bug in ANTLR we need a special case for the first token
+             */
+                    current.tokenIndex == 0
+            /*
+             sometimes, the very first token has a charPositionInLine of != 0
+             I have no idea why or when this happens
+             */
                     then 0
                     else current.charPositionInLine;
         };

@@ -1,12 +1,43 @@
 import java.io { ... }
-import java.lang { System { sysin=\iin } }
-import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer, CeylonParser }
-import org.antlr.runtime { CharStream, ANTLRFileStream, ANTLRInputStream, CommonTokenStream, BufferedTokenStream }
-import com.redhat.ceylon.compiler.typechecker.tree { Tree }
+import java.lang {
+    System {
+        sysin=\iin
+    }
+}
+import com.redhat.ceylon.compiler.typechecker.parser {
+    CeylonLexer,
+    CeylonParser
+}
+import org.antlr.runtime {
+    CharStream,
+    ANTLRFileStream,
+    ANTLRInputStream,
+    CommonTokenStream,
+    BufferedTokenStream
+}
+import com.redhat.ceylon.compiler.typechecker.tree {
+    Tree
+}
 import ceylon.time { ... }
-import ceylon.file { Writer, Resource, Path, parsePath, Directory, File, Nil, Link, Visitor }
-import ceylon.formatter.options { FormattingOptions, commandLineOptions }
-import ceylon.collection { MutableMap, HashMap }
+import ceylon.file {
+    Writer,
+    Resource,
+    Path,
+    parsePath,
+    Directory,
+    File,
+    Nil,
+    Link,
+    Visitor
+}
+import ceylon.formatter.options {
+    FormattingOptions,
+    commandLineOptions
+}
+import ceylon.collection {
+    MutableMap,
+    HashMap
+}
 
 "Run the module `ceylon.formatter`."
 shared void run() {
@@ -16,7 +47,7 @@ shared void run() {
         options = [options[0], [inFileName, inFileName]];
     }
     {<CharStream->Writer>*} files;
-    switch (options[1].size<=>2)
+    switch (options[1].size <=> 2)
     case (smaller) {
         // no input or output files, pipe mode
         object sysoutWriter satisfies Writer {
@@ -32,22 +63,22 @@ shared void run() {
          read from first file, write to second file
          or recursively from first directory to second directory
          */
-        assert(exists inFileName = options[1][0], exists outFileName = options[1][1]);
+        assert (exists inFileName = options[1][0], exists outFileName = options[1][1]);
         if (is Directory dir = parsePath(inFileName).resource) {
             Directory target;
             Resource r = parsePath(outFileName).resource;
-            if (is Directory r){
+            if (is Directory r) {
                 target = r;
             } else if (is Nil r) {
                 target = r.createDirectory();
             } else {
                 throw Exception("Can’t format files from source directory '``inFileName``' to target resource '``outFileName``'!");
             }
-            MutableMap<CharStream, Writer> mutableFiles = HashMap<CharStream, Writer>();
+            MutableMap<CharStream,Writer> mutableFiles = HashMap<CharStream,Writer>();
             dir.path.visit {
                 object visitor extends Visitor() {
                     shared actual void file(File file) {
-                        if(file.name.endsWith(".ceylon")) {
+                        if (file.name.endsWith(".ceylon")) {
                             mutableFiles.put(ANTLRFileStream(file.path.string), parseFile(parsePath(outFileName).childPath(file.path.relativePath(file.path.elementPaths.first else nothing))).Overwriter());
                         }
                     }
@@ -67,16 +98,16 @@ shared void run() {
             dir = d.linkedResource;
         }
         value finalDir = dir;
-        switch(finalDir)
+        switch (finalDir)
         case (is Nil) {
             finalDir.createDirectory();
         }
         case (is File) {
             throw Exception("Output directory '``outDirName``' is a file!");
         }
-        else { }
+        else {}
         files = {
-            for (inFileName in options[1].initial(options[1].size-1))
+            for (inFileName in options[1].initial(options[1].size - 1))
                 ANTLRFileStream(inFileName)->parseFile(outDir.childPath(inFileName)).Overwriter()
         };
     }
@@ -103,7 +134,7 @@ shared void run() {
 }
 
 File parseFile(Path|String path) {
-    Resource output =  parsePath(path.string).resource;
+    Resource output = parsePath(path.string).resource;
     File|Directory|Nil resolved;
     if (is Link i = output) {
         resolved = i.linkedResource;
@@ -122,10 +153,10 @@ File parseFile(Path|String path) {
         assert (exists firstPart = parts.first, exists lastPart = parts.last);
         variable Path p = firstPart;
         variable File f;
-        for(childP in parts.rest) {
+        for (childP in parts.rest) {
             p = p.childPath(childP);
             Resource r = p.resource;
-            switch(r)
+            switch (r)
             case (is File) {
                 if (childP != lastPart) {
                     throw Exception("Output directory part '``p``' is a file!");
@@ -146,7 +177,7 @@ File parseFile(Path|String path) {
                     throw Exception("Output is a directory!");
                 }
             }
-            else { 
+            else {
                 throw Exception("Output is not a file!");
             }
         } else {

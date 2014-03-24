@@ -1,8 +1,12 @@
-import ceylon.formatter { FormattingWriter { QueueElement=QueueElement } }
+import ceylon.formatter {
+    FormattingWriter {
+        QueueElement=QueueElement
+    }
+}
 
 "A strategy to break a series of tokens into multiple lines to accomodate a maximum line length."
 shared abstract class LineBreakStrategy() {
-
+    
     "Determine where the next line break should occur, or return `null` if no line break should
      occur (e. g. because there aren’t enough tokens).
      
@@ -22,7 +26,7 @@ shared abstract class LineBreakStrategy() {
         "The initial line length (usually indentation)."
         Integer offset,
         "The maximum line length."
-        see(`value FormattingOptions.maxLineLength`)
+        see (`value FormattingOptions.maxLineLength`)
         Integer maxLineLength);
 }
 

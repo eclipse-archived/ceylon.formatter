@@ -1,15 +1,21 @@
-import ceylon.formatter { FormattingWriter { QueueElement=QueueElement, Token=Token, LineBreak=LineBreak } }
+import ceylon.formatter {
+    FormattingWriter {
+        QueueElement=QueueElement,
+        Token=Token,
+        LineBreak=LineBreak
+    }
+}
 class DefaultLineBreaks() extends LineBreakStrategy() {
-
+    
     shared actual Integer? lineBreakLocation(QueueElement[] elements, Integer offset, Integer maxLineLength) {
         "Only the [[FormattingWriter.Token]] elements from [[elements]].
          
          This allows us to access previous and next tokens directly
          instead of having to deal with non-token elements."
         Token[] tokens = elements.filter((QueueElement elem) => elem is Token).collect((QueueElement element) {
-            assert (is Token element);
-            return element;
-        });
+                assert (is Token element);
+                return element;
+            });
         
         /*
          1. find the best location to break a line, without respect
@@ -35,7 +41,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
                     currentLength += token.text.size;
                     if (exists previousToken = tokens[tokenIndex - 1],
                         previousToken.wantsSpaceAfter + token.wantsSpaceBefore >= 0) {
-                            currentLength++; // space between tokens
+                        currentLength++; // space between tokens
                     }
                     tokenIndex++;
                 } else {

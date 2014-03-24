@@ -1,7 +1,18 @@
-import org.antlr.runtime { Token }
-import com.redhat.ceylon.compiler.typechecker.tree { Tree { ... }, Visitor }
-import ceylon.formatter.options { FormattingOptions, stack, addIndentBefore }
-import ceylon.interop.java { CeylonIterable }
+import org.antlr.runtime {
+    Token
+}
+import com.redhat.ceylon.compiler.typechecker.tree {
+    Tree { ... },
+    Visitor
+}
+import ceylon.formatter.options {
+    FormattingOptions,
+    stack,
+    addIndentBefore
+}
+import ceylon.interop.java {
+    CeylonIterable
+}
 
 
 /*
@@ -9,7 +20,6 @@ import ceylon.interop.java { CeylonIterable }
  remove assertions before release; they’re probably useful for finding bugs,
  but impact performance negatively
  */
-
 
 FormattingWriter.FormattingContext writeBacktickOpening(FormattingWriter writer, Token backtick) {
     assert (backtick.text == "`");
@@ -116,7 +126,7 @@ void writeModifier(FormattingWriter writer, Token modifier) {
 }
 
 void writeSemicolon(FormattingWriter writer, Token semicolon, FormattingWriter.FormattingContext context) {
-    assert(semicolon.text == ";");
+    assert (semicolon.text == ";");
     writer.writeToken {
         semicolon;
         linebreaksBefore = noLineBreak;
@@ -136,7 +146,7 @@ void writeOptionallyGrouped(FormattingWriter writer, Anything() inner) {
         spaceAfter = false;
         optional = true;
     };
-    while (exists c=context) {
+    while (exists c = context) {
         context = writer.writeToken {
             "<";
             linebreaksAfter = noLineBreak;
@@ -151,7 +161,7 @@ void writeOptionallyGrouped(FormattingWriter writer, Anything() inner) {
         spaceBefore = false;
         optional = true;
     };
-    while (exists c=context) {
+    while (exists c = context) {
         context = writer.writeToken {
             ">";
             linebreaksBefore = noLineBreak;
@@ -174,39 +184,39 @@ void writeSomeMemberOp(FormattingWriter writer, Token token) {
 
 void writeTypeArgumentOrParameterList(FormattingWriter writer, Visitor visitor, TypeArgumentList|TypeParameterList list, FormattingOptions options) {
     value context = writer.openContext();
+    writer.writeToken {
+        list.mainToken; // "<"
+        indentAfter = 1;
+        linebreaksAfter = noLineBreak;
+        spaceBefore = false;
+        spaceAfter = false;
+    };
+    [Type|TypeParameterDeclaration*] params;
+    if (is TypeArgumentList list) {
+        params = CeylonIterable(list.types).sequence;
+    } else {
+        assert (is TypeParameterList list); // TODO remove
+        params = CeylonIterable(list.typeParameterDeclarations).sequence;
+    }
+    assert (nonempty params);
+    params.first.visit(visitor);
+    for (param in params.rest) {
         writer.writeToken {
-            list.mainToken; // "<"
-            indentAfter = 1;
-            linebreaksAfter = noLineBreak;
+            ",";
             spaceBefore = false;
-            spaceAfter = false;
+            spaceAfter = options.spaceAfterTypeArgOrParamListComma;
+            linebreaksAfter = options.typeParameterListLineBreaks;
         };
-        [Type|TypeParameterDeclaration*] params;
-        if (is TypeArgumentList list) {
-            params = CeylonIterable(list.types).sequence;
-        } else {
-            assert (is TypeParameterList list); // TODO remove
-            params = CeylonIterable(list.typeParameterDeclarations).sequence;
-        }
-        assert (nonempty params);
-        params.first.visit(visitor);
-        for (param in params.rest) {
-            writer.writeToken {
-                ",";
-                spaceBefore = false;
-                spaceAfter = options.spaceAfterTypeArgOrParamListComma;
-                linebreaksAfter = options.typeParameterListLineBreaks;
-            };
-            param.visit(visitor);
-        }
-        writer.writeToken {
-            list.mainEndToken; // ">"
-            context;
-            linebreaksBefore = noLineBreak;
-            spaceBefore = false;
-            optional = true; // an optionally grouped type might already have eaten the closing angle bracket
-        };
-        writer.closeContext(context);
+        param.visit(visitor);
+    }
+    writer.writeToken {
+        list.mainEndToken; // ">"
+        context;
+        linebreaksBefore = noLineBreak;
+        spaceBefore = false;
+        optional = true; // an optionally grouped type might already have eaten the closing angle bracket
+    };
+    writer.closeContext(context);
 }
 
 void writeBinaryOpWithSpecialSpaces(FormattingWriter writer, Visitor visitor, RangeOp|SegmentOp|EntryOp that) {

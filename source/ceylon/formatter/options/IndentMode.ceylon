@@ -1,4 +1,7 @@
-import ceylon.collection { HashMap, MutableMap }
+import ceylon.collection {
+    HashMap,
+    MutableMap
+}
 
 "A mode to indent code based on levels of indentation."
 shared abstract class IndentMode()
@@ -22,10 +25,10 @@ shared abstract class IndentMode()
      = ((get(1) + get(1) + get(0)) + <same>) + <same> + get(1)
  
  Therefore, users only have to fill the [[cache]] with two initial values: The items belonging to the keys `0` and `1`."
-interface Cached<Item> satisfies Correspondence<Integer, Item>
+interface Cached<Item> satisfies Correspondence<Integer,Item>
         given Item satisfies Summable<Item> {
     
-    shared formal MutableMap<Integer, Item> cache;
+    shared formal MutableMap<Integer,Item> cache;
     
     shared actual Item get(Integer key) {
         if (exists cached = cache[key]) {
@@ -34,7 +37,7 @@ interface Cached<Item> satisfies Correspondence<Integer, Item>
         // construct
         Integer half = key / 2;
         Item halfItem = get(half);
-        Item constructed = halfItem + halfItem + get(key%2);
+        Item constructed = halfItem + halfItem + get(key % 2);
         cache.put(key, constructed);
         return constructed;
     }
@@ -52,9 +55,9 @@ shared class Spaces(spacesPerLevel) extends IndentMode() {
     shared actual variable String string = spacesPerLevel.string + " spaces";
     
     object cache satisfies Cached<String> {
-        shared actual MutableMap<Integer,String> cache = HashMap<Integer, String> {
-            0 -> "",
-            1 -> "".join
+        shared actual MutableMap<Integer,String> cache = HashMap<Integer,String> {
+            0->"",
+            1->"".join
                 { for (value i in 1..spacesPerLevel) " " } // todo: check speed of " ".join("", "", ...) vs "".join(" ", " ", ...)
         };
     }
@@ -73,9 +76,9 @@ shared class Tabs(width) extends IndentMode() {
     shared actual variable String string = widthOfLevel.string + "-wide tabs";
     
     object cache satisfies Cached<String> {
-        shared actual MutableMap<Integer,String> cache = HashMap<Integer, String> {
-            0 -> "",
-            1 -> "\t"
+        shared actual MutableMap<Integer,String> cache = HashMap<Integer,String> {
+            0->"",
+            1->"\t"
         };
     }
     shared actual String indent(Integer level) => cache.get(level);
@@ -109,7 +112,7 @@ shared class Mixed(tabs, spaces) extends IndentMode() {
     
     shared actual variable String string = "mix " + tabs.string + ", " + spaces.string;
     
-    MutableMap<Integer, String> cache = HashMap<Integer, String> { 0 -> "" };
+    MutableMap<Integer,String> cache = HashMap<Integer,String> { 0->"" };
     
     shared actual String indent(Integer level) {
         if (exists cached = cache[level]) {
@@ -119,7 +122,7 @@ shared class Mixed(tabs, spaces) extends IndentMode() {
         Integer fullWidth = level * spaces.widthOfLevel;
         String tabPart = tabs.indent(fullWidth / tabs.width);
         String spacesPart = "".join
-        { for (value i in 1..(fullWidth % tabs.width)) " " };
+            { for (value i in 1..(fullWidth % tabs.width)) " " };
         String indent = tabPart + spacesPart;
         cache.put(level, indent);
         return indent;
@@ -137,8 +140,8 @@ shared IndentMode? parseIndentMode(String string) {
     try {
         if (exists mixIndex = string.inclusions("mix ").first) {
             if (exists commaIndex = string.inclusions(", ").first) {
-                if (is Tabs tabs = parseIndentMode(string["mix ".size..commaIndex-1])) {
-                    if (is Spaces spaces = parseIndentMode(string[commaIndex+", ".size...])) {
+                if (is Tabs tabs = parseIndentMode(string["mix ".size .. commaIndex - 1])) {
+                    if (is Spaces spaces = parseIndentMode(string[commaIndex + ", ".size ...])) {
                         return Mixed(tabs, spaces);
                     } else {
                         throw Exception("Second pard of Mixed aren't spaces");
@@ -150,14 +153,14 @@ shared IndentMode? parseIndentMode(String string) {
                 throw Exception("Mixed doesn't contain a comma");
             }
         } else if (exists spaceIndex = string.inclusions(" spaces").first) {
-            value nString = string[...spaceIndex-1];
+            value nString = string[... spaceIndex - 1];
             if (exists n = parseInteger(nString)) {
                 return Spaces(n);
             } else {
                 throw Exception("Can't read space amount '``nString``'");
             }
         } else if (exists tabsIndex = string.inclusions("-wide tabs").first) {
-            value nString = string[...tabsIndex-1];
+            value nString = string[... tabsIndex - 1];
             if (exists n = parseInteger(nString)) {
                 return Tabs(n);
             } else {

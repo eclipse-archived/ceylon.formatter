@@ -1,5 +1,12 @@
-import ceylon.collection { MutableMap, HashMap }
-import ceylon.file { Reader, File, parsePath }
+import ceylon.collection {
+    MutableMap,
+    HashMap
+}
+import ceylon.file {
+    Reader,
+    File,
+    parsePath
+}
 "Reads a file with formatting options.
  
  The file consists of lines of key=value pairs or comments, like this:
@@ -39,10 +46,9 @@ shared FormattingOptions formattingFile(
     FormattingOptions baseOptions = FormattingOptions())
         => variableFormattingFile(filename, baseOptions);
 
-
-Map<Character, String> shortcuts = HashMap { 'w'->"maxLineLength" };
-Map<String, String> aliases = HashMap { "maxLineWidth"->"maxLineLength" };
-Map<String, SparseFormattingOptions> presets = HashMap {
+Map<Character,String> shortcuts = HashMap { 'w'->"maxLineLength" };
+Map<String,String> aliases = HashMap { "maxLineWidth"->"maxLineLength" };
+Map<String,SparseFormattingOptions> presets = HashMap {
     "allmanStyle"->SparseFormattingOptions {
         braceOnOwnLine = true;
     }
@@ -50,7 +56,7 @@ Map<String, SparseFormattingOptions> presets = HashMap {
 
 shared [FormattingOptions, String[]] commandLineOptions() {
     variable FormattingOptions baseOptions = FormattingOptions();
-    MutableMap<String, SequenceAppender<String>> lines = HashMap<String, SequenceAppender<String>>();
+    MutableMap<String,SequenceAppender<String>> lines = HashMap<String,SequenceAppender<String>>();
     SequenceBuilder<String> otherLines = SequenceBuilder<String>();
     SequenceBuilder<SparseFormattingOptions> usedPresets = SequenceBuilder<SparseFormattingOptions>();
     variable String? partialLine = null;
@@ -58,17 +64,17 @@ shared [FormattingOptions, String[]] commandLineOptions() {
         String key;
         String item;
         if (option.startsWith("-"), exists char1 = option[1]) {
-            if(exists p = partialLine) {
+            if (exists p = partialLine) {
                 String stubKey;
                 String stubItem;
-                if(p.startsWith("no-")) {
+                if (p.startsWith("no-")) {
                     stubKey = p["no-".size...];
                     stubItem = "false";
                 } else {
                     stubKey = p;
                     stubItem = "true";
                 }
-                if(exists appender = lines[stubKey]) {
+                if (exists appender = lines[stubKey]) {
                     appender.append(stubItem);
                 } else {
                     lines.put(stubKey, SequenceAppender([stubItem]));
@@ -91,13 +97,13 @@ shared [FormattingOptions, String[]] commandLineOptions() {
                 continue;
             }
             if (exists i = expanded.indexes('='.equals).first) {
-                key = expanded[...i-1];
-                item = expanded[i+1...];
+                key = expanded[... i - 1];
+                item = expanded[i + 1 ...];
             } else {
                 partialLine = expanded;
                 continue;
             }
-        } else if(exists p = partialLine){
+        } else if (exists p = partialLine) {
             key = p;
             item = option;
             partialLine = null;
@@ -105,7 +111,7 @@ shared [FormattingOptions, String[]] commandLineOptions() {
             otherLines.append(option);
             continue;
         }
-        if(exists appender = lines[(aliases[key] else key)]) {
+        if (exists appender = lines[(aliases[key] else key)]) {
             appender.append(item);
         } else {
             lines.put(aliases[key] else key, SequenceAppender([item]));
@@ -115,10 +121,10 @@ shared [FormattingOptions, String[]] commandLineOptions() {
         baseOptions = CombinedOptions(baseOptions, *seq.reversed);
     }
     return [
-    parseFormattingOptions(
-        lines.map((String->SequenceAppender<String> option) => option.key->option.item.sequence), baseOptions),
-    otherLines.sequence
-    ];
+            parseFormattingOptions(
+                lines.map((String->SequenceAppender<String> option) => option.key->option.item.sequence), baseOptions),
+            otherLines.sequence
+        ];
 }
 
 "An internal version of [[formattingFile]] that specifies a return type of [[VariableOptions]],
@@ -128,15 +134,15 @@ VariableOptions variableFormattingFile(String filename, FormattingOptions baseOp
     if (is File file = parsePath(filename).resource) {
         // read the file
         Reader reader = file.Reader();
-        MutableMap<String, SequenceAppender<String>> lines = HashMap<String, SequenceAppender<String>>();
+        MutableMap<String,SequenceAppender<String>> lines = HashMap<String,SequenceAppender<String>>();
         while (exists line = reader.readLine()) {
-            if(line.startsWith("#")) {
+            if (line.startsWith("#")) {
                 continue;
             }
             if (exists i = line.indexes('='.equals).first) {
-                String key = line[...i-1];
-                String item = line[i+1...];
-                if(exists appender = lines[key]) {
+                String key = line[... i - 1];
+                String item = line[i + 1 ...];
+                if (exists appender = lines[key]) {
                     appender.append(item);
                 } else {
                     lines.put(key, SequenceAppender([item]));
@@ -155,8 +161,8 @@ VariableOptions variableFormattingFile(String filename, FormattingOptions baseOp
 shared Range<Integer>? parseIntegerRange(String string) {
     value parts = string.split('.'.equals).sequence;
     if (parts.size == 2,
-        exists first=parseInteger(parts[0] else "invalid"),
-        exists last=parseInteger(parts[1] else "invalid")) {
+        exists first = parseInteger(parts[0] else "invalid"),
+        exists last = parseInteger(parts[1] else "invalid")) {
         return first..last;
     }
     return null;

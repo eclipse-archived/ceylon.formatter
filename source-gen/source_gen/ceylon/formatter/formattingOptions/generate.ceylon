@@ -1,4 +1,10 @@
-import ceylon.file { Writer, parsePath, File, Resource, Nil }
+import ceylon.file {
+    Writer,
+    parsePath,
+    File,
+    Resource,
+    Nil
+}
 
 shared void generate() {
     try (g = Generator()) {
@@ -37,7 +43,7 @@ class Generator() satisfies Closeable {
         gitignore.writeLine(parsePath(path).relativePath("source/ceylon/formatter/options/").string);
         return file;
     }
-
+    
     void generateFileFormattingOptions() {
         try (writer = file("source/ceylon/formatter/options/FormattingOptions_generated.ceylon").Overwriter()) {
             writeHeader(writer);
@@ -100,18 +106,18 @@ class Generator() satisfies Closeable {
         }
         writer.write(") {\n");
         for (option in formattingOptions) {
-            String[] lines = [*option.documentation.split{'\n'.equals; groupSeparators = false;}];
+            String[] lines = [*option.documentation.split { '\n'.equals; groupSeparators = false; }];
             if (lines.size == 0 || option.documentation == "") {
                 writer.write("\n");
             }
             else if (lines.size == 1) {
                 writer.write("\n    \"\"\"``option.documentation``\"\"\"\n");
             } else {
-                assert(exists firstLine = lines.first);
-                assert(exists lastLine = lines.last);
+                assert (exists firstLine = lines.first);
+                assert (exists lastLine = lines.last);
                 writer.write("\n    \"\"\"``firstLine``\n");
                 if (lines.size > 2) {
-                    for (String line in lines[1..lines.size-2]) {
+                    for (String line in lines[1 .. lines.size - 2]) {
                         writer.write("       ``line``\n");
                     }
                 }
@@ -166,7 +172,7 @@ class Generator() satisfies Closeable {
                           // ...
                       }));\"\n");
         writer.write("shared class CombinedOptions(FormattingOptions baseOptions, SparseFormattingOptions+ decoration) extends FormattingOptions() {\n");
-        for(option in formattingOptions) {
+        for (option in formattingOptions) {
             writer.write("\n    shared actual ``option.type`` ``option.name`` {\n");
             writer.write("        for (options in decoration) {\n");
             writer.write("            if (exists option = options.``option.name``) {\n");
@@ -185,7 +191,7 @@ class Generator() satisfies Closeable {
               
               For internal use only.\"\n");
         writer.write("class VariableOptions(FormattingOptions baseOptions) extends FormattingOptions() {\n\n");
-        for(option in formattingOptions) {
+        for (option in formattingOptions) {
             writer.write("    shared actual variable ``option.type`` ``option.name`` = baseOptions.``option.name``;\n");
         }
         writer.write("}\n\n");
@@ -221,7 +227,7 @@ class Generator() satisfies Closeable {
                                          } else ");
                     }
                 } else if (type.startsWith("{") && type.endsWith("*}")) {
-                    String innerType = type[1:type.size-3];
+                    String innerType = type[1 : type.size - 3];
                     String parseFunction;
                     if (innerType == "String") {
                         parseFunction = "s";
@@ -253,7 +259,6 @@ class Generator() satisfies Closeable {
                                       }\n");
             writer.write(
                 "        }\n");
-                 
         }
         writer.write(
             "        else {
@@ -277,5 +282,4 @@ class Generator() satisfies Closeable {
     shared actual Anything close(Throwable? t) => gitignore.close(t);
     
     shared actual Anything open() => gitignore.open();
-    
 }

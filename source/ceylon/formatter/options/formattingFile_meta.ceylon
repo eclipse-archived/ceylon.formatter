@@ -1,7 +1,17 @@
-import ceylon.file { parsePath, File, Reader }
-import ceylon.language.meta.model { Attribute }
-import ceylon.language.meta.declaration { FunctionDeclaration }
-import ceylon.language.meta { type }
+import ceylon.file {
+    parsePath,
+    File,
+    Reader
+}
+import ceylon.language.meta.model {
+    Attribute
+}
+import ceylon.language.meta.declaration {
+    FunctionDeclaration
+}
+import ceylon.language.meta {
+    type
+}
 "Reads a file with formatting options, parsing it using the metamodel.
  
  This function does exactly the same thing as [[ceylon.formatter.options::formattingFile]];
@@ -64,7 +74,7 @@ VariableOptions variableFormattingFile_meta(String filename, FormattingOptions b
                 String fullTypeString = attribute.type.string;
                 Integer? endOfPackageIndex = fullTypeString.inclusions("::").first;
                 assert (exists endOfPackageIndex);
-                String trimmedTypeString = fullTypeString[endOfPackageIndex+2...].trim((Character c) => c == '?');
+                String trimmedTypeString = fullTypeString[endOfPackageIndex + 2 ...].trim((Character c) => c == '?');
                 String parseFunctionName = "parse" + trimmedTypeString;
                 FunctionDeclaration? parseFunction =
                         `package ceylon.language`.getFunction(parseFunctionName)
@@ -72,7 +82,7 @@ VariableOptions variableFormattingFile_meta(String filename, FormattingOptions b
                 "Internal error - type not parsable"
                 assert (exists parseFunction);
                 
-                Anything parsedOptionValue = (parseFunction.apply<Anything, [String]>())(optionValue);
+                Anything parsedOptionValue = (parseFunction.apply<Anything,[String]>())(optionValue);
                 "Internal error - parser function of wrong type"
                 assert (type(parsedOptionValue).subtypeOf(attribute.type));
                 

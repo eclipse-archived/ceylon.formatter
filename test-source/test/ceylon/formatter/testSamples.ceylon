@@ -1,10 +1,32 @@
-import ceylon.test { assertEquals, fail, test }
+import ceylon.test {
+    assertEquals,
+    fail,
+    test
+}
 import ceylon.file { ... }
-import com.redhat.ceylon.compiler.typechecker.tree { Tree { CompilationUnit } }
-import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer, CeylonParser }
-import org.antlr.runtime { ANTLRFileStream, CommonTokenStream, BufferedTokenStream }
-import ceylon.formatter { FormattingVisitor }
-import ceylon.formatter.options { FormattingOptions, formattingFile, CombinedOptions, SparseFormattingOptions }
+import com.redhat.ceylon.compiler.typechecker.tree {
+    Tree {
+        CompilationUnit
+    }
+}
+import com.redhat.ceylon.compiler.typechecker.parser {
+    CeylonLexer,
+    CeylonParser
+}
+import org.antlr.runtime {
+    ANTLRFileStream,
+    CommonTokenStream,
+    BufferedTokenStream
+}
+import ceylon.formatter {
+    FormattingVisitor
+}
+import ceylon.formatter.options {
+    FormattingOptions,
+    formattingFile,
+    CombinedOptions,
+    SparseFormattingOptions
+}
 
 "Tests that the formatter transforms `test-samples/<filename>.ceylon`
  into `test-samples/<filename>.ceylon.formatted`. If a file
@@ -12,7 +34,7 @@ import ceylon.formatter.options { FormattingOptions, formattingFile, CombinedOpt
  (see [[ceylon.formatter.options::formattingFile]])."
 void testFile(String filename) {
     String fullFilename = "test-samples/" + filename + ".ceylon";
-    if(is File inputFile =  parsePath(fullFilename).resource,
+    if (is File inputFile = parsePath(fullFilename).resource,
         is File expectedFile = parsePath(fullFilename + ".formatted").resource) {
         // format input file
         object output satisfies Writer {
@@ -34,8 +56,8 @@ void testFile(String filename) {
         }
         FormattingVisitor visitor = FormattingVisitor(BufferedTokenStream(lexer), // don't use CommonTokenStream - we don't want to skip comments
             output, CombinedOptions(options, SparseFormattingOptions {
-                failFast = true;
-            }));
+                    failFast = true;
+                }));
         cu.visit(visitor);
         visitor.close();
         variable String actual = output.string;
@@ -55,7 +77,7 @@ void testFile(String filename) {
             actual += "\n";
         } else if (actual.endsWith("\n\n")) {
             // remove last trailing newline
-            actual = actual[0..actual.size - 2];
+            actual = actual[0 .. actual.size - 2];
         }
         // now test that they're equal
         assertEquals(actual, expected);

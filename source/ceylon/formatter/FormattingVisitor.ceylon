@@ -1,14 +1,40 @@
-import com.redhat.ceylon.compiler.typechecker.tree { Tree { ... }, Node, VisitorAdaptor, NaturalVisitor }
-import com.redhat.ceylon.compiler.typechecker.parser { CeylonLexer {
-    uidentifier=\iUIDENTIFIER,
-    lidentifier=\iLIDENTIFIER
-} }
-import org.antlr.runtime { TokenStream { la=\iLA }, Token, CommonToken }
-import java.lang { Error, Exception }
-import ceylon.file { Writer }
-import ceylon.interop.java { CeylonIterable }
-import ceylon.formatter.options { FormattingOptions, multiLine }
-import ceylon.collection { MutableList, ArrayList }
+import com.redhat.ceylon.compiler.typechecker.tree {
+    Tree { ... },
+    Node,
+    VisitorAdaptor,
+    NaturalVisitor
+}
+import com.redhat.ceylon.compiler.typechecker.parser {
+    CeylonLexer {
+        uidentifier=\iUIDENTIFIER,
+        lidentifier=\iLIDENTIFIER
+    }
+}
+import org.antlr.runtime {
+    TokenStream {
+        la=\iLA
+    },
+    Token,
+    CommonToken
+}
+import java.lang {
+    Error,
+    Exception
+}
+import ceylon.file {
+    Writer
+}
+import ceylon.interop.java {
+    CeylonIterable
+}
+import ceylon.formatter.options {
+    FormattingOptions,
+    multiLine
+}
+import ceylon.collection {
+    MutableList,
+    ArrayList
+}
 
 "A [[com.redhat.ceylon.compiler.typechecker.tree::Visitor]] that writes a formatted version of the
  element (typically a [[com.redhat.ceylon.compiler.typechecker.tree::Tree.CompilationUnit]]) to a
@@ -78,7 +104,7 @@ shared class FormattingVisitor(
         visitingAnnotation = false;
         if (is {String*} inlineAnnotations = options.inlineAnnotations) {
             if (exists text = that.primary?.children?.get(0)?.mainToken?.text,
-            text in inlineAnnotations) {
+                text in inlineAnnotations) {
                 // no line break for these annotations
             } else {
                 fWriter.requireAtLeastLineBreaks(1);
@@ -192,16 +218,16 @@ shared class FormattingVisitor(
     
     shared actual void visitBaseType(BaseType that) {
         writeOptionallyGrouped(fWriter, void() {
-            that.identifier.visit(this);
-            that.typeArgumentList?.visit(this);
-        });
+                that.identifier.visit(this);
+                that.typeArgumentList?.visit(this);
+            });
     }
     
     shared actual void visitBaseTypeExpression(BaseTypeExpression that) {
         writeOptionallyGrouped(fWriter, void() {
-            that.identifier.visit(this);
-            that.typeArguments.visit(this);
-        });
+                that.identifier.visit(this);
+                that.typeArguments.visit(this);
+            });
     }
     
     shared actual void visitBinaryOperatorExpression(BinaryOperatorExpression that) {
@@ -268,8 +294,9 @@ shared class FormattingVisitor(
             linebreaksAfter = noLineBreak;
         };
         value context = fWriter.writeToken {
-            "("; /* not in the AST – there’s a TODO in Ceylon.g that “we really should not throw away this token”;
-                    for now, we produce it out of thin air :) */
+            "(";
+            /* not in the AST – there’s a TODO in Ceylon.g that “we really should not throw away this token”;
+               for now, we produce it out of thin air :) */
             spaceAfter = false; // TODO option
             indentAfter = 1;
             linebreaksAfter = noLineBreak;
@@ -469,17 +496,17 @@ shared class FormattingVisitor(
     
     shared actual void visitEntryType(EntryType that) {
         writeOptionallyGrouped(fWriter, () {
-            that.keyType.visit(this);
-            fWriter.writeToken {
-                "->";
-                linebreaksBefore = noLineBreak;
-                linebreaksAfter = noLineBreak;
-                spaceBefore = false;
-                spaceAfter = false;
-            };
-            that.valueType.visit(this);
-            return null;
-        });
+                that.keyType.visit(this);
+                fWriter.writeToken {
+                    "->";
+                    linebreaksBefore = noLineBreak;
+                    linebreaksAfter = noLineBreak;
+                    spaceBefore = false;
+                    spaceAfter = false;
+                };
+                that.valueType.visit(this);
+                return null;
+            });
     }
     
     shared actual void visitExists(Exists that) {
@@ -812,22 +839,22 @@ shared class FormattingVisitor(
     
     shared actual void visitIntersectionType(IntersectionType that) {
         writeOptionallyGrouped(fWriter, () {
-            value types = CeylonIterable(that.staticTypes).sequence;
-            "Empty union type not allowed"
-            assert (nonempty types);
-            types.first.visit(this);
-            for (type in types.rest) {
-                fWriter.writeToken {
-                    "&";
-                    linebreaksBefore = noLineBreak;
-                    linebreaksAfter = noLineBreak;
-                    spaceBefore = false;
-                    spaceAfter = false;
-                };
-                type.visit(this);
-            }
-            return null;
-        });
+                value types = CeylonIterable(that.staticTypes).sequence;
+                "Empty union type not allowed"
+                assert (nonempty types);
+                types.first.visit(this);
+                for (type in types.rest) {
+                    fWriter.writeToken {
+                        "&";
+                        linebreaksBefore = noLineBreak;
+                        linebreaksAfter = noLineBreak;
+                        spaceBefore = false;
+                        spaceAfter = false;
+                    };
+                    type.visit(this);
+                }
+                return null;
+            });
     }
     
     shared actual void visitInvocationExpression(InvocationExpression that) {
@@ -868,20 +895,20 @@ shared class FormattingVisitor(
     
     shared actual void visitIterableType(IterableType that) {
         writeOptionallyGrouped(fWriter, () {
-            value context = fWriter.writeToken {
-                that.mainToken; // "{"
-                linebreaksAfter = noLineBreak;
-                spaceAfter = false;
-            };
-            that.elementType.visit(this);
-            fWriter.writeToken {
-                that.mainEndToken; // "}"
-                linebreaksBefore = noLineBreak;
-                spaceBefore = false;
-                context = context;
-            };
-            return null;
-        });
+                value context = fWriter.writeToken {
+                    that.mainToken; // "{"
+                    linebreaksAfter = noLineBreak;
+                    spaceAfter = false;
+                };
+                that.elementType.visit(this);
+                fWriter.writeToken {
+                    that.mainEndToken; // "}"
+                    linebreaksBefore = noLineBreak;
+                    spaceBefore = false;
+                    context = context;
+                };
+                return null;
+            });
     }
     
     shared actual void visitLiteral(Literal that) {
@@ -1027,14 +1054,14 @@ shared class FormattingVisitor(
     
     shared actual void visitOptionalType(OptionalType that) {
         writeOptionallyGrouped(fWriter, () {
-            that.definiteType.visit(this);
-            fWriter.writeToken {
-                that.mainEndToken; // "?"
-                linebreaksBefore = noLineBreak;
-                spaceBefore = false;
-            };
-            return null;
-        });
+                that.definiteType.visit(this);
+                fWriter.writeToken {
+                    that.mainEndToken; // "?"
+                    linebreaksBefore = noLineBreak;
+                    spaceBefore = false;
+                };
+                return null;
+            });
     }
     
     shared actual void visitOuter(Outer that) {
@@ -1065,7 +1092,7 @@ shared class FormattingVisitor(
             shared actual void visitAnnotation(Annotation annotation) {
                 if (is {String*} inlineAnnotations = options.inlineAnnotations) {
                     if (exists text = annotation.primary?.children?.get(0)?.mainToken?.text,
-                    text in inlineAnnotations) {
+                        text in inlineAnnotations) {
                         // not multiLine
                     } else {
                         multiLine = true;
@@ -1115,7 +1142,7 @@ shared class FormattingVisitor(
     shared actual void visitPositionalArgumentList(PositionalArgumentList that) {
         Token? openingParen = that.mainToken;
         Token? closingParen = that.mainEndToken;
-        if(exists openingParen, exists closingParen) {
+        if (exists openingParen, exists closingParen) {
             value context = fWriter.writeToken {
                 that.mainToken; // "("
                 linebreaksBefore = noLineBreak;
@@ -1187,17 +1214,17 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitQualifiedType(QualifiedType that) {
-        writeOptionallyGrouped(fWriter, void () {
-            that.outerType.visit(this);
-            fWriter.writeToken {
-                that.mainToken; // "."
-                spaceBefore = false;
-                spaceAfter = false;
-                linebreaksBefore = noLineBreak;
-                linebreaksAfter = noLineBreak;
-            };
-            that.identifier.visit(this);
-        });
+        writeOptionallyGrouped(fWriter, void() {
+                that.outerType.visit(this);
+                fWriter.writeToken {
+                    that.mainToken; // "."
+                    spaceBefore = false;
+                    spaceAfter = false;
+                    linebreaksBefore = noLineBreak;
+                    linebreaksAfter = noLineBreak;
+                };
+                that.identifier.visit(this);
+            });
     }
     
     shared actual void visitRangeOp(RangeOp that)
@@ -1308,16 +1335,16 @@ shared class FormattingVisitor(
     shared actual void visitSequencedType(SequencedType that) {
         // String* is a SequencedType
         writeOptionallyGrouped(fWriter, () {
-            that.type.visit(this);
-            fWriter.writeToken {
-                that.mainEndToken; // "*" or "+"
-                linebreaksBefore = noLineBreak;
-                linebreaksAfter = noLineBreak;
-                spaceBefore = false;
-                spaceAfter = 10;
-            };
-            return null;
-        });
+                that.type.visit(this);
+                fWriter.writeToken {
+                    that.mainEndToken; // "*" or "+"
+                    linebreaksBefore = noLineBreak;
+                    linebreaksAfter = noLineBreak;
+                    spaceBefore = false;
+                    spaceAfter = 10;
+                };
+                return null;
+            });
     }
     
     shared actual void visitSequenceEnumeration(SequenceEnumeration that) {
@@ -1337,28 +1364,28 @@ shared class FormattingVisitor(
     shared actual void visitSequenceType(SequenceType that) {
         // String[] is a SequenceType
         writeOptionallyGrouped(fWriter, () {
-            that.elementType.visit(this);
-            fWriter.writeToken {
-                "["; // doesn’t seem like that token is in the AST anywhere
-                linebreaksBefore = noLineBreak;
-                linebreaksAfter = noLineBreak;
-                spaceBefore = false;
-                spaceAfter = false;
-            };
-            fWriter.writeToken {
-                that.mainEndToken; // "]"
-                linebreaksBefore = noLineBreak;
-                spaceBefore = false;
-            };
-            return null;
-        });
+                that.elementType.visit(this);
+                fWriter.writeToken {
+                    "["; // doesn’t seem like that token is in the AST anywhere
+                    linebreaksBefore = noLineBreak;
+                    linebreaksAfter = noLineBreak;
+                    spaceBefore = false;
+                    spaceAfter = false;
+                };
+                fWriter.writeToken {
+                    that.mainEndToken; // "]"
+                    linebreaksBefore = noLineBreak;
+                    spaceBefore = false;
+                };
+                return null;
+            });
     }
     
     shared actual void visitSimpleType(SimpleType that) {
         writeOptionallyGrouped(fWriter, () {
-           that.visitChildren(this);
-           return null; 
-        });
+                that.visitChildren(this);
+                return null;
+            });
     }
     
     shared actual void visitSpecifiedArgument(SpecifiedArgument that) {
@@ -1420,7 +1447,7 @@ shared class FormattingVisitor(
         value literals = CeylonIterable(that.stringLiterals).sequence;
         value expressions = CeylonIterable(that.expressions).sequence;
         "String template must have at least one string literal"
-        assert  (nonempty literals);
+        assert (nonempty literals);
         "String template must have exactly more string literal than expressions"
         assert (literals.size == expressions.size + 1);
         variable Boolean? wantsSpace;
@@ -1527,36 +1554,36 @@ shared class FormattingVisitor(
     
     shared actual void visitTupleType(TupleType that) {
         writeOptionallyGrouped(fWriter, () {
-            value context = fWriter.writeToken {
-                that.mainToken; // "["
-                linebreaksAfter = noLineBreak;
-                spaceAfter = false;
-            };
-            value elements = CeylonIterable(that.elementTypes).sequence;
-            if (exists first = elements.first) {
-                variable value innerContext = fWriter.openContext();
-                first.visit(this);
-                for (element in elements.rest) {
-                    fWriter.writeToken {
-                        ",";
-                        linebreaksBefore = noLineBreak;
-                        indentAfter = 1;
-                        spaceBefore = false;
-                        spaceAfter = true;
-                        innerContext;
-                    };
-                    innerContext = fWriter.openContext();
-                    element.visit(this);
+                value context = fWriter.writeToken {
+                    that.mainToken; // "["
+                    linebreaksAfter = noLineBreak;
+                    spaceAfter = false;
+                };
+                value elements = CeylonIterable(that.elementTypes).sequence;
+                if (exists first = elements.first) {
+                    variable value innerContext = fWriter.openContext();
+                    first.visit(this);
+                    for (element in elements.rest) {
+                        fWriter.writeToken {
+                            ",";
+                            linebreaksBefore = noLineBreak;
+                            indentAfter = 1;
+                            spaceBefore = false;
+                            spaceAfter = true;
+                            innerContext;
+                        };
+                        innerContext = fWriter.openContext();
+                        element.visit(this);
+                    }
                 }
-            }
-            fWriter.writeToken {
-                that.mainEndToken; // "]"
-                linebreaksBefore = noLineBreak;
-                spaceBefore = false;
-                context = context;
-            };
-            return null;
-        });
+                fWriter.writeToken {
+                    that.mainEndToken; // "]"
+                    linebreaksBefore = noLineBreak;
+                    spaceBefore = false;
+                    context = context;
+                };
+                return null;
+            });
     }
     
     shared actual void visitTypeAliasDeclaration(TypeAliasDeclaration that) {
@@ -1640,22 +1667,22 @@ shared class FormattingVisitor(
     
     shared actual void visitUnionType(UnionType that) {
         writeOptionallyGrouped(fWriter, () {
-            value types = CeylonIterable(that.staticTypes).sequence;
-            "Empty union type not allowed"
-            assert (nonempty types);
-            types.first.visit(this);
-            for (type in types.rest) {
-                fWriter.writeToken {
-                    "|";
-                    linebreaksBefore = noLineBreak;
-                    linebreaksAfter = noLineBreak;
-                    spaceBefore = false;
-                    spaceAfter = false;
-                };
-                type.visit(this);
-            }
-            return null;
-        });
+                value types = CeylonIterable(that.staticTypes).sequence;
+                "Empty union type not allowed"
+                assert (nonempty types);
+                types.first.visit(this);
+                for (type in types.rest) {
+                    fWriter.writeToken {
+                        "|";
+                        linebreaksBefore = noLineBreak;
+                        linebreaksAfter = noLineBreak;
+                        spaceBefore = false;
+                        spaceAfter = false;
+                    };
+                    type.visit(this);
+                }
+                return null;
+            });
     }
     
     shared actual void visitValueIterator(ValueIterator that) {
@@ -1740,7 +1767,7 @@ shared class FormattingVisitor(
     //TODO eventually, this will be unneeded, as each visitSomeSubclassOfNode should be overwritten here.
     shared actual void visitAny(Node that) {
         if (that.mainToken exists || that.mainEndToken exists) {
-            process.writeErrorLine("``that.mainToken?.text else ""``\t``that.mainEndToken?.text else ""``"); // breakpoint here
+            process.writeErrorLine("`` that.mainToken?.text else "" ``\t`` that.mainEndToken?.text else "" ``"); // breakpoint here
         }
         super.visitAny(that); // continue walking the tree
     }

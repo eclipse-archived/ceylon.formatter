@@ -1,4 +1,6 @@
-import ceylon.test { test }
+import ceylon.test {
+    test
+}
 
 void testIssue(Integer number, String? variant = null) {
     if (exists variant) {
