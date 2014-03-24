@@ -28,8 +28,10 @@ shared void run() {
         files = { ANTLRInputStream(sysin)->sysoutWriter };
     }
     case (equal) {
-        // read from first file, write to second file
-        // or recursively from first directory to second directory
+        /*
+         read from first file, write to second file
+         or recursively from first directory to second directory
+         */
         assert(exists inFileName = options[1][0], exists outFileName = options[1][1]);
         if (is Directory dir = parsePath(inFileName).resource) {
             Directory target;

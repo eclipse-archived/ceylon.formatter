@@ -4,9 +4,11 @@ import ceylon.formatter.options { FormattingOptions, stack, addIndentBefore }
 import ceylon.interop.java { CeylonIterable }
 
 
-// TODO
-// remove assertions before release; they’re probably useful for finding bugs,
-// but impact performance negatively
+/*
+ TODO
+ remove assertions before release; they’re probably useful for finding bugs,
+ but impact performance negatively
+ */
 
 
 FormattingWriter.FormattingContext writeBacktickOpening(FormattingWriter writer, Token backtick) {

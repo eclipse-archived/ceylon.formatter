@@ -11,8 +11,10 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
             return element;
         });
         
-        // 1. find the best location to break a line, without respect
-        //    to existing line breaks and allowSpace{Before,After} settings
+        /*
+         1. find the best location to break a line, without respect
+            to existing line breaks and allowSpace{Before,After} settings
+         */
         
         variable Integer currentLength = offset;
         "The index of the token in [[tokens]] whose index in [[elements]]
@@ -37,8 +39,10 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
                     }
                     tokenIndex++;
                 } else {
-                    // we’ve reached the end of the tokens without exceeding the maxLineLength;
-                    // return the index of the first LineBreak or null if there isn’t one
+                    /*
+                     we’ve reached the end of the tokens without exceeding the maxLineLength;
+                     return the index of the first LineBreak or null if there isn’t one
+                     */
                     return elements.indexes((QueueElement elem) => elem is LineBreak).first;
                 }
             }
@@ -47,11 +51,13 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
             }
         }
         
-        // 2. respect allowSpace{Before,After} settings
-        //    go back until we encounter an index where the tokens before and after
-        //    allow a line break; we hit the beginning of the tokens, search in the
-        //    other direction; if we then hit the end of the tokens, return the index
-        //    of the first existing LineBreak, else null.
+        /*
+         2. respect allowSpace{Before,After} settings
+            go back until we encounter an index where the tokens before and after
+            allow a line break; we hit the beginning of the tokens, search in the
+            other direction; if we then hit the end of the tokens, return the index
+            of the first existing LineBreak, else null.
+         */
         
         Integer origTokenIndex = tokenIndex;
         while (exists token = tokens[tokenIndex], exists previousToken = tokens[tokenIndex - 1],
@@ -69,15 +75,19 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
         }
         Token? token = tokens[tokenIndex];
         if (is Null token) {
-            // we’ve reached the end of the tokens without finding a suitable token;
-            // return the index of the first LineBreak or null if there isn’t one
+            /*
+             we’ve reached the end of the tokens without finding a suitable token;
+             return the index of the first LineBreak or null if there isn’t one
+             */
             return elements.indexes((QueueElement elem) => elem is LineBreak).first;
         }
         assert (exists token); // TODO revisit, unnecessary assert
         
-        // 3. find the element index from the token index
-        //    go through elements until we encounter token
-        //    (or a LineBreak).
+        /*
+         3. find the element index from the token index
+            go through elements until we encounter token
+            (or a LineBreak).
+         */
         
         variable Integer elementIndex = 0;
         while (exists element = elements[elementIndex], element != token) {
@@ -88,8 +98,10 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
         }
         
         if (elementIndex >= elements.size) {
-            // we’ve reached the end of the tokens without finding a suitable token;
-            // return the index of the first LineBreak or null if there isn’t one
+            /*
+             we’ve reached the end of the tokens without finding a suitable token;
+             return the index of the first LineBreak or null if there isn’t one
+             */
             return elements.indexes((QueueElement elem) => elem is LineBreak).first;
         }
         return elementIndex;

@@ -538,9 +538,11 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         preIndent = allowLineBreakBefore then indentBefore + this.nextIndentBefore else 0;
         postIndent = linebreaksAfter.any(0.smallerThan) then indentAfter;
         
-        // look for optional token
-        // if it’s not there, return immediately
-        // the following sections will perform irreversible changes (intersect currentlyAllowedLineBreaks etc.)
+        /*
+         look for optional token
+         if it’s not there, return immediately
+         the following sections will perform irreversible changes (intersect currentlyAllowedLineBreaks etc.)
+         */
         if (optional, exists tokens) { // TODO if no token stream, we’ll always write optionals. Be smarter!
             variable value i = 1;
             try {
@@ -562,15 +564,19 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         
         this.nextIndentBefore = nextIndentBefore;
         
-        // handle the part before this token:
-        // fast-forward, intersect allowed line breaks, write out line breaks
+        /*
+         handle the part before this token:
+         fast-forward, intersect allowed line breaks, write out line breaks
+         */
         intersectAllowedLineBreaks(linebreaksBefore, false);
         fastForward((AntlrToken? current) {
             if (exists current) {
                 assert (exists lineBreaks = givenLineBreaks);
                 if (current.type == lineComment || current.type == multiComment) {
-                    // we treat comments as regular tokens
-                    // just with the difference that their before- and afterToken range isn’t given, but an option instead
+                    /*
+                     we treat comments as regular tokens
+                     just with the difference that their before- and afterToken range isn’t given, but an option instead
+                     */
                     return fastForwardComment(current);
                 } else if (current.type == ws) {
                     givenLineBreaks = lineBreaks + current.text.count('\n'.equals);
@@ -604,8 +610,10 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             tokenQueue.add(LineBreak());
         }
         givenLineBreaks = tokens exists then 0;
-        // handle this token:
-        // set allowed line breaks, add token
+        /*
+         handle this token:
+         set allowed line breaks, add token
+         */
         currentlyAllowedLinebreaks = linebreaksAfter; 
         FormattingContext? ret;
         Token t;
@@ -615,9 +623,11 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         Integer() targetColumn;
         if (is AntlrToken token) {
             if (token.type == stringStart) {
-                // start of a string template:
-                // save this token’s source and target column,
-                // as the other parts are aligned to the same columns (not their own).
+                /*
+                 start of a string template:
+                 save this token’s source and target column,
+                 as the other parts are aligned to the same columns (not their own).
+                 */
                 sourceColumn = token.charPositionInLine + 1;
                 variable value entry = ColumnStackEntry(sourceColumn);
                 columnStack.add(entry);
@@ -627,15 +637,19 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                     return target;
                 };
             } else if (token.type == stringMid) {
-                // middle part of a string template:
-                // reuse start’s source and target column
+                /*
+                 middle part of a string template:
+                 reuse start’s source and target column
+                 */
                 assert (exists entry = columnStack.last);
                 sourceColumn = entry.sourceColumn;
                 targetColumn = () => entry.targetColumn;
             } else if (token.type == stringEnd) {
-                // end of a string template:
-                // reuse start’s source and target column,
-                // then remove them from the stack
+                /*
+                 end of a string template:
+                 reuse start’s source and target column,
+                 then remove them from the stack
+                 */
                 assert (exists entry = columnStack.deleteLast());
                 sourceColumn = entry.sourceColumn;
                 targetColumn = () => entry.targetColumn;
@@ -651,8 +665,10 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             }
         } else {
             sourceColumn = 0; // meaningless
-            // hack: for now we assume the only multi-line tokens are multi-line string literals,
-            // so we use the amount of leading quotes to know how much we have to skip
+            /*
+             hack: for now we assume the only multi-line tokens are multi-line string literals,
+             so we use the amount of leading quotes to know how much we have to skip
+             */
             assert (is String token);
             targetColumn = () => countingWriter.currentWidth + token.takingWhile('"'.equals).size;
         }
@@ -811,8 +827,10 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         assert(exists lastElement);
         
         if (is ClosingToken firstToken) {
-            // this context needs to be closed *before* we write indentation
-            // because closing it may reduce the indentation level
+            /*
+             this context needs to be closed *before* we write indentation
+             because closing it may reduce the indentation level
+             */
             closeContext0(firstToken);
         }
         FormattingContext? tmpIndent;
@@ -1077,12 +1095,16 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             wantsSpaceBefore = maxDesire - 1;
             wantsSpaceAfter = maxDesire - 1;
             sourceColumn =
-                // TODO
-                // this should just be current.charPositionInLine…
-                // … but due to a bug in ANTLR we need a special case for the first token
+                /*
+                 TODO
+                 this should just be current.charPositionInLine…
+                 … but due to a bug in ANTLR we need a special case for the first token
+                 */
                 current.tokenIndex == 0
-                    // sometimes, the very first token has a charPositionInLine of != 0
-                    // I have no idea why or when this happens
+                    /*
+                     sometimes, the very first token has a charPositionInLine of != 0
+                     I have no idea why or when this happens
+                     */
                     then 0
                     else current.charPositionInLine;
         };

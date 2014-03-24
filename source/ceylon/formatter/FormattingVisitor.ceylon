@@ -268,8 +268,8 @@ shared class FormattingVisitor(
             linebreaksAfter = noLineBreak;
         };
         value context = fWriter.writeToken {
-            "("; // not in the AST – there’s a TODO in Ceylon.g that “we really should not throw away this token”;
-                 // for now, we produce it out of thin air :)
+            "("; /* not in the AST – there’s a TODO in Ceylon.g that “we really should not throw away this token”;
+                    for now, we produce it out of thin air :) */
             spaceAfter = false; // TODO option
             indentAfter = 1;
             linebreaksAfter = noLineBreak;
@@ -395,12 +395,14 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitElementRange(ElementRange that) {
-        // An ElementRange can be anything that goes into an index expression (except a single element),
-        // that is, ...upper, lower..., lower..upper, and lower:length.
-        // The ..., .. and : tokens are all lost because the grammar for this part kinda sucks
-        // (TODO go bug someone about that),
-        // so we just have to infer them from which fields are null and which aren’t
-        // (for example, use : if there’s a length).
+        /* 
+         An ElementRange can be anything that goes into an index expression (except a single element),
+         that is, ...upper, lower..., lower..upper, and lower:length.
+         The ..., .. and : tokens are all lost because the grammar for this part kinda sucks
+         (TODO go bug someone about that),
+         so we just have to infer them from which fields are null and which aren’t
+         (for example, use : if there’s a length).
+         */
         Expression? lower = that.lowerBound;
         Expression? upper = that.upperBound;
         Expression? length = that.length;
@@ -1002,9 +1004,11 @@ shared class FormattingVisitor(
             body.visit(this);
             fWriter.closeContext(context);
         } else {
-            // If I understand the grammar correctly, it’s possible to replace the body with a semicolon.
-            // In that case, the parser will add a recognition error, but then continue parsing.
-            // I guess that qualifies as syntactically valid-ish code, so we support it here.
+            /*
+             If I understand the grammar correctly, it’s possible to replace the body with a semicolon.
+             In that case, the parser will add a recognition error, but then continue parsing.
+             I guess that qualifies as syntactically valid-ish code, so we support it here.
+             */
             writeSemicolon(fWriter, that.mainEndToken, context);
         }
     }
@@ -1669,11 +1673,13 @@ shared class FormattingVisitor(
         if (exists t = that.specifierExpression?.mainToken) {
             that.specifierExpression.visit(this);
         } else {
-            // ignore; for a condition like
-            //     if (exists something)
-            // (without a specifier expression), the compiler just adds the identifier as expression
-            // in which case we shouldn’t visit this “virtual” expression
-            // (see #27)
+            /*
+             ignore; for a condition like
+                 if (exists something)
+             (without a specifier expression), the compiler just adds the identifier as expression
+             in which case we shouldn’t visit this “virtual” expression
+             (see #27)
+             */
         }
     }
     
