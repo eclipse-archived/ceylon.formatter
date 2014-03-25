@@ -57,10 +57,13 @@ shared void format(
      (which is what you normally give to the compiler), because that skips comments.
      Use [[org.antlr.runtime::BufferedTokenStream]] instead."
     TokenStream? tokens = null) {
-
+    
     output.open();
     value formattingVisitor = FormattingVisitor(tokens, output, options);
-    compilationUnit.visit(formattingVisitor);
-    formattingVisitor.close();
-    output.close(null);
+    try {
+        compilationUnit.visit(formattingVisitor);
+    } finally {
+        formattingVisitor.close();
+        output.close(null);
+    }
 }

@@ -34,9 +34,13 @@ import ceylon.formatter.options {
     FormattingOptions,
     commandLineOptions
 }
-import ceylon.collection {
-    MutableMap,
-    HashMap
+
+void noop(Anything* args) {}
+void recoveryOnError(ANTLRFileStream stream, File file)(Throwable t) {
+    t.printStackTrace();
+    try (overwriter = file.Overwriter()) {
+        overwriter.write(stream.substring(0, stream.size() - 1));
+    }
 }
 
 "Run the module `ceylon.formatter`."
@@ -46,7 +50,7 @@ shared void run() {
         // input = output
         options = [options[0], [inFileName, inFileName]];
     }
-    {<CharStream->Writer>*} files;
+    {[CharStream, Writer, Anything(Throwable)]*} files;
     switch (options[1].size <=> 2)
     case (smaller) {
         // no input or output files, pipe mode
@@ -56,7 +60,7 @@ shared void run() {
             shared actual void write(String string) => process.write(string);
             shared actual void writeLine(String line) => process.writeLine(line);
         }
-        files = { ANTLRInputStream(sysin)->sysoutWriter };
+        files = { [ANTLRInputStream(sysin), sysoutWriter, noop] };
     }
     case (equal) {
         /*
@@ -74,19 +78,25 @@ shared void run() {
             } else {
                 throw Exception("Can’t format files from source directory '``inFileName``' to target resource '``outFileName``'!");
             }
-            MutableMap<CharStream,Writer> mutableFiles = HashMap<CharStream,Writer>();
+            value filesBuilder = SequenceBuilder<[CharStream, Writer, Anything(Throwable)]>();
             dir.path.visit {
                 object visitor extends Visitor() {
                     shared actual void file(File file) {
                         if (file.name.endsWith(".ceylon")) {
-                            mutableFiles.put(ANTLRFileStream(file.path.string), parseFile(parsePath(outFileName).childPath(file.path.relativePath(file.path.elementPaths.first else nothing))).Overwriter());
+                            value firstPart = file.path.elementPaths.first;
+                            assert (exists firstPart);
+                            value targetFile = parseFile(parsePath(outFileName).childPath(file.path.relativePath(firstPart)));
+                            value stream = ANTLRFileStream(file.path.string);
+                            filesBuilder.append([stream, targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
                         }
                     }
                 }
             };
-            files = mutableFiles;
+            files = filesBuilder.sequence;
         } else {
-            files = { ANTLRFileStream(inFileName)->parseFile(outFileName).Overwriter() };
+            value targetFile = parseFile(outFileName);
+            value stream = ANTLRFileStream(inFileName);
+            files = { [stream, targetFile.Overwriter(), recoveryOnError(stream, targetFile)] };
         }
     }
     case (larger) {
@@ -106,19 +116,26 @@ shared void run() {
             throw Exception("Output directory '``outDirName``' is a file!");
         }
         else {}
-        files = {
-            for (inFileName in options[1].initial(options[1].size - 1))
-                ANTLRFileStream(inFileName)->parseFile(outDir.childPath(inFileName)).Overwriter()
-        };
+        value filesBuilder = SequenceBuilder<[CharStream, Writer, Anything(Throwable)]>();
+        for (inFileName in options[1].initial(options[1].size - 1)) {
+            value targetFile = parseFile(outDir.childPath(inFileName));
+            value stream = ANTLRFileStream(inFileName);
+            filesBuilder.append([stream, targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
+        }
+        files = filesBuilder.sequence;
     }
     Instant start = now();
-    for (CharStream->Writer file in files) {
+    for ([CharStream, Writer, Anything(Throwable)] file in files) {
         Instant t1 = now();
-        CeylonLexer lexer = CeylonLexer(file.key);
+        CeylonLexer lexer = CeylonLexer(file[0]);
         Tree.CompilationUnit cu = CeylonParser(CommonTokenStream(lexer)).compilationUnit();
         Instant t2 = now();
         lexer.reset(); // FormattingVisitor needs to read the tokens again
-        format(cu, options[0], file.item, BufferedTokenStream(lexer));
+        try {
+            format(cu, options[0], file[1], BufferedTokenStream(lexer));
+        } catch (Throwable t) {
+            file[2](t);
+        }
         Instant t3 = now();
         if (options[0].time) {
             process.writeErrorLine("Compiler: ``t1.durationTo(t2)``, formatter: ``t2.durationTo(t3)``");
