@@ -118,10 +118,7 @@ shared void run() {
         Tree.CompilationUnit cu = CeylonParser(CommonTokenStream(lexer)).compilationUnit();
         Instant t2 = now();
         lexer.reset(); // FormattingVisitor needs to read the tokens again
-        value formattingVisitor = FormattingVisitor(BufferedTokenStream(lexer), file.item, options[0]);
-        cu.visit(formattingVisitor);
-        formattingVisitor.close();
-        file.item.close(null);
+        format(cu, options[0], file.item, BufferedTokenStream(lexer));
         Instant t3 = now();
         if (options[0].time) {
             process.writeErrorLine("Compiler: ``t1.durationTo(t2)``, formatter: ``t2.durationTo(t3)``");
