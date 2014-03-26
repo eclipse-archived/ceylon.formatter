@@ -1,0 +1,12 @@
+shared class 
+SampleClass        ()     
+         extends Object()
+         satisfies 
+Identifiable {
+
+    string             = "hi";
+    
+    shared     void run() {
+        print        (string);
+    }}
+

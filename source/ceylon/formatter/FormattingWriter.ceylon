@@ -885,7 +885,9 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             tmpIndent = null;
         }
         
-        writeIndentation();
+        if (firstToken exists || options.indentBlankLines) {
+            writeIndentation();
+        }
         
         if (exists tmpIndent) {
             value deleted = tokenStack.deleteLast();

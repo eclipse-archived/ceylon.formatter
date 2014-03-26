@@ -289,6 +289,10 @@
            ~~~
            (no line break around `=>` at all) are unaffected by this option.""";
         "IndentationAfterSpecifierExpressionStart"; "indentationAfterSpecifierExpressionStart"; /* = */ "addIndentBefore";
+    },
+    FormattingOption {
+        "Decide whether blank lines should be indented or not.";
+        "Boolean"; "indentBlankLines"; /* = */ "true";
     }
 };
 
