@@ -25,7 +25,10 @@ import ceylon.formatter.options {
     FormattingOptions,
     Spaces,
     Tabs,
-    Mixed
+    Mixed,
+    os,
+    lf,
+    crlf
 }
 import ceylon.time.internal.math {
     floorDiv
@@ -207,8 +210,22 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             }
         }
         
+        String lineBreak;
+        value option = options.lineBreak;
+        switch (option)
+        case (os) {
+            lineBreak = operatingSystem.newline;
+        }
+        case (lf) {
+            lineBreak = "\n";
+        }
+        case (crlf) {
+            lineBreak = "\r\n";
+        }
+        
         shared actual void writeLine(String line) {
-            writer.writeLine(line);
+            writer.write(line);
+            writer.write(lineBreak);
             m_CurrentWidth = 0;
         }
     }

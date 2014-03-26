@@ -293,6 +293,10 @@
     FormattingOption {
         "Decide whether blank lines should be indented or not.";
         "Boolean"; "indentBlankLines"; /* = */ "true";
+    },
+    FormattingOption {
+        "The character(s) used to break lines, or [[os]] to use the operating system’s line breaks.";
+        "LineBreak"; "lineBreak"; /* = */ "lf";
     }
 };
 
@@ -300,5 +304,6 @@
     Enum("Unlimited"),
     Enum("All"),
     Enum("ImportStyle", { "singleLine", "multiLine" }),
-    Enum("IndentationAfterSpecifierExpressionStart", { "stack", "addIndentBefore" })
+    Enum("IndentationAfterSpecifierExpressionStart", { "stack", "addIndentBefore" }),
+    Enum("LineBreak", { "os", "lf", "crlf" })
 };
