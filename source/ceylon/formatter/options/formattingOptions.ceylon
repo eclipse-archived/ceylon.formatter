@@ -54,13 +54,13 @@ Map<String,SparseFormattingOptions> presets = HashMap {
     }
 };
 
-shared [FormattingOptions, String[]] commandLineOptions() {
+shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = process.arguments) {
     variable FormattingOptions baseOptions = FormattingOptions();
     MutableMap<String,SequenceAppender<String>> lines = HashMap<String,SequenceAppender<String>>();
     SequenceBuilder<String> otherLines = SequenceBuilder<String>();
     SequenceBuilder<SparseFormattingOptions> usedPresets = SequenceBuilder<SparseFormattingOptions>();
     variable String? partialLine = null;
-    for (String option in process.arguments) {
+    for (String option in arguments) {
         String key;
         String item;
         if (option.startsWith("-"), exists char1 = option[1]) {
