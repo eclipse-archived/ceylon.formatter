@@ -43,15 +43,10 @@ void recoveryOnError(ANTLRFileStream stream, File file)(Throwable t) {
     }
 }
 
-"Run the module `ceylon.formatter`."
-shared void run() {
-    variable [FormattingOptions, String[]] options = commandLineOptions();
-    if (exists inFileName = options[1][0], options[1].size == 1) {
-        // input = output
-        options = [options[0], [inFileName, inFileName]];
-    }
-    {[CharStream, Writer, Anything(Throwable)]*} files;
-    switch (options[1].size <=> 2)
+"Parses a list of paths from the command line.
+ Returns a sequence of tuples of source [[CharStream]], target [[Writer]] and onError callback."
+[CharStream, Writer, Anything(Throwable)][] commandLineFiles(String[] arguments) {
+    switch (arguments.size <=> 2)
     case (smaller) {
         // no input or output files, pipe mode
         object sysoutWriter satisfies Writer {
@@ -60,14 +55,14 @@ shared void run() {
             shared actual void write(String string) => process.write(string);
             shared actual void writeLine(String line) => process.writeLine(line);
         }
-        files = { [ANTLRInputStream(sysin), sysoutWriter, noop] };
+        return [ [ANTLRInputStream(sysin), sysoutWriter, noop] ];
     }
     case (equal) {
         /*
          read from first file, write to second file
          or recursively from first directory to second directory
          */
-        assert (exists inFileName = options[1][0], exists outFileName = options[1][1]);
+        assert (exists inFileName = arguments[0], exists outFileName = arguments[1]);
         if (is Directory dir = parsePath(inFileName).resource) {
             Directory target;
             Resource r = parsePath(outFileName).resource;
@@ -92,16 +87,16 @@ shared void run() {
                     }
                 }
             };
-            files = filesBuilder.sequence;
+            return filesBuilder.sequence;
         } else {
             value targetFile = parseFile(outFileName);
             value stream = ANTLRFileStream(inFileName);
-            files = { [stream, targetFile.Overwriter(), recoveryOnError(stream, targetFile)] };
+            return [ [stream, targetFile.Overwriter(), recoveryOnError(stream, targetFile)] ];
         }
     }
     case (larger) {
         // read from first..second-to-last file, write to last directory
-        assert (exists String outDirName = options[1].last);
+        assert (exists String outDirName = arguments.last);
         Path outDir = parsePath(outDirName);
         variable value dir = outDir.resource;
         if (is Link d = dir) {
@@ -117,13 +112,23 @@ shared void run() {
         }
         else {}
         value filesBuilder = SequenceBuilder<[CharStream, Writer, Anything(Throwable)]>();
-        for (inFileName in options[1].initial(options[1].size - 1)) {
+        for (inFileName in arguments.initial(arguments.size - 1)) {
             value targetFile = parseFile(outDir.childPath(inFileName));
             value stream = ANTLRFileStream(inFileName);
             filesBuilder.append([stream, targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
         }
-        files = filesBuilder.sequence;
+        return filesBuilder.sequence;
     }
+}
+
+"Run the module `ceylon.formatter`."
+shared void run() {
+    variable [FormattingOptions, String[]] options = commandLineOptions();
+    if (exists inFileName = options[1][0], options[1].size == 1) {
+        // input = output
+        options = [options[0], [inFileName, inFileName]];
+    }
+    {[CharStream, Writer, Anything(Throwable)]*} files = commandLineFiles(options[1]);
     Instant start = now();
     for ([CharStream, Writer, Anything(Throwable)] file in files) {
         Instant t1 = now();
