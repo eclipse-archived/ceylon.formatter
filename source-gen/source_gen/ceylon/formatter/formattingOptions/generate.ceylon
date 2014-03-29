@@ -198,32 +198,19 @@ class Generator() satisfies Destroyable {
     
     void generateFormattingFile(Writer writer) {
         writer.write(
-            "VariableOptions parseFormattingOptions({<String->{String+}>*} entries, FormattingOptions baseOptions) {
-                 // read included files
-                 variable VariableOptions options = VariableOptions(baseOptions);
-                 if(exists includes = entries.find((String->{String+} entry) => entry.key == \"include\")?.item) {
-                     for(include in includes) {
-                         options = variableFormattingFile(include, options);
-                     }
-                 }
-                 
-                 // read other options
-                 for (String->{String+} entry in entries.filter((String->{String+} entry) => entry.key != \"include\")) {
-                     String optionName = entry.key;
-                     String optionValue = entry.item.last;
-                         
-                     switch (optionName)\n");
+            "void parseFormattingOption(String optionName, String optionValue, VariableOptions options) {
+                 switch (optionName)\n");
         for (FormattingOption option in formattingOptions) {
             writer.write(
-                "        case (\"``option.name``\") {\n");
-            writer.write("            ");
+                "    case (\"``option.name``\") {\n");
+            writer.write("        ");
             for (String type in option.type.split('|'.equals)) {
                 if (exists enum = enums.find((Enum elem) => elem.classname == type)) {
                     for (instance in enum.instances) {
                         writer.write(
                             "if (\"``instance``\" == optionValue) {
-                                             options.``option.name`` = ``instance``;
-                                         } else ");
+                                         options.``option.name`` = ``instance``;
+                                     } else ");
                     }
                 } else if (type.startsWith("{") && type.endsWith("*}")) {
                     String innerType = type[1 : type.size - 3];
@@ -237,35 +224,32 @@ class Generator() satisfies Destroyable {
                             "{ for (s in optionValue.split()) ``parseFunction`` }";
                     writer.write(
                         "if (!``comprehension``.empty) {
-                                         options.``option.name`` = ``comprehension``;
-                                     } else ");
+                                     options.``option.name`` = ``comprehension``;
+                                 } else ");
                 } else if (type.startsWith("Range<")) {
                     "Only [[Integer]] ranges allowed for now"
                     assert (type == "Range<Integer>");
                     writer.write(
                         "if (exists option = parseIntegerRange(optionValue)) {
-                                         options.``option.name`` = option;
-                                     } else ");
+                                     options.``option.name`` = option;
+                                 } else ");
                 } else {
                     writer.write(
                         "if (exists option = parse``type``(optionValue)) {
-                                         options.``option.name`` = option;
-                                     } else ");
+                                     options.``option.name`` = option;
+                                 } else ");
                 }
             }
             writer.write("{
-                                          throw Exception(\"Can't parse value '\`\`optionValue\`\`' for option '``option.name``'!\");
-                                      }\n");
+                                      throw Exception(\"Can't parse value '\`\`optionValue\`\`' for option '``option.name``'!\");
+                                  }\n");
             writer.write(
-                "        }\n");
+                "    }\n");
         }
         writer.write(
-            "        else {
-                         throw Exception(\"Unknown option '\`\`optionName\`\`'!\");
-                     }
+            "    else {
+                     throw Exception(\"Unknown option '\`\`optionName\`\`'!\");
                  }
-                 
-                 return options;
              }");
     }
     

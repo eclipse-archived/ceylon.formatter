@@ -157,6 +157,29 @@ VariableOptions variableFormattingFile(String filename, FormattingOptions baseOp
     }
 }
 
+VariableOptions parseFormattingOptions({<String->{String+}>*} entries, FormattingOptions baseOptions) {
+    // read included files
+    variable VariableOptions options = VariableOptions(baseOptions);
+    if (exists includes = entries.find((String->{String+} entry) => entry.key == "include")?.item) {
+        for (include in includes) {
+            options = variableFormattingFile(include, options);
+        }
+    }
+    
+    // read other options
+    for (String->{String+} entry in entries.filter((String->{String+} entry) => entry.key != "include")) {
+        String optionName = entry.key;
+        String optionValue = entry.item.last;
+        try {
+            parseFormattingOption(optionName, optionValue, options);
+        } catch (Exception e) {
+            process.writeErrorLine(e.message);
+        }
+    }
+    
+    return options;
+}
+
 shared Range<Integer>? parseIntegerRange(String string) {
     value parts = string.split('.'.equals).sequence;
     if (parts.size == 2,
