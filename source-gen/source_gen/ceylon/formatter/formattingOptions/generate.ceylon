@@ -198,7 +198,9 @@ class Generator() satisfies Destroyable {
     
     void generateFormattingFile(Writer writer) {
         writer.write(
-            "void parseFormattingOption(String optionName, String optionValue, VariableOptions options) {
+            "throws (`class ParseOptionException`, \"If the option can’t be parsed\")
+             throws (`class UnknownOptionException`, \"If the option is unknown\")
+             void parseFormattingOption(String optionName, String optionValue, VariableOptions options) {
                  switch (optionName)\n");
         for (FormattingOption option in formattingOptions) {
             writer.write(
@@ -241,14 +243,14 @@ class Generator() satisfies Destroyable {
                 }
             }
             writer.write("{
-                                      throw Exception(\"Can't parse value '\`\`optionValue\`\`' for option '``option.name``'!\");
+                                      throw ParseOptionException(\"``option.name``\", optionValue);
                                   }\n");
             writer.write(
                 "    }\n");
         }
         writer.write(
             "    else {
-                     throw Exception(\"Unknown option '\`\`optionName\`\`'!\");
+                     throw UnknownOptionException(optionName);
                  }
              }");
     }
