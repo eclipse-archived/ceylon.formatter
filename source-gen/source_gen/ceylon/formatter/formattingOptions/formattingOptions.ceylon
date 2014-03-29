@@ -326,5 +326,5 @@
     Enum("All"),
     Enum("ImportStyle", { "singleLine", "multiLine" }),
     Enum("IndentationAfterSpecifierExpressionStart", { "stack", "addIndentBefore" }),
-    Enum("LineBreak", { "os", "lf", "crlf" })
+    Enum { "LineBreak"; { "os", "lf", "crlf" }; generate = false; }
 };

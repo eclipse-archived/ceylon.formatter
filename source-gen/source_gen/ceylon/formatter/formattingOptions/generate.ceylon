@@ -57,7 +57,7 @@ class Generator() satisfies Destroyable {
     }
     
     void generateEnums() {
-        for (Enum enum in enums) {
+        for (Enum enum in enums.filter(Enum.generate)) {
             generateFileEnum(enum);
         }
     }

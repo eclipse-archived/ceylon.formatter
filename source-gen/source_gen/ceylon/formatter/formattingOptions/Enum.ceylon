@@ -10,11 +10,16 @@ import java.lang {
  special value. You could use [[null]], but adding a dedicated object/type pair
  `unlimited` increases readability and decreases the chance of the user giving
  the wrong value without understanding what it means."
-class Enum(classname, instances = { lowercasedFirstChar(classname) }) {
+class Enum(classname, instances = { lowercasedFirstChar(classname) }, generate = true) {
     
     shared String classname; // see ceylon/ceylon-compiler#1492
     
     shared {String+} instances;
+    
+    "If you set this to [[false]], the enum class won’t be generated.
+     In this case, the only use of the enum is to simplify the parser,
+     which will still directly check all cases instead of delegating to a `parseX` function."
+    shared Boolean generate;
     
     "[[classname]] must be a valid class name!"
     assert (exists classname_first = classname.first,

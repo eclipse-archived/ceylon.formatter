@@ -211,22 +211,9 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             }
         }
         
-        String lineBreak;
-        value option = options.lineBreak;
-        switch (option)
-        case (os) {
-            lineBreak = operatingSystem.newline;
-        }
-        case (lf) {
-            lineBreak = "\n";
-        }
-        case (crlf) {
-            lineBreak = "\r\n";
-        }
-        
         shared actual void writeLine(String line) {
             writer.write(line);
-            writer.write(lineBreak);
+            writer.write(options.lineBreak.string);
             m_CurrentWidth = 0;
         }
     }
