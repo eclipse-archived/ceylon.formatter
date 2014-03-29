@@ -14,7 +14,7 @@ import ceylon.file {
 }
 
 object stdoutWriter satisfies Writer {
-    shared actual void destroy() => flush();
+    shared actual void close() => flush();
     shared actual void flush() {}
     shared actual void write(String string) {
         process.write(string);
@@ -58,12 +58,13 @@ shared void format(
      Use [[org.antlr.runtime::BufferedTokenStream]] instead."
     TokenStream? tokens = null) {
     
-    output.open();
-    value formattingVisitor = FormattingVisitor(tokens, output, options);
-    try {
+    variable Throwable? error = null;
+    try (formattingVisitor = FormattingVisitor(tokens, output, options)) {
         compilationUnit.visit(formattingVisitor);
+    } catch (Throwable t) {
+        error = t;
+        throw t;
     } finally {
-        formattingVisitor.close();
-        output.close(null);
+        output.destroy(error);
     }
 }

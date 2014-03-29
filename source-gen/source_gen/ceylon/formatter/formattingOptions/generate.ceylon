@@ -12,7 +12,7 @@ shared void generate() {
     }
 }
 
-class Generator() satisfies Closeable {
+class Generator() satisfies Destroyable {
     
     Writer gitignore;
     Resource gitignoreResource = parsePath("source/ceylon/formatter/options/.gitignore").resource;
@@ -279,7 +279,5 @@ class Generator() satisfies Closeable {
         writer.writeLine("shared object ``instance`` extends ``classname``() {}");
     }
     
-    shared actual Anything close(Throwable? t) => gitignore.close(t);
-    
-    shared actual Anything open() => gitignore.open();
+    shared actual Anything destroy(Throwable? error) => gitignore.destroy(error);
 }

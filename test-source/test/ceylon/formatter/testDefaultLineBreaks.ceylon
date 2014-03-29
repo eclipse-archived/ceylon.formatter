@@ -17,7 +17,7 @@ import ceylon.file {
 test
 shared void testDefaultLineBreaks() {
     object writer satisfies Writer {
-        shared actual void destroy() {}
+        shared actual void close() {}
         shared actual void flush() {}
         shared actual void write(String string) {}
         shared actual void writeLine(String line) {}

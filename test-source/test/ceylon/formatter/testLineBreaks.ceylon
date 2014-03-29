@@ -19,7 +19,7 @@ import ceylon.file {
 void testLineBreaks(LineBreak option, String lineBreak) {
     value sb = StringBuilder();
     object writer satisfies Writer {
-        shared actual void destroy() => flush();
+        shared actual void close() => flush();
         
         shared actual void flush() {}
         
@@ -32,18 +32,18 @@ void testLineBreaks(LineBreak option, String lineBreak) {
             assert (false);
         }
     }
-    value fWriter = FormattingWriter(null, writer, FormattingOptions {
+    try (fWriter = FormattingWriter(null, writer, FormattingOptions {
             lineBreak = option;
-        });
-    fWriter.writeToken {
-        "a";
-        linebreaksAfter = 2..2;
-    };
-    fWriter.writeToken {
-        "b";
-        linebreaksBefore = 2..2;
-    };
-    fWriter.close();
+        })) {
+        fWriter.writeToken {
+            "a";
+            linebreaksAfter = 2..2;
+        };
+        fWriter.writeToken {
+            "b";
+            linebreaksBefore = 2..2;
+        };
+    }
     assertEquals(sb.string, "a``lineBreak.repeat(2)``b``lineBreak``");
 }
 

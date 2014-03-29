@@ -50,12 +50,12 @@ void recoveryOnError(ANTLRFileStream stream, File file)(Throwable t) {
     case (smaller) {
         // no input or output files, pipe mode
         object sysoutWriter satisfies Writer {
-            shared actual void destroy() => flush();
+            shared actual void close() => flush();
             shared actual void flush() => process.flush();
             shared actual void write(String string) => process.write(string);
             shared actual void writeLine(String line) => process.writeLine(line);
         }
-        return [ [ANTLRInputStream(sysin), sysoutWriter, noop] ];
+        return [[ANTLRInputStream(sysin), sysoutWriter, noop]];
     }
     case (equal) {
         /*
@@ -91,7 +91,7 @@ void recoveryOnError(ANTLRFileStream stream, File file)(Throwable t) {
         } else {
             value targetFile = parseFile(outFileName);
             value stream = ANTLRFileStream(inFileName);
-            return [ [stream, targetFile.Overwriter(), recoveryOnError(stream, targetFile)] ];
+            return [[stream, targetFile.Overwriter(), recoveryOnError(stream, targetFile)]];
         }
     }
     case (larger) {

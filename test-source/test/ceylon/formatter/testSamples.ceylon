@@ -39,7 +39,7 @@ void testFile(String filename) {
         // format input file
         object output satisfies Writer {
             StringBuilder content = StringBuilder();
-            shared actual void destroy() => flush();
+            shared actual void close() => flush();
             shared actual void flush() {}
             shared actual void write(String string) => content.append(string);
             shared actual void writeLine(String line) => content.append(line).appendNewline();
@@ -54,21 +54,21 @@ void testFile(String filename) {
         } else {
             options = FormattingOptions();
         }
-        FormattingVisitor visitor = FormattingVisitor(BufferedTokenStream(lexer), // don't use CommonTokenStream - we don't want to skip comments
+        try (visitor = FormattingVisitor(BufferedTokenStream(lexer), // don't use CommonTokenStream - we don't want to skip comments
             output, CombinedOptions(options, SparseFormattingOptions {
                     failFast = true;
-                }));
-        cu.visit(visitor);
-        visitor.close();
+                }))) {
+            cu.visit(visitor);
+        }
         variable String actual = output.string;
         // read expected file
         variable String expected = "";
-        value reader = expectedFile.Reader();
-        while (exists line = reader.readLine()) {
-            expected += line;
-            expected += "\n";
+        try (reader = expectedFile.Reader()) {
+            while (exists line = reader.readLine()) {
+                expected += line;
+                expected += "\n";
+            }
         }
-        reader.destroy();
         // mild reformatting of actual:
         // * newline goodness
         actual = actual.replace("\r\n", "\n").replace("\r", "\n");

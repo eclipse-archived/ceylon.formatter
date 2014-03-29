@@ -46,7 +46,7 @@ shared class FormattingVisitor(
     "The writer to which the subject is written."
     Writer writer,
     "The options for the formatter that control the format of the written code."
-    FormattingOptions options) extends VisitorAdaptor() satisfies NaturalVisitor {
+    FormattingOptions options) extends VisitorAdaptor() satisfies NaturalVisitor&Destroyable {
     
     FormattingWriter fWriter = FormattingWriter(tokens, writer, options);
     
@@ -1772,8 +1772,8 @@ shared class FormattingVisitor(
         super.visitAny(that); // continue walking the tree
     }
     
-    shared void close() {
-        fWriter.close();
-        writer.close(null);
+    shared actual void destroy(Throwable? error) {
+        fWriter.destroy(error);
+        writer.destroy(error);
     }
 }

@@ -171,7 +171,8 @@ object stopAndDontConsume extends Stop() { consume = false; }
           comments
         */
        ~~~"
-shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOptions options) {
+shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOptions options)
+        satisfies Destroyable {
     
     Integer tabWidth => 4; // TODO see ceylon/ceylon-spec#866
     "Keeps track of the length of the line that is currently being written.
@@ -182,7 +183,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         variable Integer m_CurrentWidth = 0; // TODO “don’t ever write code like this in Ceylon”... how else can I hide the setter?
         shared Integer currentWidth => m_CurrentWidth;
         
-        shared actual void destroy() => writer.destroy();
+        shared actual void close() => writer.close();
         
         shared actual void flush() => writer.flush();
         
@@ -1185,7 +1186,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     }
     
     "Enqueue a line break if the last queue element isn’t a line break, then flush the queue."
-    shared void close() {
+    shared actual void destroy(Throwable? error) {
         if (!isEmpty) {
             writeToken {
                 ""; // empty token, big effect: fastForward again, comments, newlines, etc.
