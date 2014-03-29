@@ -297,6 +297,27 @@
     FormattingOption {
         "The character(s) used to break lines, or [[os]] to use the operating system’s line breaks.";
         "LineBreak"; "lineBreak"; /* = */ "lf";
+    },
+    FormattingOption {
+        "Decide whether `else` should be on its own line.
+         For example:
+         ~~~
+         if (something) {
+             // ...
+         } else {
+             // ...
+         }
+         ~~~
+         vs.
+         ~~~
+         if (something) {
+             // ...
+         }
+         else {
+             // ...
+         }
+         ~~~";
+        "Boolean"; "elseOnOwnLine"; /* = */ "false";
     }
 };
 

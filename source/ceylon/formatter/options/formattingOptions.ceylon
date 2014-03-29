@@ -90,8 +90,7 @@ shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = pro
                 }
             } else if (exists longOption = shortcuts[char1]) {
                 expanded = longOption + option[2...];
-            }
-            else {
+            } else {
                 // TODO report the error somewhere?
                 process.writeError("Unrecognized short option '``option[0..1]``'!");
                 continue;

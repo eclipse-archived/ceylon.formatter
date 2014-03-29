@@ -109,8 +109,7 @@ class Generator() satisfies Destroyable {
             String[] lines = [*option.documentation.split { '\n'.equals; groupSeparators = false; }];
             if (lines.size == 0 || option.documentation == "") {
                 writer.write("\n");
-            }
-            else if (lines.size == 1) {
+            } else if (lines.size == 1) {
                 writer.write("\n    \"\"\"``option.documentation``\"\"\"\n");
             } else {
                 assert (exists firstLine = lines.first);

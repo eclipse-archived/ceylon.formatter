@@ -291,6 +291,7 @@ shared class FormattingVisitor(
             that.mainToken; // "case"
             spaceBefore = true;
             spaceAfter = true; // TODO option
+            linebreaksBefore = 1..1;
             linebreaksAfter = noLineBreak;
         };
         value context = fWriter.writeToken {
@@ -483,9 +484,13 @@ shared class FormattingVisitor(
         }
     }
     
+    "Do not use this for `switch` `else` clauses – use [[visitSwitchElseClause]] for that instead.
+     
+     (Reason: [[FormattingOptions.elseOnOwnLine]] shouldn’t be used for these else clauses.)"
     shared actual void visitElseClause(ElseClause that) {
         fWriter.writeToken {
             that.mainToken; // "else"
+            linebreaksBefore = options.elseOnOwnLine then 1..1 else 0..0;
             linebreaksAfter = noLineBreak;
         };
         that.visitChildren(this);
@@ -661,11 +666,9 @@ shared class FormattingVisitor(
             assert (diff == 2);
             if (token.type == uidentifier) {
                 tokenText = "\\I" + token.text;
-            }
-            else if (token.type == lidentifier) {
+            } else if (token.type == lidentifier) {
                 tokenText = "\\i" + token.text;
-            }
-            else {
+            } else {
                 throw Exception("Unexpected token type on identifier token!");
             }
         }
@@ -1481,6 +1484,15 @@ shared class FormattingVisitor(
         }
     }
     
+    shared actual void visitSwitchCaseList(SwitchCaseList that) {
+        for (caseClause in CeylonIterable(that.caseClauses)) {
+            visitCaseClause(caseClause);
+        }
+        if (exists elseClause = that.elseClause) {
+            visitSwitchElseClause(elseClause);
+        }
+    }
+    
     shared actual void visitSwitchClause(SwitchClause that) {
         fWriter.writeToken {
             that.mainToken; // "switch"
@@ -1502,6 +1514,15 @@ shared class FormattingVisitor(
             linebreaksBefore = noLineBreak;
             linebreaksAfter = 1..2;
         };
+    }
+    
+    shared void visitSwitchElseClause(ElseClause that) {
+        fWriter.writeToken {
+            that.mainToken; // "else"
+            linebreaksBefore = 1..1;
+            linebreaksAfter = noLineBreak;
+        };
+        that.visitChildren(this);
     }
     
     shared actual void visitThenOp(ThenOp that) {

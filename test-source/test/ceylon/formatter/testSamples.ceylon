@@ -420,3 +420,13 @@ test
 shared void testRangeSpacing() {
     testFile("rangeSpacing");
 }
+
+test
+shared void testElseOnSameLine() {
+    testFile("elseOnSameLine");
+}
+
+test
+shared void testElseOnOwnLine() {
+    testFile("elseOnOwnLine");
+}
