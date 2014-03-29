@@ -101,20 +101,20 @@ class Generator() satisfies Destroyable {
             if (needsComma) {
                 writer.write(",");
             }
-            writer.write("\n        ``option.name`` = null");
+            writer.write("\n    ``option.name`` = null");
             needsComma = true;
         }
         writer.write(") {\n");
         for (option in formattingOptions) {
             String[] lines = [*option.documentation.split { '\n'.equals; groupSeparators = false; }];
             if (lines.size == 0 || option.documentation == "") {
-                writer.write("\n");
+                writer.write("    \n");
             } else if (lines.size == 1) {
-                writer.write("\n    \"\"\"``option.documentation``\"\"\"\n");
+                writer.write("    \n    \"\"\"``option.documentation``\"\"\"\n");
             } else {
                 assert (exists firstLine = lines.first);
                 assert (exists lastLine = lines.last);
-                writer.write("\n    \"\"\"``firstLine``\n");
+                writer.write("    \n    \"\"\"``firstLine``\n");
                 if (lines.size > 2) {
                     for (String line in lines[1 .. lines.size - 2]) {
                         writer.write("       ``line``\n");
@@ -145,12 +145,12 @@ class Generator() satisfies Destroyable {
             if (needsComma) {
                 writer.write(",");
             }
-            writer.write("\n        ``option.name`` = ``option.defaultValue``");
+            writer.write("\n    ``option.name`` = ``option.defaultValue``");
             needsComma = true;
         }
         writer.write(") extends SparseFormattingOptions() {\n");
         for (option in formattingOptions) {
-            writer.write("\n    shared actual default ``option.type`` ``option.name``;\n");
+            writer.write("    \n    shared actual default ``option.type`` ``option.name``;\n");
         }
         writer.write("}\n\n");
     }
@@ -172,7 +172,7 @@ class Generator() satisfies Destroyable {
                       }));\"\n");
         writer.write("shared class CombinedOptions(FormattingOptions baseOptions, SparseFormattingOptions+ decoration) extends FormattingOptions() {\n");
         for (option in formattingOptions) {
-            writer.write("\n    shared actual ``option.type`` ``option.name`` {\n");
+            writer.write("    \n    shared actual ``option.type`` ``option.name`` {\n");
             writer.write("        for (options in decoration) {\n");
             writer.write("            if (exists option = options.``option.name``) {\n");
             writer.write("                return option;\n");
@@ -189,7 +189,7 @@ class Generator() satisfies Destroyable {
             "\"A subclass of [[FormattingOptions]] that makes its attributes [[variable]].
               
               For internal use only.\"\n");
-        writer.write("class VariableOptions(FormattingOptions baseOptions) extends FormattingOptions() {\n\n");
+        writer.write("class VariableOptions(FormattingOptions baseOptions) extends FormattingOptions() {\n    \n");
         for (option in formattingOptions) {
             writer.write("    shared actual variable ``option.type`` ``option.name`` = baseOptions.``option.name``;\n");
         }
@@ -252,7 +252,8 @@ class Generator() satisfies Destroyable {
             "    else {
                      throw UnknownOptionException(optionName);
                  }
-             }");
+             }
+             ");
     }
     
     void generateEnumClass(Writer writer, Enum enum) {
