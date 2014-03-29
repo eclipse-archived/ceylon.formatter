@@ -25,10 +25,7 @@ import ceylon.formatter.options {
     FormattingOptions,
     Spaces,
     Tabs,
-    Mixed,
-    os,
-    lf,
-    crlf
+    Mixed
 }
 import ceylon.time.internal.math {
     floorDiv
