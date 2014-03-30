@@ -46,84 +46,88 @@ shared FormattingOptions formattingFile(
     FormattingOptions baseOptions = FormattingOptions())
         => variableFormattingFile(filename, baseOptions);
 
-Map<Character,String> shortcuts = HashMap { 'w'->"maxLineLength" };
-Map<String,String> aliases = HashMap { "maxLineWidth"->"maxLineLength" };
-Map<String,SparseFormattingOptions> presets = HashMap {
-    "allmanStyle"->SparseFormattingOptions {
-        braceOnOwnLine = true;
-    }
+Map<String,String> sugarOptions = HashMap { "-w"->"--maxLineLength", "--maxLineWidth"->"--maxLineLength" };
+Map<String,Anything(VariableOptions)> presets = HashMap {
+    "--allmanStyle"->(void(VariableOptions options) => options.braceOnOwnLine = true)
 };
 
 shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = process.arguments) {
     variable FormattingOptions baseOptions = FormattingOptions();
-    MutableMap<String,SequenceAppender<String>> lines = HashMap<String,SequenceAppender<String>>();
-    SequenceBuilder<String> otherLines = SequenceBuilder<String>();
-    SequenceBuilder<SparseFormattingOptions> usedPresets = SequenceBuilder<SparseFormattingOptions>();
-    variable String? partialLine = null;
-    for (String option in arguments) {
-        String key;
-        String item;
-        if (option.startsWith("-"), exists char1 = option[1]) {
-            if (exists p = partialLine) {
-                String stubKey;
-                String stubItem;
-                if (p.startsWith("no-")) {
-                    stubKey = p["no-".size...];
-                    stubItem = "false";
-                } else {
-                    stubKey = p;
-                    stubItem = "true";
+    
+    /*
+     TODO: this is a workaround for ceylon/ceylon-compiler#1589.
+     As soon as that issue is fixed, use
+     
+     String[] splitArguments = concatenate(*arguments.map((String s) {
+             if (exists index = s.indexes('='.equals).first) {
+                 return [s[... index - 1], s[index + 1 ...]];
+             }
+             return [s];
+         }));
+     
+     instead. (Remove the two `of String[]`.)
+     */
+    String[] splitArguments = concatenate(*arguments.map((String s) {
+                if (exists index = s.indexes('='.equals).first) {
+                    return [s[... index - 1], s[index + 1 ...]] of String[];
                 }
-                if (exists appender = lines[stubKey]) {
-                    appender.append(stubItem);
-                } else {
-                    lines.put(stubKey, SequenceAppender([stubItem]));
+                return [s] of String[];
+            }));
+    value options = VariableOptions(baseOptions);
+    value remaining = SequenceBuilder<String>();
+    
+    if (nonempty splitArguments) {
+        variable Integer i = 0;
+        while (i < splitArguments.size) {
+            assert (exists option = splitArguments[i]);
+            String optionName = (sugarOptions[option] else option)["--".size...];
+            if (option == "--") {
+                remaining.appendAll(splitArguments[(i + 1)...]);
+                break;
+            } else if (optionName.startsWith("no-")) {
+                try {
+                    parseFormattingOption(optionName["no-".size...], "false", options);
+                } catch (ParseOptionException e) {
+                    process.writeErrorLine("Option '``optionName["no-".size...]``' is not a boolean option and can’t be used as '``option``'!");
+                } catch (UnknownOptionException e) {
+                    remaining.append(option);
                 }
-                partialLine = null;
-            }
-            String expanded;
-            if (char1 == '-') { // option.startsWith("--")
-                expanded = option[2...];
-                if (exists preset = presets[expanded]) {
-                    usedPresets.append(preset);
-                    continue;
+            } else if (exists preset = presets[option]) {
+                preset(options);
+            } else if (exists optionValue = splitArguments[i + 1]) {
+                try {
+                    parseFormattingOption(optionName, optionValue, options);
+                    i++;
+                } catch (ParseOptionException e) {
+                    // maybe it’s a boolean option
+                    try {
+                        parseFormattingOption(optionName, "true", options);
+                    } catch (ParseOptionException f) {
+                        if (optionValue.startsWith("-")) {
+                            process.writeErrorLine("Missing value for option '``optionName``'!");
+                        } else {
+                            process.writeErrorLine(e.message);
+                            i++;
+                        }
+                    }
+                } catch (UnknownOptionException e) {
+                    remaining.append(option);
                 }
-            } else if (exists longOption = shortcuts[char1]) {
-                expanded = longOption + option[2...];
             } else {
-                // TODO report the error somewhere?
-                process.writeError("Unrecognized short option '``option[0..1]``'!");
-                continue;
+                try {
+                    // maybe it’s a boolean option…
+                    parseFormattingOption(optionName, "true", options);
+                } catch (ParseOptionException e) {
+                    // …nope.
+                    process.writeErrorLine("Missing value for option '``optionName``'!");
+                } catch (UnknownOptionException e) {
+                    remaining.append(option);
+                }
             }
-            if (exists i = expanded.indexes('='.equals).first) {
-                key = expanded[... i - 1];
-                item = expanded[i + 1 ...];
-            } else {
-                partialLine = expanded;
-                continue;
-            }
-        } else if (exists p = partialLine) {
-            key = p;
-            item = option;
-            partialLine = null;
-        } else {
-            otherLines.append(option);
-            continue;
-        }
-        if (exists appender = lines[(aliases[key] else key)]) {
-            appender.append(item);
-        } else {
-            lines.put(aliases[key] else key, SequenceAppender([item]));
+            i++;
         }
     }
-    if (nonempty seq = usedPresets.sequence) {
-        baseOptions = CombinedOptions(baseOptions, *seq.reversed);
-    }
-    return [
-            parseFormattingOptions(
-                lines.map((String->SequenceAppender<String> option) => option.key->option.item.sequence), baseOptions),
-            otherLines.sequence
-        ];
+    return [options, remaining.sequence];
 }
 
 "An internal version of [[formattingFile]] that specifies a return type of [[VariableOptions]],
