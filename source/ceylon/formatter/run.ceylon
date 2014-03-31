@@ -43,11 +43,216 @@ void recoveryOnError(ANTLRFileStream stream, File file)(Throwable t) {
     }
 }
 
+void createParentDirectories(Nil nil) {
+    value parts = nil.path.elementPaths;
+    assert (nonempty parts);
+    if (parts.size == 1) {
+        return;
+    }
+    value initial = parts.first.resource;
+    assert (is Directory|Nil initial);
+    variable Directory current;
+    switch (initial)
+    case (is Directory) {
+        current = initial;
+    }
+    case (is Nil) {
+        current = initial.createDirectory();
+    }
+    for (part in parts.rest[... parts.size - 3]) {
+        value next = current.path.childPath(part).resource.linkedResource;
+        assert (is Directory|Nil next);
+        switch (next)
+        case (is Directory) {
+            current = next;
+        }
+        case (is Nil) {
+            current = next.createDirectory();
+        }
+    }
+}
+
 "Parses a list of paths from the command line.
  Returns a sequence of tuples of source [[CharStream]], target [[Writer]] and onError callback."
 [CharStream, Writer, Anything(Throwable)][] commandLineFiles(String[] arguments) {
-    switch (arguments.size <=> 2)
-    case (smaller) {
+    
+    if (nonempty arguments) {
+        variable Integer i = 0;
+        variable SequenceAppender<String>? currentSources = null;
+        SequenceBuilder<String[]->String> translations = SequenceBuilder<String[]->String>();
+        while (i < arguments.size) {
+            assert (exists argument = arguments[i]);
+            value nextArgument = arguments[i + 1];
+            if (argument == "--and") {
+                if (exists nextArgument) {
+                    if (exists current = currentSources) {
+                        current.append(nextArgument);
+                    } else {
+                        process.writeErrorLine("Missing first file or directory before '--and ``nextArgument``'!");
+                    }
+                    i++;
+                } else {
+                    process.writeErrorLine("Missing file or directory after '--and'!");
+                }
+            } else if (argument == "--to") {
+                if (exists nextArgument) {
+                    if (exists current = currentSources) {
+                        translations.append(current.sequence->nextArgument);
+                    } else {
+                        process.writeErrorLine("Missing files or directories before '--to ``nextArgument``'!");
+                    }
+                    i++;
+                } else {
+                    process.writeErrorLine("Missing file or directory after '--to'!");
+                }
+            } else {
+                if (exists current = currentSources) {
+                    if (current.size > 1) {
+                        process.writeErrorLine("Warning: Multiple files or directories collected with '--and', but not redirected with '--to'!");
+                    }
+                    for (fileOrDir in current.sequence) {
+                        translations.append([fileOrDir]->fileOrDir);
+                    }
+                }
+                currentSources = SequenceAppender { argument };
+            }
+            i++;
+        }
+        if (exists current = currentSources) {
+            if (current.size > 1) {
+                process.writeErrorLine("Warning: Multiple files or directories collected with '--and', but not redirected with '--to'!");
+            }
+            for (fileOrDir in current.sequence) {
+                translations.append([fileOrDir]->fileOrDir);
+            }
+        }
+        value ret = SequenceBuilder<[CharStream, Writer, Anything(Throwable)]>();
+        void translate(String source, Directory targetDirectory) {
+            value resource = parsePath(source).resource.linkedResource;
+            object visitor extends Visitor() {
+                shared actual void file(File file) {
+                    if (file.name.endsWith(".ceylon")) {
+                        value firstPart = file.path.elementPaths.first;
+                        assert (exists firstPart);
+                        value target = targetDirectory.path.childPath(file.path.relativePath(firstPart)).resource.linkedResource;
+                        File targetFile;
+                        switch (target)
+                        case (is File) {
+                            targetFile = target;
+                        }
+                        case (is Nil) {
+                            try {
+                                createParentDirectories(target);
+                            } catch (AssertionError e) {
+                                process.writeErrorLine("Can’t create target file '``target.path``'!");
+                                return;
+                            }
+                            targetFile = target.createFile();
+                        }
+                        case (is Directory) {
+                            process.writeErrorLine("Can’t format file '``source``' to target directory '``target.path``'!");
+                            return;
+                        }
+                        value stream = ANTLRFileStream(file.path.string);
+                        ret.append([stream, targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
+                    }
+                }
+            }
+            switch (resource)
+            case (is Directory) {
+                resource.path.visit {
+                    visitor = visitor;
+                };
+            }
+            case (is File) {
+                visitor.file(resource);
+            }
+            case (is Nil) {
+                process.writeErrorLine("Warning: Source file '``source``' doesn’t exist, skipping!");
+            }
+        }
+        void translateToDirectory([String+] sources, Directory targetDirectory) {
+            if (sources.size == 1) {
+                // source/foo/bar → target/foo/bar
+                translate(sources.first, targetDirectory);
+            } else {
+                // source1/foo/bar → target/source1/foo/bar, source2/baz → target/source2/baz
+                for (source in sources) {
+                    value resource = parsePath(source).resource.linkedResource;
+                    Path targetPath;
+                    switch (resource)
+                    case (is Directory|Nil) {
+                        targetPath = targetDirectory.path.childPath(source);
+                    }
+                    case (is File) {
+                        targetPath = targetDirectory.path.childPath(resource.directory.path);
+                    }
+                    value targetResource = targetPath.resource.linkedResource;
+                    switch (targetResource)
+                    case (is Directory) {
+                        translate(source, targetResource);
+                    }
+                    case (is Nil) {
+                        try {
+                            createParentDirectories(targetResource);
+                        } catch (AssertionError e) {
+                            process.writeErrorLine("Can’t create target directory '``targetPath``'!");
+                            continue;
+                        }
+                        translate(source, targetResource.createDirectory());
+                    }
+                    case (is File) {
+                        process.writeErrorLine("Can’t format source '``source``' to target file '``targetPath``'!");
+                    }
+                }
+            }
+        }
+        for (translation in translations.sequence) {
+            assert (nonempty sources = translation.key);
+            value target = translation.item;
+            value targetResource = parsePath(target).resource.linkedResource;
+            switch (targetResource)
+            case (is File) {
+                if (is File sourceFile = parsePath(sources.first).resource.linkedResource) {
+                    if (sources.size == 1) {
+                        value stream = ANTLRFileStream(sources.first);
+                        ret.append([stream, targetResource.Overwriter(), recoveryOnError(stream, targetResource)]);
+                    } else {
+                        process.writeErrorLine("Can’t format more than one source files or directories into a single target file!");
+                        process.writeErrorLine("Skipping directive '``" --and ".join(sources)`` --to ``target``'.");
+                    }
+                } else {
+                    process.writeErrorLine("Can’t format a source directory into a target file!");
+                    process.writeErrorLine("Skipping directive '``" --and ".join(sources)`` --to ``target``'.");
+                }
+            }
+            case (is Directory) {
+                translateToDirectory(sources, targetResource);
+            }
+            case (is Nil) {
+                if (is File sourceFile = parsePath(sources.first).resource.linkedResource, sources.size == 1) {
+                    // single file to single file
+                    value stream = ANTLRFileStream(sources.first);
+                    try {
+                        createParentDirectories(targetResource);
+                    } catch (AssertionError e) {
+                        process.writeErrorLine("Can’t create target file '``target``'!");
+                    }
+                    value targetFile = targetResource.createFile();
+                    ret.append([stream, targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
+                } else {
+                    try {
+                        createParentDirectories(targetResource);
+                    } catch (AssertionError e) {
+                        process.writeErrorLine("Can’t create target directory '``target``'!");
+                    }
+                    Directory targetDirectory = targetResource.createDirectory();
+                    translateToDirectory(sources, targetDirectory);
+                }
+            }
+        }
+        return ret.sequence;
+    } else {
         // no input or output files, pipe mode
         object sysoutWriter satisfies Writer {
             shared actual void close() => flush();
@@ -56,68 +261,6 @@ void recoveryOnError(ANTLRFileStream stream, File file)(Throwable t) {
             shared actual void writeLine(String line) => process.writeLine(line);
         }
         return [[ANTLRInputStream(sysin), sysoutWriter, noop]];
-    }
-    case (equal) {
-        /*
-         read from first file, write to second file
-         or recursively from first directory to second directory
-         */
-        assert (exists inFileName = arguments[0], exists outFileName = arguments[1]);
-        if (is Directory dir = parsePath(inFileName).resource) {
-            Directory target;
-            Resource r = parsePath(outFileName).resource;
-            if (is Directory r) {
-                target = r;
-            } else if (is Nil r) {
-                target = r.createDirectory();
-            } else {
-                throw Exception("Can’t format files from source directory '``inFileName``' to target resource '``outFileName``'!");
-            }
-            value filesBuilder = SequenceBuilder<[CharStream, Writer, Anything(Throwable)]>();
-            dir.path.visit {
-                object visitor extends Visitor() {
-                    shared actual void file(File file) {
-                        if (file.name.endsWith(".ceylon")) {
-                            value firstPart = file.path.elementPaths.first;
-                            assert (exists firstPart);
-                            value targetFile = parseFile(parsePath(outFileName).childPath(file.path.relativePath(firstPart)));
-                            value stream = ANTLRFileStream(file.path.string);
-                            filesBuilder.append([stream, targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
-                        }
-                    }
-                }
-            };
-            return filesBuilder.sequence;
-        } else {
-            value targetFile = parseFile(outFileName);
-            value stream = ANTLRFileStream(inFileName);
-            return [[stream, targetFile.Overwriter(), recoveryOnError(stream, targetFile)]];
-        }
-    }
-    case (larger) {
-        // read from first..second-to-last file, write to last directory
-        assert (exists String outDirName = arguments.last);
-        Path outDir = parsePath(outDirName);
-        variable value dir = outDir.resource;
-        if (is Link d = dir) {
-            dir = d.linkedResource;
-        }
-        value finalDir = dir;
-        switch (finalDir)
-        case (is Nil) {
-            finalDir.createDirectory();
-        }
-        case (is File) {
-            throw Exception("Output directory '``outDirName``' is a file!");
-        }
-        else {}
-        value filesBuilder = SequenceBuilder<[CharStream, Writer, Anything(Throwable)]>();
-        for (inFileName in arguments.initial(arguments.size - 1)) {
-            value targetFile = parseFile(outDir.childPath(inFileName));
-            value stream = ANTLRFileStream(inFileName);
-            filesBuilder.append([stream, targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
-        }
-        return filesBuilder.sequence;
     }
 }
 
