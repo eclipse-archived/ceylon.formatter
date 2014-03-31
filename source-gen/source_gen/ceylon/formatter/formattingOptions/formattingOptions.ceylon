@@ -201,7 +201,7 @@
            
            This is mostly for internal use; in the finished formatter, there shouldn’t be any errors
            when formatting syntactically valid code.""";
-        "Boolean"; "failFast"; /* = */ "false";
+        "Boolean"; "failFast"; /* = */ "true";
     },
     FormattingOption {
         """Decide whether there should be a space before a try-with-resources resource list.
