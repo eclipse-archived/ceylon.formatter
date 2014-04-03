@@ -17,10 +17,6 @@ import org.antlr.runtime {
     Token,
     CommonToken
 }
-import java.lang {
-    Error,
-    Exception
-}
 import ceylon.file {
     Writer
 }
