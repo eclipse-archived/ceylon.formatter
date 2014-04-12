@@ -74,7 +74,7 @@ void createParentDirectories(Nil nil) {
 
 "Parses a list of paths from the command line.
  Returns a sequence of tuples of source [[CharStream]], target [[Writer]] and onError callback."
-[CharStream, Writer, Anything(Throwable)][] commandLineFiles(String[] arguments) {
+[CharStream, Writer(), Anything(Throwable)][] commandLineFiles(String[] arguments) {
     
     if (nonempty arguments) {
         variable Integer i = 0;
@@ -126,7 +126,7 @@ void createParentDirectories(Nil nil) {
                 translations.append([fileOrDir]->fileOrDir);
             }
         }
-        value ret = SequenceBuilder<[CharStream, Writer, Anything(Throwable)]>();
+        value ret = SequenceBuilder<[CharStream, Writer(), Anything(Throwable)]>();
         void translate(String source, Directory targetDirectory) {
             value resource = parsePath(source).resource.linkedResource;
             object visitor extends Visitor() {
@@ -154,7 +154,7 @@ void createParentDirectories(Nil nil) {
                             return;
                         }
                         value stream = ANTLRFileStream(file.path.string);
-                        ret.append([stream, targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
+                        ret.append([stream, () => targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
                     }
                 }
             }
@@ -216,7 +216,7 @@ void createParentDirectories(Nil nil) {
                 if (is File sourceFile = parsePath(sources.first).resource.linkedResource) {
                     if (sources.size == 1) {
                         value stream = ANTLRFileStream(sources.first);
-                        ret.append([stream, targetResource.Overwriter(), recoveryOnError(stream, targetResource)]);
+                        ret.append([stream, () => targetResource.Overwriter(), recoveryOnError(stream, targetResource)]);
                     } else {
                         process.writeErrorLine("Can’t format more than one source files or directories into a single target file!");
                         process.writeErrorLine("Skipping directive '``" --and ".join(sources)`` --to ``target``'.");
@@ -239,7 +239,7 @@ void createParentDirectories(Nil nil) {
                         process.writeErrorLine("Can’t create target file '``target``'!");
                     }
                     value targetFile = targetResource.createFile();
-                    ret.append([stream, targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
+                    ret.append([stream, () => targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
                 } else {
                     try {
                         createParentDirectories(targetResource);
@@ -260,7 +260,7 @@ void createParentDirectories(Nil nil) {
             shared actual void write(String string) => process.write(string);
             shared actual void writeLine(String line) => process.writeLine(line);
         }
-        return [[ANTLRInputStream(sysin), sysoutWriter, noop]];
+        return [[ANTLRInputStream(sysin), () => sysoutWriter, noop]];
     }
 }
 
@@ -271,16 +271,16 @@ shared void run() {
         // input = output
         options = [options[0], [inFileName, inFileName]];
     }
-    {[CharStream, Writer, Anything(Throwable)]*} files = commandLineFiles(options[1]);
+    {[CharStream, Writer(), Anything(Throwable)]*} files = commandLineFiles(options[1]);
     Instant start = now();
-    for ([CharStream, Writer, Anything(Throwable)] file in files) {
+    for ([CharStream, Writer(), Anything(Throwable)] file in files) {
         Instant t1 = now();
         CeylonLexer lexer = CeylonLexer(file[0]);
         Tree.CompilationUnit cu = CeylonParser(CommonTokenStream(lexer)).compilationUnit();
         Instant t2 = now();
         lexer.reset(); // FormattingVisitor needs to read the tokens again
         try {
-            format(cu, options[0], file[1], BufferedTokenStream(lexer));
+            format(cu, options[0], file[1](), BufferedTokenStream(lexer));
         } catch (Throwable t) {
             file[2](t);
         }
