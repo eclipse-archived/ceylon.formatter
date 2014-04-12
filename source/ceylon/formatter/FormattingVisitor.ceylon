@@ -1260,7 +1260,9 @@ shared class FormattingVisitor(
         value context = fWriter.writeToken {
             that.mainToken; // "return"
             indentAfter = 1;
+            indentAfterOnlyWhenLineBreak = true;
             spaceAfter = that.expression exists;
+            linebreaksAfter = that.expression exists then 0..1 else 0..0;
         };
         assert (exists context);
         that.expression?.visit(this);

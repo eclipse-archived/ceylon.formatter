@@ -627,12 +627,12 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                             ex.printStackTrace();
                             // attempt to recover by just writing out tokens until we find the right one
                             return { OpeningToken {
-                                        current.text;
-                                        allowLineBreakBefore = true;
-                                        postIndent = 0;
-                                        wantsSpaceBefore = 0;
-                                        wantsSpaceAfter = 0;
-                                    } };
+                                    current.text;
+                                    allowLineBreakBefore = true;
+                                    postIndent = 0;
+                                    wantsSpaceBefore = 0;
+                                    wantsSpaceAfter = 0;
+                                } };
                         }
                     }
                 } else {
