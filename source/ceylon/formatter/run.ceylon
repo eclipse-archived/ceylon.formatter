@@ -285,12 +285,12 @@ shared void run() {
             file[2](t);
         }
         Instant t3 = now();
-        if (options[0].time) {
+        if (options[0].measureTime) {
             process.writeErrorLine("Compiler: ``t1.durationTo(t2)``, formatter: ``t2.durationTo(t3)``");
         }
     }
     Instant end = now();
-    if (options[0].time) {
+    if (options[0].measureTime) {
         process.writeErrorLine("Total: ``start.durationTo(end).string``");
     }
 }

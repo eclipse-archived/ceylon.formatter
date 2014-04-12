@@ -70,7 +70,7 @@ shared class FormattingVisitor(
     shared actual void visitAbstractedType(AbstractedType that) {
         fWriter.writeToken {
             that.mainToken; // "abstracts"
-            indentBefore = options.extendsSatisfiesPreIndent;
+            indentBefore = options.indentBeforeTypeInfo;
             linebreaksAfter = noLineBreak;
             spaceBefore = true;
             spaceAfter = true;
@@ -312,7 +312,7 @@ shared class FormattingVisitor(
             that.mainToken; // "of"
             spaceBefore = true;
             spaceAfter = true;
-            indentBefore = options.extendsSatisfiesPreIndent;
+            indentBefore = options.indentBeforeTypeInfo;
             indentAfter = 1;
         };
         assert (exists context);
@@ -551,7 +551,7 @@ shared class FormattingVisitor(
     shared actual void visitExtendedType(ExtendedType that) {
         fWriter.writeToken {
             that.mainToken; // "extends"
-            indentBefore = options.extendsSatisfiesPreIndent;
+            indentBefore = options.indentBeforeTypeInfo;
             linebreaksAfter = noLineBreak;
             spaceBefore = true;
             spaceAfter = true;
@@ -1275,7 +1275,7 @@ shared class FormattingVisitor(
     shared actual void visitSatisfiedTypes(SatisfiedTypes that) {
         value context = fWriter.writeToken {
             that.mainToken; // "satisfies"
-            indentBefore = options.extendsSatisfiesPreIndent;
+            indentBefore = options.indentBeforeTypeInfo;
             linebreaksAfter = noLineBreak;
             spaceBefore = true;
             spaceAfter = true;
@@ -1628,8 +1628,8 @@ shared class FormattingVisitor(
         value context = fWriter.writeToken {
             that.mainToken; // "given"
             spaceAfter = true;
-            indentBefore = options.extendsSatisfiesPreIndent;
-            indentAfter = options.extendsSatisfiesPreIndent;
+            indentBefore = options.indentBeforeTypeInfo;
+            indentAfter = options.indentBeforeTypeInfo;
         };
         assert (exists context);
         that.identifier.visit(this);

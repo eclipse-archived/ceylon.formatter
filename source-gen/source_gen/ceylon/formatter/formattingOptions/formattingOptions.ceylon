@@ -130,34 +130,34 @@
     },
     FormattingOption {
         "The range of line breaks allowed before a line comment (`// comment`).";
-        "Range<Integer>"; "beforeLineCommentLineBreaks"; /* = */ "0..3";
+        "Range<Integer>"; "lineBreaksBeforeLineComment"; /* = */ "0..3";
     },
     FormattingOption {
         "The range of line breaks allowed after a line comment (`// comment`).
          
          Note that the minimum value of the range must be `> 0`;
          allowing having no line breaks after a line comment would obviously produce syntactically invalid code.";
-        "Range<Integer>"; "afterLineCommentLineBreaks"; /* = */ "1..3";
+        "Range<Integer>"; "lineBreaksAfterLineComment"; /* = */ "1..3";
     },
     FormattingOption {
         "The range of line breaks allowed before a single-line multi comment (`/* comment */`).";
-        "Range<Integer>"; "beforeSingleCommentLineBreaks"; /* = */ "0..3";
+        "Range<Integer>"; "lineBreaksBeforeSingleComment"; /* = */ "0..3";
     },
     FormattingOption {
         "The range of line breaks allowed after a single-line multi comment (`/* comment */`).";
-        "Range<Integer>"; "afterSingleCommentLineBreaks"; /* = */ "0..3";
+        "Range<Integer>"; "lineBreaksAfterSingleComment"; /* = */ "0..3";
     },
     FormattingOption {
         "The range of line breaks allowed before a multi-line comment (`/* comment... \\n ... \\n comment */`).";
-        "Range<Integer>"; "beforeMultiCommentLineBreaks"; /* = */ "1..3";
+        "Range<Integer>"; "lineBreaksBeforeMultiComment"; /* = */ "1..3";
     },
     FormattingOption {
         "The range of line breaks allowed after a multi-line comment (`/* comment... \\n ... \\n comment */`).";
-        "Range<Integer>"; "afterMultiCommentLineBreaks"; /* = */ "1..3";
+        "Range<Integer>"; "lineBreaksAfterMultiComment"; /* = */ "1..3";
     },
     FormattingOption {
         "The range of line breaks allowed in a type parameter list.";
-        "Range<Integer>"; "typeParameterListLineBreaks"; /* = */ "0..1";
+        "Range<Integer>"; "lineBreaksInTypeParameterList"; /* = */ "0..1";
     },
     FormattingOption {
         "Decide whether there should be a space after the opening brace of a sequence enumeration.
@@ -228,7 +228,7 @@
         "Boolean"; "spaceAfterTypeArgOrParamListComma"; /* = */ "false";
     },
     FormattingOption {
-        """By how many levels the `extends` and `satisfies` should be indented.
+        """By how many levels `extends`, `satisfies`, `of`, `given`, and `abstracts` should be indented.
            
            For example:
            
@@ -241,13 +241,13 @@
                class Foo()
                    extends Bar()
                    satisfies Baz {}""";
-        "Integer"; "extendsSatisfiesPreIndent"; /* = */ "2";
+        "Integer"; "indentBeforeTypeInfo"; /* = */ "2";
     },
     FormattingOption {
         "If [[true]], print timing information to standard error.
          The output is purely informational and its format may change at any time without notice;
          it should not be used in scripts or something similar.";
-        "Boolean"; "time"; /* = */ "false";
+        "Boolean"; "measureTime"; /* = */ "false";
     },
     FormattingOption {
         """Decide how linebreaks after specifier expression’s main tokens should be handled.

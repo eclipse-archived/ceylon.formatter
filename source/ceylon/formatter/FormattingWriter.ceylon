@@ -332,7 +332,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     variable Boolean isEmpty = true;
     
     "Must not allow no line breaks after a line comment, breaks syntax"
-    assert (min(options.afterLineCommentLineBreaks) > 0);
+    assert (min(options.lineBreaksAfterLineComment) > 0);
     
     "See documentation of the equally named parameter of [[writeToken]]"
     variable Integer nextIndentBefore = 0;
@@ -1126,15 +1126,15 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         Range<Integer> before;
         Range<Integer> after;
         if (current.type == lineComment) {
-            before = options.beforeLineCommentLineBreaks;
-            after = options.afterLineCommentLineBreaks;
+            before = options.lineBreaksBeforeLineComment;
+            after = options.lineBreaksAfterLineComment;
         } else {
             if (current.text.contains('\n') && !isEmpty) {
-                before = options.beforeMultiCommentLineBreaks;
-                after = options.afterMultiCommentLineBreaks;
+                before = options.lineBreaksBeforeMultiComment;
+                after = options.lineBreaksAfterMultiComment;
             } else {
-                before = options.beforeSingleCommentLineBreaks;
-                after = options.afterSingleCommentLineBreaks;
+                before = options.lineBreaksBeforeSingleComment;
+                after = options.lineBreaksAfterSingleComment;
             }
         }
         intersectAllowedLineBreaks(before, false);
