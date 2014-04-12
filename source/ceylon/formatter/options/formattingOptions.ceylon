@@ -54,24 +54,11 @@ Map<String,Anything(VariableOptions)> presets = HashMap {
 shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = process.arguments) {
     variable FormattingOptions baseOptions = FormattingOptions();
     
-    /*
-     TODO: this is a workaround for ceylon/ceylon-compiler#1589.
-     As soon as that issue is fixed, use
-     
-     String[] splitArguments = concatenate(*arguments.map((String s) {
-             if (exists index = s.indexes('='.equals).first) {
-                 return [s[... index - 1], s[index + 1 ...]];
-             }
-             return [s];
-         }));
-     
-     instead. (Remove the two `of String[]`.)
-     */
     String[] splitArguments = concatenate(*arguments.map((String s) {
                 if (exists index = s.indexes('='.equals).first) {
-                    return [s[... index - 1], s[index + 1 ...]] of String[];
+                    return [s[... index - 1], s[index + 1 ...]];
                 }
-                return [s] of String[];
+                return [s];
             }));
     value options = VariableOptions(baseOptions);
     value remaining = SequenceBuilder<String>();
