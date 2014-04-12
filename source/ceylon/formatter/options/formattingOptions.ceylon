@@ -52,7 +52,7 @@ Map<String,Anything(VariableOptions)> presets = HashMap {
 };
 
 shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = process.arguments) {
-    variable FormattingOptions baseOptions = FormattingOptions();
+    variable FormattingOptions baseOptions = configOptions();
     
     String[] splitArguments = concatenate(*arguments.map((String s) {
                 if (exists index = s.indexes('='.equals).first) {
@@ -148,7 +148,7 @@ VariableOptions variableFormattingFile(String filename, FormattingOptions baseOp
     }
 }
 
-VariableOptions parseFormattingOptions({<String->{String+}>*} entries, FormattingOptions baseOptions) {
+VariableOptions parseFormattingOptions({<String->{String+}>*} entries, FormattingOptions baseOptions = FormattingOptions()) {
     // read included files
     variable VariableOptions options = VariableOptions(baseOptions);
     if (exists includes = entries.find((String->{String+} entry) => entry.key == "include")?.item) {
