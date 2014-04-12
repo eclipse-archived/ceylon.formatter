@@ -170,12 +170,11 @@ shared class FormattingVisitor(
         that.annotationList.visit(this);
         that.type.visit(this);
         that.identifier.visit(this);
-        if (exists TypeParameterList typeParams = that.typeParameterList) {
-            typeParams.visit(this);
-        }
+        that.typeParameterList?.visit(this);
         for (ParameterList list in CeylonIterable(that.parameterLists)) {
             list.visit(this);
         }
+        that.typeConstraintList?.visit(this);
     }
     
     shared actual void visitAssertion(Assertion that) {
