@@ -250,7 +250,7 @@ Boolean wantsSpecialSpaces({Term*} terms) {
  even if [[wantsSpecialSpaces]] says they don’t want spaces. For more information, see
  [ceylon-compiler#959](https://github.com/ceylon/ceylon-compiler/issues/959) or
  [ceylon-compiler#686](https://github.com/ceylon/ceylon-compiler/issues/686)."
-see(`function wantsSpecialSpaces`)
+see (`function wantsSpecialSpaces`)
 Boolean wantsSpacesInStringTemplate(Term term) {
     variable Boolean startsWithBacktick = false;
     object startsWithBacktickVisitor extends GoLeftVisitor() {
