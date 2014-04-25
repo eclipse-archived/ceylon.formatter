@@ -62,6 +62,15 @@ shared class Spaces(spacesPerLevel) extends IndentMode() {
         };
     }
     shared actual String indent(Integer level) => cache.get(level);
+    
+    shared actual Boolean equals(Object that) {
+        if (is Spaces that) {
+            return spacesPerLevel == that.spacesPerLevel;
+        } else {
+            return false;
+        }
+    }
+    shared actual Integer hash => spacesPerLevel.hash;
 }
 
 "Indent using tabs."
@@ -82,6 +91,15 @@ shared class Tabs(width) extends IndentMode() {
         };
     }
     shared actual String indent(Integer level) => cache.get(level);
+    
+    shared actual Boolean equals(Object that) {
+        if (is Tabs that) {
+            return width == that.width;
+        } else {
+            return false;
+        }
+    }
+    shared actual Integer hash => width.hash;
 }
 
 "Indent using tabs and spaces.
@@ -127,6 +145,15 @@ shared class Mixed(tabs, spaces) extends IndentMode() {
         cache.put(level, indent);
         return indent;
     }
+    
+    shared actual Boolean equals(Object that) {
+        if (is Mixed that) {
+            return tabs == that.tabs && spaces == that.spaces;
+        } else {
+            return false;
+        }
+    }
+    shared actual Integer hash => 31 * tabs.hash + spaces.hash;
 }
 
 "The [[IndentMode]] represented by the given [[String]], or [[null]] if the string can't be parsed.
