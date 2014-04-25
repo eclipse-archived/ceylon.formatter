@@ -1448,7 +1448,7 @@ shared class FormattingVisitor(
         value expressions = CeylonIterable(that.expressions).sequence;
         "String template must have at least one string literal"
         assert (nonempty literals);
-        "String template must have exactly more string literal than expressions"
+        "String template must have exactly one more string literal than expressions"
         assert (literals.size == expressions.size + 1);
         variable Boolean? wantsSpace;
         if (exists expression = expressions.first) {
