@@ -1452,7 +1452,7 @@ shared class FormattingVisitor(
         assert (literals.size == expressions.size + 1);
         variable Boolean? wantsSpace;
         if (exists expression = expressions.first) {
-            wantsSpace = wantsSpecialSpaces { expression.term };
+            wantsSpace = wantsSpacesInStringTemplate(expression.term);
         } else {
             wantsSpace = null;
         }
@@ -1467,7 +1467,7 @@ shared class FormattingVisitor(
             assert (exists previousWantsSpace = wantsSpace);
             Boolean? nextWantsSpace;
             if (exists nextExpression = expressions[i]) {
-                nextWantsSpace = wantsSpecialSpaces { nextExpression.term };
+                nextWantsSpace = wantsSpacesInStringTemplate(nextExpression.term);
             } else {
                 nextWantsSpace = null;
             }

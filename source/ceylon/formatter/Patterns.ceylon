@@ -245,3 +245,25 @@ Boolean wantsSpecialSpaces({Term*} terms) {
     }
     return wantsSpaces;
 }
+
+"Terms in string templates might sometimes require spacing to disambiguate the syntax
+ even if [[wantsSpecialSpaces]] says they don’t want spaces. For more information, see
+ [ceylon-compiler#959](https://github.com/ceylon/ceylon-compiler/issues/959) or
+ [ceylon-compiler#686](https://github.com/ceylon/ceylon-compiler/issues/686)."
+see(`function wantsSpecialSpaces`)
+Boolean wantsSpacesInStringTemplate(Term term) {
+    variable Boolean startsWithBacktick = false;
+    object startsWithBacktickVisitor extends GoLeftVisitor() {
+        shared actual void visitAliasLiteral(AliasLiteral that) => startsWithBacktick = true;
+        shared actual void visitClassLiteral(ClassLiteral that) => startsWithBacktick = true;
+        shared actual void visitFunctionLiteral(FunctionLiteral that) => startsWithBacktick = true;
+        shared actual void visitInterfaceLiteral(InterfaceLiteral that) => startsWithBacktick = true;
+        shared actual void visitMetaLiteral(MetaLiteral that) => startsWithBacktick = true;
+        shared actual void visitModuleLiteral(ModuleLiteral that) => startsWithBacktick = true;
+        shared actual void visitPackageLiteral(PackageLiteral that) => startsWithBacktick = true;
+        shared actual void visitTypeParameterLiteral(TypeParameterLiteral that) => startsWithBacktick = true;
+        shared actual void visitValueLiteral(ValueLiteral that) => startsWithBacktick = true;
+    }
+    term.visit(startsWithBacktickVisitor);
+    return startsWithBacktick || wantsSpecialSpaces { term };
+}
