@@ -167,14 +167,22 @@ shared IndentMode? parseIndentMode(String string) {
     try {
         if (exists mixIndex = string.inclusions("mix ").first) {
             if (exists commaIndex = string.inclusions(", ").first) {
-                if (is Tabs tabs = parseIndentMode(string["mix ".size .. commaIndex - 1])) {
-                    if (is Spaces spaces = parseIndentMode(string[commaIndex + ", ".size ...])) {
+                value first = parseIndentMode(string["mix ".size .. commaIndex - 1]);
+                value second = parseIndentMode(string[commaIndex + ", ".size ...]);
+                if (is Tabs tabs = first) {
+                    if (is Spaces spaces = second) {
                         return Mixed(tabs, spaces);
                     } else {
-                        throw Exception("Second pard of Mixed aren't spaces");
+                        throw Exception("First part of Mixed are tabs, but second part aren't spaces");
+                    }
+                } else if (is Spaces spaces = first) {
+                    if (is Tabs tabs = second) {
+                        return Mixed(tabs, spaces);
+                    } else {
+                        throw Exception("First part of Mixed are spaces, but second part aren't tabs");
                     }
                 } else {
-                    throw Exception("First part of Mixed aren't tabs");
+                    throw Exception("First part of Mixed are neither spaces nor tabs");
                 }
             } else {
                 throw Exception("Mixed doesn't contain a comma");

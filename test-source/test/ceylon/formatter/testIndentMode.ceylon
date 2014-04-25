@@ -20,4 +20,6 @@ void testIndentMode() {
     assert (parsedTabs == tabs);
     assert (exists parsedMixed = parseIndentMode(mixed.string));
     assert (parsedMixed == mixed);
+    assert (exists parsedMixedReversed = parseIndentMode("mix 3 spaces, 9-wide tabs"));
+    assert (parsedMixedReversed == mixed);
 }
