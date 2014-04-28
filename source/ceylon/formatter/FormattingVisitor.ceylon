@@ -1129,6 +1129,12 @@ shared class FormattingVisitor(
         };
     }
     
+    shared actual void visitPackage(Package that) {
+        fWriter.writeToken {
+            that.mainToken; // "package"
+        };
+    }
+    
     shared actual void visitPackageDescriptor(PackageDescriptor that) {
         value context = fWriter.openContext();
         that.annotationList.visit(this);

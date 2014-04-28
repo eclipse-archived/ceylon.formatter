@@ -455,3 +455,8 @@ test
 shared void testImportMixRenamesAndWildcards() {
     testFile("importMixRenamesAndWildcards");
 }
+
+test
+shared void testPackageAtom() {
+    testFile("packageAtom");
+}
