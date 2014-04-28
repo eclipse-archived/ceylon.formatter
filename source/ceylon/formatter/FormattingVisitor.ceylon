@@ -419,6 +419,14 @@ shared class FormattingVisitor(
         that.rightTerm.visit(this);
     }
     
+    shared actual void visitDynamicClause(DynamicClause that) {
+        writeModifier(fWriter, that.mainToken); // "dynamic"
+        that.block.visit(this);
+    }
+    
+    shared actual void visitDynamicModifier(DynamicModifier that)
+            => writeModifier(fWriter, that.mainToken); // "dynamic"
+    
     shared actual void visitElementRange(ElementRange that) {
         /* 
          An ElementRange can be anything that goes into an index expression (except a single element),

@@ -430,3 +430,8 @@ test
 shared void testElseOnOwnLine() {
     testFile("elseOnOwnLine");
 }
+
+test
+shared void testDynamic() {
+    testFile("dynamic");
+}
