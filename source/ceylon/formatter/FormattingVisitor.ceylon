@@ -208,8 +208,10 @@ shared class FormattingVisitor(
         that.block.visit(this);
     }
     
-    shared actual void visitBaseMemberExpression(BaseMemberExpression that)
-            => that.identifier.visit(this);
+    shared actual void visitBaseMemberExpression(BaseMemberExpression that) {
+        that.identifier.visit(this);
+        that.typeArguments?.visit(this);
+    }
     
     shared actual void visitBaseType(BaseType that) {
         writeOptionallyGrouped(fWriter, void() {
