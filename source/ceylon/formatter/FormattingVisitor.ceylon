@@ -1739,6 +1739,12 @@ shared class FormattingVisitor(
         that.type.visit(this);
     }
     
+    shared actual void visitTypeParameterDeclaration(TypeParameterDeclaration that) {
+        that.typeVariance?.visit(this);
+        that.identifier.visit(this);
+        that.typeSpecifier?.visit(this);
+    }
+    
     shared actual void visitTypeParameterList(TypeParameterList that) {
         writeTypeArgumentOrParameterList(fWriter, this, that, options);
     }
@@ -1756,6 +1762,9 @@ shared class FormattingVisitor(
         };
         that.type.visit(this);
     }
+    
+    shared actual void visitTypeVariance(TypeVariance that)
+            => writeModifier(fWriter, that.mainToken); // "in" or "out"
     
     shared actual void visitUnionType(UnionType that) {
         writeOptionallyGrouped(fWriter, () {

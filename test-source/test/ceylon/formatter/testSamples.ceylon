@@ -460,3 +460,8 @@ test
 shared void testPackageAtom() {
     testFile("packageAtom");
 }
+
+test
+shared void testTypeParameters() {
+    testFile("typeParameters");
+}
