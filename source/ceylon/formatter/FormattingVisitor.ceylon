@@ -1350,14 +1350,18 @@ shared class FormattingVisitor(
     shared actual void visitSequenceEnumeration(SequenceEnumeration that) {
         value context = fWriter.writeToken {
             that.mainToken; // "{"
-            spaceAfter = options.spaceAfterSequenceEnumerationOpeningBrace;
+            spaceAfter = that.sequencedArgument exists
+                    then options.spaceAfterSequenceEnumerationOpeningBrace
+                    else false;
             indentAfter = 1;
         };
-        that.sequencedArgument.visit(this);
+        that.sequencedArgument?.visit(this);
         fWriter.writeToken {
             that.mainEndToken; // "}"
             context;
-            spaceBefore = options.spaceBeforeSequenceEnumerationClosingBrace;
+            spaceBefore = that.sequencedArgument exists
+                    then options.spaceBeforeSequenceEnumerationClosingBrace
+                    else false;
         };
     }
     
