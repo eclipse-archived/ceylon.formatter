@@ -620,7 +620,13 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                     } else if (current.text == tokenInStreamText) {
                         return { stopAndConsume }; // end fast-forwarding
                     } else {
-                        value ex = Exception("Unexpected token '``current.text``', expected '``tokenText``' instead");
+                        String expected;
+                        if (is AntlrToken token) {
+                            expected = " (``token.string``)";
+                        } else {
+                            expected = "";
+                        }
+                        value ex = Exception("Unexpected token '``current.text``' (``current``), expected '``tokenText``'``expected`` instead");
                         if (options.failFast) {
                             throw ex;
                         } else {
