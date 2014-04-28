@@ -1427,7 +1427,12 @@ shared class FormattingVisitor(
     shared actual void visitSpecifierStatement(SpecifierStatement that) {
         value context = fWriter.openContext();
         that.baseMemberExpression.visit(this);
-        writeSpecifierMainToken(fWriter, "=", options); // I can’t find the "=" in the AST anywhere
+        if (!(that.specifierExpression.mainToken exists)) {
+            // for some reason, in some statements the specifier main token ("=" or "=>") is completely missing.
+            // it seems that this only happens for the "=" case, so we conjure up the token out of thin air :-/
+            // TODO investigate!
+            writeSpecifierMainToken(fWriter, "=", options);
+        }
         that.specifierExpression.visit(this);
         writeSemicolon(fWriter, that.mainEndToken, context);
     }
