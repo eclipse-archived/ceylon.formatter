@@ -220,6 +220,19 @@ shared class FormattingVisitor(
         that.block.visit(this);
     }
     
+    shared actual void visitAttributeSetterDefinition(AttributeSetterDefinition that) {
+        value context = writeModifier(fWriter, that.mainToken); // "assign"
+        assert (exists context);
+        that.identifier.visit(this);
+        if (exists expr = that.specifierExpression) {
+            expr.visit(this);
+            writeSemicolon(fWriter, that.mainEndToken, context);
+        } else {
+            that.block.visit(this);
+            fWriter.closeContext(context);
+        }
+    }
+    
     shared actual void visitBaseMemberExpression(BaseMemberExpression that) {
         that.identifier.visit(this);
         that.typeArguments?.visit(this);

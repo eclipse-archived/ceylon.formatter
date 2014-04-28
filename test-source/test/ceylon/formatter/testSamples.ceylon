@@ -440,3 +440,8 @@ test
 shared void testAttributeArguments() {
     testFile("attributeArguments");
 }
+
+test
+shared void testAttributeSetterDeclaration() {
+    testFile("attributeSetterDeclaration");
+}

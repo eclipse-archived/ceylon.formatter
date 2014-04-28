@@ -116,8 +116,8 @@ void writeMetaLiteralStart(FormattingWriter writer, String start) {
     };
 }
 
-void writeModifier(FormattingWriter writer, Token modifier) {
-    writer.writeToken {
+FormattingWriter.FormattingContext? writeModifier(FormattingWriter writer, Token modifier) {
+    return writer.writeToken {
         modifier;
         linebreaksBefore = 0..2;
         spaceBefore = maxDesire - 1;
