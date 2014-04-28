@@ -1282,7 +1282,7 @@ shared class FormattingVisitor(
         writeOptionallyGrouped(fWriter, void() {
                 that.outerType.visit(this);
                 fWriter.writeToken {
-                    that.mainToken; // "."
+                    that.mainToken else "."; // the 'else "."' seems to be necessary for 'super.Klass' types
                     spaceBefore = false;
                     spaceAfter = false;
                     linebreaksBefore = noLineBreak;
@@ -1553,6 +1553,12 @@ shared class FormattingVisitor(
             };
             wantsSpace = nextWantsSpace;
         }
+    }
+    
+    shared actual void visitSuperType(SuperType that) {
+        fWriter.writeToken {
+            that.mainToken; // "super"
+        };
     }
     
     shared actual void visitSwitchCaseList(SwitchCaseList that) {

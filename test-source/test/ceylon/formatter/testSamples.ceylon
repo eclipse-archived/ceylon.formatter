@@ -465,3 +465,8 @@ test
 shared void testTypeParameters() {
     testFile("typeParameters");
 }
+
+test
+shared void testSuperType() {
+    testFile("superType");
+}
