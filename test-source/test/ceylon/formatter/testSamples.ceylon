@@ -445,3 +445,8 @@ test
 shared void testAttributeSetterDeclaration() {
     testFile("attributeSetterDeclaration");
 }
+
+test
+shared void testKeyValueIterators() {
+    testFile("keyValueIterators");
+}

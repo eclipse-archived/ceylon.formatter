@@ -944,6 +944,30 @@ shared class FormattingVisitor(
             });
     }
     
+    shared actual void visitKeyValueIterator(KeyValueIterator that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "("
+            spaceAfter = options.spaceAfterValueIteratorOpeningParenthesis;
+            linebreaksAfter = noLineBreak;
+        };
+        that.keyVariable.visit(this);
+        fWriter.writeToken {
+            "->"; // token is nowhere in the AST
+            spaceBefore = false;
+            spaceAfter = false;
+            linebreaksBefore = noLineBreak;
+            linebreaksAfter = noLineBreak;
+        };
+        that.valueVariable.visit(this);
+        that.specifierExpression.visit(this);
+        fWriter.writeToken {
+            that.mainEndToken; // ")"
+            context;
+            spaceBefore = options.spaceBeforeValueIteratorClosingParenthesis;
+            linebreaksBefore = noLineBreak;
+        };
+    }
+    
     shared actual void visitLiteral(Literal that) {
         fWriter.writeToken {
             that.mainToken;
