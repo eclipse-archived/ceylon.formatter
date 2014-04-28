@@ -1550,11 +1550,11 @@ shared class FormattingVisitor(
     shared actual void visitThrow(Throw that) {
         value context = fWriter.writeToken {
             that.mainToken; // "throw"
-            spaceAfter = true;
+            spaceAfter = 1000;
             linebreaksAfter = noLineBreak;
         };
         assert (exists context);
-        that.expression.visit(this);
+        that.expression?.visit(this);
         writeSemicolon(fWriter, that.mainEndToken, context);
     }
     
