@@ -207,7 +207,21 @@ void createParentDirectories(Nil nil) {
                 }
             }
         }
-        for (translation in translations.sequence) {
+        variable Boolean printedAbsoluteFilePathsError = false;
+        value translationsS = translations.sequence.select((String[]->String translation) {
+                if (translation.key.any(compose(Path.absolute, parsePath))) {
+                    // TODO support absolute file paths
+                    if (!printedAbsoluteFilePathsError) {
+                        process.writeErrorLine("Absolute file paths are currently not supported! (Issue #48)");
+                        process.writeErrorLine("Skipping the following translation(s):");
+                        printedAbsoluteFilePathsError = true;
+                    }
+                    process.writeErrorLine(translation.string);
+                    return false;
+                }
+                return true;
+            });
+        for (translation in translationsS) {
             assert (nonempty sources = translation.key);
             value target = translation.item;
             value targetResource = parsePath(target).resource.linkedResource;
