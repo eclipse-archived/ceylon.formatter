@@ -190,6 +190,18 @@ shared class FormattingVisitor(
         writeSemicolon(fWriter, that.mainEndToken, context);
     }
     
+    shared actual void visitAttributeArgument(AttributeArgument that) {
+        value context = fWriter.openContext();
+        that.type?.visit(this);
+        that.identifier?.visit(this);
+        if (exists expr = that.specifierExpression) {
+            expr.visit(this);
+            writeSemicolon(fWriter, that.mainEndToken, context);
+        } else {
+            that.block.visit(this);
+        }
+    }
+    
     shared actual void visitAttributeDeclaration(AttributeDeclaration that) {
         value context = fWriter.openContext();
         visitAnyAttribute(that);
@@ -1404,9 +1416,7 @@ shared class FormattingVisitor(
     
     shared actual void visitSpecifiedArgument(SpecifiedArgument that) {
         value context = fWriter.openContext();
-        if (exists identifier = that.identifier) {
-            that.identifier.visit(this);
-        }
+        that.identifier?.visit(this);
         that.specifierExpression.visit(this);
         writeSemicolon(fWriter, that.mainEndToken, context);
     }

@@ -435,3 +435,8 @@ test
 shared void testDynamic() {
     testFile("dynamic");
 }
+
+test
+shared void testAttributeArguments() {
+    testFile("attributeArguments");
+}
