@@ -750,19 +750,13 @@ shared class FormattingVisitor(
             spaceBefore = true;
             spaceAfter = true;
         };
-        if (exists wildcard = that.importWildcard) {
-            wildcard.visit(this);
-        } else {
+        if (exists membersOrTypes = that.importMemberOrTypes, nonempty elements = CeylonIterable(membersOrTypes).sequence) {
             if (options.importStyle == multiLine) {
                 fWriter.requireAtLeastLineBreaks(1);
             }
-            assert (exists membersOrTypes = that.importMemberOrTypes);
-            value elements = CeylonIterable(membersOrTypes).sequence;
-            "Empty import list not allowed"
-            assert (exists first = elements.first);
             variable value innerContext = fWriter.openContext();
-            first.visit(this);
-            for (value element in elements.rest) {
+            value self = this; // TODO ugly workaround!
+            void writeCommaAndVisitNext(Node node) {
                 fWriter.writeToken {
                     ",";
                     linebreaksBefore = noLineBreak;
@@ -772,12 +766,22 @@ shared class FormattingVisitor(
                     innerContext;
                 };
                 innerContext = fWriter.openContext();
-                element.visit(this);
+                node.visit(self); // TODO s/self/this/ if possible
+            }
+            elements.first.visit(this);
+            for (value element in elements.rest) {
+                writeCommaAndVisitNext(element);
+            }
+            if (exists wildcard = that.importWildcard) {
+                writeCommaAndVisitNext(wildcard);
             }
             if (options.importStyle == multiLine) {
                 fWriter.requireAtLeastLineBreaks(1);
             }
             fWriter.closeContext(innerContext);
+        } else {
+            assert (exists wildcard = that.importWildcard);
+            wildcard.visit(this);
         }
         fWriter.writeToken {
             that.mainEndToken; // "}"
@@ -842,8 +846,6 @@ shared class FormattingVisitor(
     shared actual void visitImportWildcard(ImportWildcard that) {
         fWriter.writeToken {
             that.mainToken; // "..."
-            linebreaksBefore = noLineBreak;
-            linebreaksAfter = noLineBreak;
             spaceBefore = true;
             spaceAfter = true;
         };

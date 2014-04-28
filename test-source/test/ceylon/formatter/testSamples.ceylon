@@ -450,3 +450,8 @@ test
 shared void testKeyValueIterators() {
     testFile("keyValueIterators");
 }
+
+test
+shared void testImportMixRenamesAndWildcards() {
+    testFile("importMixRenamesAndWildcards");
+}
