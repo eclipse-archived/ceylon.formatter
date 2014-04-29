@@ -14,3 +14,19 @@ void testSwitch() {
         print(first);
     }
 }
+
+abstract class T() of t1|t2|t3 {}
+object t1 extends T() {}
+object t2 extends T() {}
+object t3 extends T() {}
+
+void testSwitchWithMultipleCases() {
+    T t = nothing;
+    switch (t)
+    case (t1) {
+        // do stuff
+    }
+    case (t2, t3) {
+        // do other stuff
+    }
+}

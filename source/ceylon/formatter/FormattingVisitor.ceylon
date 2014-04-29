@@ -594,6 +594,21 @@ shared class FormattingVisitor(
         }
     }
     
+    shared actual void visitExpressionList(ExpressionList that) {
+        value expressions = CeylonIterable(that.expressions).sequence;
+        assert (nonempty expressions);
+        expressions.first.visit(this);
+        for (expression in expressions.rest) {
+            fWriter.writeToken {
+                ","; // not in the AST
+                spaceBefore = false;
+                spaceAfter = true;
+                linebreaksBefore = noLineBreak;
+            };
+            expression.visit(this);
+        }
+    }
+    
     shared actual void visitExtendedType(ExtendedType that) {
         fWriter.writeToken {
             that.mainToken; // "extends"
