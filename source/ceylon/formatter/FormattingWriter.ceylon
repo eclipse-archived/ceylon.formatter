@@ -155,7 +155,7 @@ object stopAndDontConsume extends Stop() { consume = false; }
  
  * `spaceBefore = maxDesire - 1, spaceAfter = maxDesire - 1`
  * `indentBefore = Indent(0), indentAfter = Indent(0)`
- * `linebreaksBefore, linebreaksAfter` as determined by the [[options]]
+ * `lineBreaksBefore, lineBreaksAfter` as determined by the [[options]]
      * [[beforeLineCommentLineBreaks|FormattingOptions.beforeLineCommentLineBreaks]] and
        [[afterLineCommentLineBreaks|FormattingOptions.afterLineCommentLineBreaks]] for `// line comments`
      * [[beforeSingleCommentLineBreaks|FormattingOptions.beforeSingleCommentLineBreaks]] and
@@ -445,8 +445,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         context = null,
         indentBefore = 0,
         indentAfter = 0,
-        linebreaksBefore = 0..2,
-        linebreaksAfter = 0..1,
+        lineBreaksBefore = 0..2,
+        lineBreaksAfter = 0..1,
         spaceBefore = 0,
         spaceAfter = 0,
         optional = false,
@@ -467,9 +467,9 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         Integer indentAfter;
         "The amount of line breaks that is allowed before this token."
         see (`value noLineBreak`)
-        Range<Integer> linebreaksBefore;
+        Range<Integer> lineBreaksBefore;
         "The amount of line breaks that is allowed after this token."
-        Range<Integer> linebreaksAfter;
+        Range<Integer> lineBreaksAfter;
         "Whether to put a space before this token.
          
          [[true]] and [[false]] are sugar for [[maxDesire]] and [[minDesire]], respectively."
@@ -539,9 +539,9 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         Integer nextIndentBefore;
         
         "Line break count range must be nonnegative"
-        assert (linebreaksBefore.first >= 0 && linebreaksBefore.last >= 0);
+        assert (lineBreaksBefore.first >= 0 && lineBreaksBefore.last >= 0);
         "Line break count range must be nonnegative"
-        assert (linebreaksAfter.first >= 0 && linebreaksAfter.last >= 0);
+        assert (lineBreaksAfter.first >= 0 && lineBreaksAfter.last >= 0);
         
         // desugar
         Integer spaceBeforeDesire;
@@ -565,9 +565,9 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             assert (is String tokenInStream); // the typechecker can't figure that out (yet), see ceylon-spec#74
             tokenInStreamText = tokenInStream;
         }
-        allowLineBreakBefore = linebreaksBefore.any(0.smallerThan);
+        allowLineBreakBefore = lineBreaksBefore.any(0.smallerThan);
         preIndent = allowLineBreakBefore then indentBefore + this.nextIndentBefore else 0;
-        postIndent = linebreaksAfter.any(0.smallerThan) then indentAfter;
+        postIndent = lineBreaksAfter.any(0.smallerThan) then indentAfter;
         
         /*
          look for optional token
@@ -599,7 +599,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
          handle the part before this token:
          fast-forward, intersect allowed line breaks, write out line breaks
          */
-        intersectAllowedLineBreaks(linebreaksBefore, false);
+        intersectAllowedLineBreaks(lineBreaksBefore, false);
         fastForward((AntlrToken? current) {
                 if (exists current) {
                     assert (exists lineBreaks = givenLineBreaks);
@@ -651,7 +651,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
          handle this token:
          set allowed line breaks, add token
          */
-        currentlyAllowedLinebreaks = linebreaksAfter;
+        currentlyAllowedLinebreaks = lineBreaksAfter;
         FormattingContext? ret;
         Token t;
         see (`value Token.sourceColumn`)
@@ -1178,8 +1178,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         if (!isEmpty) {
             writeToken {
                 ""; // empty token, big effect: fastForward again, comments, newlines, etc.
-                linebreaksBefore = 1..1;
-                linebreaksAfter = 0..0;
+                lineBreaksBefore = 1..1;
+                lineBreaksAfter = 0..0;
                 spaceBefore = false;
                 spaceAfter = false;
             };

@@ -37,11 +37,11 @@ void testLineBreaks(LineBreak option, String lineBreak) {
         })) {
         fWriter.writeToken {
             "a";
-            linebreaksAfter = 2..2;
+            lineBreaksAfter = 2..2;
         };
         fWriter.writeToken {
             "b";
-            linebreaksBefore = 2..2;
+            lineBreaksBefore = 2..2;
         };
     }
     assertEquals(sb.string, "a``lineBreak.repeat(2)``b``lineBreak``");

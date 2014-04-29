@@ -250,7 +250,7 @@
         "Boolean"; "measureTime"; /* = */ "false";
     },
     FormattingOption {
-        """Decide how linebreaks after specifier expression’s main tokens should be handled.
+        """Decide how line breaks after specifier expression’s main tokens should be handled.
            
            * [[stack]]:
            ~~~

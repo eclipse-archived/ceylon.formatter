@@ -25,7 +25,7 @@ FormattingWriter.FormattingContext writeBacktickOpening(FormattingWriter writer,
     assert (backtick.text == "`");
     value context = writer.writeToken {
         backtick;
-        linebreaksAfter = noLineBreak;
+        lineBreaksAfter = noLineBreak;
         spaceAfter = false;
     };
     assert (exists context);
@@ -36,7 +36,7 @@ void writeBacktickClosing(FormattingWriter writer, Token backtick, FormattingWri
     assert (backtick.text == "`");
     writer.writeToken {
         backtick;
-        linebreaksBefore = noLineBreak;
+        lineBreaksBefore = noLineBreak;
         spaceBefore = false;
         context;
     };
@@ -89,8 +89,8 @@ void writeMetaLiteral(FormattingWriter writer, FormattingVisitor visitor, MetaLi
                 ".";
                 spaceBefore = false;
                 spaceAfter = false;
-                linebreaksBefore = noLineBreak;
-                linebreaksAfter = noLineBreak;
+                lineBreaksBefore = noLineBreak;
+                lineBreaksAfter = noLineBreak;
             };
         }
         that.identifier.visit(visitor);
@@ -109,7 +109,7 @@ void writeMetaLiteral(FormattingWriter writer, FormattingVisitor visitor, MetaLi
 void writeMetaLiteralStart(FormattingWriter writer, String start) {
     writer.writeToken {
         start;
-        linebreaksBefore = noLineBreak;
+        lineBreaksBefore = noLineBreak;
         indentAfter = 1;
         spaceBefore = false;
         spaceAfter = true;
@@ -119,7 +119,7 @@ void writeMetaLiteralStart(FormattingWriter writer, String start) {
 FormattingWriter.FormattingContext? writeModifier(FormattingWriter writer, Token modifier) {
     return writer.writeToken {
         modifier;
-        linebreaksBefore = 0..2;
+        lineBreaksBefore = 0..2;
         spaceBefore = maxDesire - 1;
         spaceAfter = maxDesire - 1;
     };
@@ -129,8 +129,8 @@ void writeSemicolon(FormattingWriter writer, Token semicolon, FormattingWriter.F
     assert (semicolon.text == ";");
     writer.writeToken {
         semicolon;
-        linebreaksBefore = noLineBreak;
-        linebreaksAfter = 0..2;
+        lineBreaksBefore = noLineBreak;
+        lineBreaksAfter = 0..2;
         spaceBefore = false;
         spaceAfter = true;
         context;
@@ -142,14 +142,14 @@ void writeSemicolon(FormattingWriter writer, Token semicolon, FormattingWriter.F
 void writeOptionallyGrouped(FormattingWriter writer, Anything() inner) {
     variable value context = writer.writeToken {
         "<";
-        linebreaksAfter = noLineBreak;
+        lineBreaksAfter = noLineBreak;
         spaceAfter = false;
         optional = true;
     };
     while (exists c = context) {
         context = writer.writeToken {
             "<";
-            linebreaksAfter = noLineBreak;
+            lineBreaksAfter = noLineBreak;
             spaceAfter = false;
             optional = true;
         };
@@ -157,14 +157,14 @@ void writeOptionallyGrouped(FormattingWriter writer, Anything() inner) {
     inner();
     context = writer.writeToken {
         ">";
-        linebreaksBefore = noLineBreak;
+        lineBreaksBefore = noLineBreak;
         spaceBefore = false;
         optional = true;
     };
     while (exists c = context) {
         context = writer.writeToken {
             ">";
-            linebreaksBefore = noLineBreak;
+            lineBreaksBefore = noLineBreak;
             spaceBefore = false;
             optional = true;
         };
@@ -176,7 +176,7 @@ void writeSomeMemberOp(FormattingWriter writer, Token token) {
     writer.writeToken {
         token;
         indentBefore = 1;
-        linebreaksAfter = noLineBreak;
+        lineBreaksAfter = noLineBreak;
         spaceBefore = false;
         spaceAfter = false;
     };
@@ -187,7 +187,7 @@ void writeTypeArgumentOrParameterList(FormattingWriter writer, Visitor visitor, 
     writer.writeToken {
         list.mainToken; // "<"
         indentAfter = 1;
-        linebreaksAfter = noLineBreak;
+        lineBreaksAfter = noLineBreak;
         spaceBefore = false;
         spaceAfter = false;
     };
@@ -205,14 +205,14 @@ void writeTypeArgumentOrParameterList(FormattingWriter writer, Visitor visitor, 
             ",";
             spaceBefore = false;
             spaceAfter = options.spaceAfterTypeArgOrParamListComma;
-            linebreaksAfter = options.lineBreaksInTypeParameterList;
+            lineBreaksAfter = options.lineBreaksInTypeParameterList;
         };
         param.visit(visitor);
     }
     writer.writeToken {
         list.mainEndToken; // ">"
         context;
-        linebreaksBefore = noLineBreak;
+        lineBreaksBefore = noLineBreak;
         spaceBefore = false;
         optional = true; // an optionally grouped type might already have eaten the closing angle bracket
     };
@@ -226,8 +226,8 @@ void writeBinaryOpWithSpecialSpaces(FormattingWriter writer, Visitor visitor, Ra
     left.visit(visitor);
     writer.writeToken {
         that.mainToken; // "..", ":" or "->"
-        linebreaksBefore = noLineBreak;
-        linebreaksAfter = noLineBreak;
+        lineBreaksBefore = noLineBreak;
+        lineBreaksAfter = noLineBreak;
         spaceBefore = wantsSpaces;
         spaceAfter = wantsSpaces;
     };
