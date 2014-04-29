@@ -405,9 +405,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         value inc1 = currentlyAllowedLinebreaks.decreasing then currentlyAllowedLinebreaks.reversed else currentlyAllowedLinebreaks;
         value inc2 = other.decreasing then other.reversed else other;
         value intersect = max { inc1.first, inc2.first }..min { inc1.last, inc2.last };
-        if (intersect.decreasing) {
-            assert (false); // TODO
-        }
+        assert (!intersect.decreasing);
         currentlyAllowedLinebreaks = currentlyAllowedLinebreaks.decreasing then intersect.reversed else intersect;
     }
     "Require at leasts [[limit]] line breaks between the latest token and the next one to be [[written|writeToken]]."
