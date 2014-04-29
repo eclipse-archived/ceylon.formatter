@@ -1318,7 +1318,8 @@ shared class FormattingVisitor(
             lastResource.visit(this);
             for (resource in resources.rest) {
                 fWriter.writeToken {
-                    lastResource.mainEndToken; // ","
+                    ","; /* the grammar sets the COMMA token as the end token of the entire resource list,
+                            where it is overwritten by later commas and finally the closing parenthesis */
                     spaceBefore = false;
                     spaceAfter = true;
                     linebreaksBefore = noLineBreak;

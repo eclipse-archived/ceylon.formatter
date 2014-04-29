@@ -27,3 +27,10 @@ void testTryWithResources() {
         print(s);
     }
 }
+
+void testTryWithMultipleResources() {
+    try (s = String("Hi!"), i = 3) {
+        print(s);
+        print(i);
+    }
+}
