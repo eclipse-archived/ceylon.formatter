@@ -98,6 +98,7 @@ void createParentDirectories(Nil nil) {
                 if (exists nextArgument) {
                     if (exists current = currentSources) {
                         translations.append(current.sequence->nextArgument);
+                        currentSources = null;
                     } else {
                         process.writeErrorLine("Missing files or directories before '--to ``nextArgument``'!");
                     }
@@ -281,10 +282,6 @@ void createParentDirectories(Nil nil) {
 "Run the module `ceylon.formatter`."
 shared void run() {
     variable [FormattingOptions, String[]] options = commandLineOptions();
-    if (exists inFileName = options[1][0], options[1].size == 1) {
-        // input = output
-        options = [options[0], [inFileName, inFileName]];
-    }
     {[CharStream, Writer(), Anything(Throwable)]*} files = commandLineFiles(options[1]);
     Instant start = now();
     for ([CharStream, Writer(), Anything(Throwable)] file in files) {
