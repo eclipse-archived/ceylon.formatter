@@ -766,7 +766,6 @@ shared class FormattingVisitor(
                 fWriter.requireAtLeastLineBreaks(1);
             }
             variable value innerContext = fWriter.openContext();
-            value self = this; // TODO ugly workaround!
             void writeCommaAndVisitNext(Node node) {
                 fWriter.writeToken {
                     ",";
@@ -777,7 +776,7 @@ shared class FormattingVisitor(
                     innerContext;
                 };
                 innerContext = fWriter.openContext();
-                node.visit(self); // TODO s/self/this/ if possible
+                node.visit(this);
             }
             elements.first.visit(this);
             for (value element in elements.rest) {
