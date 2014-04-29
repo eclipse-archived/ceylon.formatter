@@ -391,6 +391,17 @@ shared class FormattingVisitor(
     shared actual void visitClassLiteral(ClassLiteral that)
             => writeMetaLiteral(fWriter, this, that, "class");
     
+    shared actual void visitClassSpecifier(ClassSpecifier that) {
+        fWriter.writeToken {
+            that.mainToken; // "=" or "=>" – only "=>" is legal, but the grammar allows both
+            spaceBefore = true;
+            spaceAfter = true;
+            linebreaksAfter = noLineBreak;
+            indentBefore = 2;
+        };
+        that.visitChildren(this);
+    }
+    
     shared actual void visitConditionList(ConditionList that) {
         value context = fWriter.writeToken {
             that.mainToken; // "("
