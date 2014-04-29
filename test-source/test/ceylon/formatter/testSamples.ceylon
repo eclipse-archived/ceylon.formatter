@@ -470,3 +470,8 @@ test
 shared void testSuperType() {
     testFile("superType");
 }
+
+test
+shared void testOperatorStyleExpressions() {
+    testFile("operatorStyleExpressions");
+}

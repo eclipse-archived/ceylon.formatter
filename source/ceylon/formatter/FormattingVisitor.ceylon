@@ -985,8 +985,14 @@ shared class FormattingVisitor(
     shared actual void visitMatchCase(MatchCase that)
             => that.visitChildren(this);
     
-    shared actual void visitMemberOp(MemberOp that)
-            => writeSomeMemberOp(fWriter, that.mainToken);
+    shared actual void visitMemberOp(MemberOp that) {
+        if (exists token = that.mainToken) {
+            writeSomeMemberOp(fWriter, that.mainToken);
+        } else {
+            // operator-style expressions have a MemberOp with a null token
+            // just ignore it
+        }
+    }
     
     shared actual void visitMetaLiteral(MetaLiteral that)
             => writeMetaLiteral(fWriter, this, that, null);
@@ -1207,6 +1213,7 @@ shared class FormattingVisitor(
     shared actual void visitPositionalArgumentList(PositionalArgumentList that) {
         Token? openingParen = that.mainToken;
         Token? closingParen = that.mainEndToken;
+        value args = CeylonIterable(that.positionalArguments).sequence;
         if (exists openingParen, exists closingParen) {
             value context = fWriter.writeToken {
                 that.mainToken; // "("
@@ -1218,7 +1225,7 @@ shared class FormattingVisitor(
                 spaceAfter = false;
             };
             variable FormattingWriter.FormattingContext? previousContext = null;
-            for (PositionalArgument argument in CeylonIterable(that.positionalArguments)) {
+            for (PositionalArgument argument in args) {
                 if (exists c = previousContext) {
                     fWriter.writeToken {
                         ",";
@@ -1237,10 +1244,14 @@ shared class FormattingVisitor(
                 spaceAfter = 5;
                 context;
             };
-        } else {
-            // this happens for annotations with no arguments
-            assert (that.positionalArguments.empty);
+        } else if (nonempty args) {
+            // operator-style expressions
+            assert (args.size == 1);
+            args.first.visit(this);
             return;
+        } else {
+            // annotations with no arguments
+            // do nothing
         }
     }
     
