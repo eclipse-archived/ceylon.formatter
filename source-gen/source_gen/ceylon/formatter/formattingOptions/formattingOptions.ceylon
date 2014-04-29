@@ -149,11 +149,11 @@
     },
     FormattingOption {
         "The range of line breaks allowed before a multi-line comment (`/* comment... \\n ... \\n comment */`).";
-        "Range<Integer>"; "lineBreaksBeforeMultiComment"; /* = */ "1..3";
+        "Range<Integer>"; "lineBreaksBeforeMultiComment"; /* = */ "0..3";
     },
     FormattingOption {
         "The range of line breaks allowed after a multi-line comment (`/* comment... \\n ... \\n comment */`).";
-        "Range<Integer>"; "lineBreaksAfterMultiComment"; /* = */ "1..3";
+        "Range<Integer>"; "lineBreaksAfterMultiComment"; /* = */ "0..3";
     },
     FormattingOption {
         "The range of line breaks allowed in a type parameter list.";

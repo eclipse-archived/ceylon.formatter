@@ -1143,7 +1143,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         }
         intersectAllowedLineBreaks(before, false);
         SequenceBuilder<QueueElement> ret = SequenceBuilder<QueueElement>();
-        for (i in 0:lineBreakAmount(givenLineBreaks)) {
+        for (i in 0:lineBreakAmount(givenLineBreaks else 1)) {
             ret.append(LineBreak());
         }
         currentlyAllowedLinebreaks = after;
