@@ -707,7 +707,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
              so we use the amount of leading quotes to know how much we have to skip
              */
             assert (is String token);
-            targetColumn = () => countingWriter.currentWidth + token.takingWhile('"'.equals).size;
+            targetColumn = () => countingWriter.currentWidth + token.takeWhile('"'.equals).size;
         }
         if (exists context) {
             "indentAfter doesn’t apply when closing a context"
