@@ -41,6 +41,7 @@ void recoveryOnError(ANTLRFileStream stream, File file)(Throwable t) {
     }
 }
 
+"Creates all parent directories in a path (but not the [[nil]] resource itself)."
 void createParentDirectories(Nil nil) {
     value parts = nil.path.elementPaths;
     assert (nonempty parts);
@@ -70,157 +71,211 @@ void createParentDirectories(Nil nil) {
     }
 }
 
+"Determines the common root of several paths.
+ For example, the common root of `a/b/c` and `a/b/d` is `a/b`,
+ the common root of `/a/b/c` and `/a/d/e` is `/a`
+ and the common root of `a` and `b` is the empty path."
+shared /* TODO unshare #45 */ Path commonRoot(
+    "The paths. Must be either all absolute or all relative."
+    variable [Path+] paths) {
+    Boolean allAbsolute = paths.every(Path.absolute);
+    "Can’t mix absolute and relative paths"
+    assert (allAbsolute || paths.every(not(Path.absolute)));
+    variable Path root;
+    if (allAbsolute) {
+        root = parsePath(paths.first.separator);
+    } else {
+        root = parsePath("");
+    }
+    value iterators = paths.collect((Path p) => p.elementPaths.iterator());
+    function nextOrNull<Element>(Iterator<Element> it) {
+        if (is Element element = it.next()) {
+            return element;
+        }
+        return null;
+    }
+    variable [Path?+] parts = iterators.collect(nextOrNull<Path>);
+    while (parts.every((Path? p) => p exists) && parts.filter((Path? p) {
+                assert (exists first = parts.first, exists p);
+                return first == p;
+            }).size == parts.size) {
+        assert (is Path firstPart = parts.first);
+        root = root.childPath(firstPart);
+        parts = iterators.collect(nextOrNull<Path>);
+    }
+    return root;
+}
+
+"Parses translations from the [[arguments]].
+ 
+ For example, the arguments
+ ~~~
+ a/b/c --and a/b/d --to x/a/b   d/e   f/g --to m/n/f/g
+ ~~~
+ correspond to the translations
+ ~~~
+ [
+   [a/b/c, a/b/d] -> x/a/b,
+   d/e -> d/e,
+   f/g -> m/n/f/g
+ ]
+ ~~~"
+shared /* TODO unshare #45 */ <String[]->String>[] parseTranslations(String[] arguments) {
+    variable Integer i = 0;
+    variable SequenceAppender<String>? currentSources = null;
+    SequenceBuilder<String[]->String> translations = SequenceBuilder<String[]->String>();
+    while (i < arguments.size) {
+        assert (exists argument = arguments[i]);
+        value nextArgument = arguments[i + 1];
+        if (argument == "--and") {
+            if (exists nextArgument) {
+                if (exists current = currentSources) {
+                    current.append(nextArgument);
+                } else {
+                    process.writeErrorLine("Missing first file or directory before '--and ``nextArgument``'!");
+                }
+                i++;
+            } else {
+                process.writeErrorLine("Missing file or directory after '--and'!");
+            }
+        } else if (argument == "--to") {
+            if (exists nextArgument) {
+                if (exists current = currentSources) {
+                    translations.append(current.sequence->nextArgument);
+                    currentSources = null;
+                } else {
+                    process.writeErrorLine("Missing files or directories before '--to ``nextArgument``'!");
+                }
+                i++;
+            } else {
+                process.writeErrorLine("Missing file or directory after '--to'!");
+            }
+        } else {
+            if (exists current = currentSources) {
+                if (current.size > 1) {
+                    process.writeErrorLine("Warning: Multiple files or directories collected with '--and', but not redirected with '--to'!");
+                }
+                for (fileOrDir in current.sequence) {
+                    translations.append([fileOrDir]->fileOrDir);
+                }
+            }
+            currentSources = SequenceAppender { argument };
+        }
+        i++;
+    }
+    if (exists current = currentSources) {
+        if (current.size > 1) {
+            process.writeErrorLine("Warning: Multiple files or directories collected with '--and', but not redirected with '--to'!");
+        }
+        for (fileOrDir in current.sequence) {
+            translations.append([fileOrDir]->fileOrDir);
+        }
+    }
+    return translations.sequence;
+}
+
+"Process a single source from a translation, that is:
+ 
+ - recurse the file tree from [[source]]
+ - for each file found, open a CharStream to read from it and a Writer to write to the correct file in [[targetDirectory]]
+ - the target path is [[targetDirectory]] + (source path - [[root]])"
+[CharStream, Writer(), Anything(Throwable)][] translateSingleSource(String source, Path root, Directory targetDirectory) {
+    value ret = SequenceBuilder<[CharStream, Writer(), Anything(Throwable)]>();
+    object visitor extends Visitor() {
+        shared actual void file(File file) {
+            if (file.name.endsWith(".ceylon")) {
+                value path = file.path;
+                value uprootedPath = path.relativePath(root);
+                value rerootedPath = targetDirectory.path.childPath(uprootedPath);
+                value target = rerootedPath.resource.linkedResource;
+                File targetFile;
+                switch (target)
+                case (is File) {
+                    targetFile = target;
+                }
+                case (is Nil) {
+                    try {
+                        createParentDirectories(target);
+                    } catch (AssertionError e) {
+                        process.writeErrorLine("Can’t create target file '``target.path``'!");
+                        return;
+                    }
+                    targetFile = target.createFile();
+                }
+                case (is Directory) {
+                    process.writeErrorLine("Can’t format file '``source``' to target directory '``target.path``'!");
+                    return;
+                }
+                value stream = ANTLRFileStream(file.path.string);
+                ret.append([stream, () => targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
+            }
+        }
+    }
+    value resource = parsePath(source).resource.linkedResource;
+    switch (resource)
+    case (is Directory) {
+        resource.path.visit {
+            visitor = visitor;
+        };
+    }
+    case (is File) {
+        visitor.file(resource);
+    }
+    case (is Nil) {
+        process.writeErrorLine("Warning: Source file '``source``' doesn’t exist, skipping!");
+    }
+    return ret.sequence;
+}
+
+"Translate one or more sources to a target directory."
+see (`function parseTranslations`)
+[CharStream, Writer(), Anything(Throwable)][] translate([String+] sources, Directory targetDirectory) {
+    value ret = SequenceBuilder<[CharStream, Writer(), Anything(Throwable)]>();
+    value root = commonRoot(sources.collect(parsePath));
+    if (sources.size == 1) {
+        // source/foo/bar → target/foo/bar
+        ret.appendAll(translateSingleSource(sources.first, root, targetDirectory));
+    } else {
+        // source1/foo/bar → target/source1/foo/bar, source2/baz → target/source2/baz
+        for (source in sources) {
+            value resource = parsePath(source).resource.linkedResource;
+            Path targetPath;
+            switch (resource)
+            case (is Directory|Nil) {
+                targetPath = targetDirectory.path.childPath(source);
+            }
+            case (is File) {
+                targetPath = targetDirectory.path.childPath(resource.directory.path);
+            }
+            value targetResource = targetPath.resource.linkedResource;
+            switch (targetResource)
+            case (is Directory) {
+                ret.appendAll(translateSingleSource(source, root, targetResource));
+            }
+            case (is Nil) {
+                try {
+                    createParentDirectories(targetResource);
+                } catch (AssertionError e) {
+                    process.writeErrorLine("Can’t create target directory '``targetPath``'!");
+                    continue;
+                }
+                ret.appendAll(translateSingleSource(source, root, targetResource.createDirectory()));
+            }
+            case (is File) {
+                process.writeErrorLine("Can’t format source '``source``' to target file '``targetPath``'!");
+            }
+        }
+    }
+    return ret.sequence;
+}
+
 "Parses a list of paths from the command line.
  Returns a sequence of tuples of source [[CharStream]], target [[Writer]] and onError callback."
 [CharStream, Writer(), Anything(Throwable)][] commandLineFiles(String[] arguments) {
-    
     if (nonempty arguments) {
-        variable Integer i = 0;
-        variable SequenceAppender<String>? currentSources = null;
-        SequenceBuilder<String[]->String> translations = SequenceBuilder<String[]->String>();
-        while (i < arguments.size) {
-            assert (exists argument = arguments[i]);
-            value nextArgument = arguments[i + 1];
-            if (argument == "--and") {
-                if (exists nextArgument) {
-                    if (exists current = currentSources) {
-                        current.append(nextArgument);
-                    } else {
-                        process.writeErrorLine("Missing first file or directory before '--and ``nextArgument``'!");
-                    }
-                    i++;
-                } else {
-                    process.writeErrorLine("Missing file or directory after '--and'!");
-                }
-            } else if (argument == "--to") {
-                if (exists nextArgument) {
-                    if (exists current = currentSources) {
-                        translations.append(current.sequence->nextArgument);
-                        currentSources = null;
-                    } else {
-                        process.writeErrorLine("Missing files or directories before '--to ``nextArgument``'!");
-                    }
-                    i++;
-                } else {
-                    process.writeErrorLine("Missing file or directory after '--to'!");
-                }
-            } else {
-                if (exists current = currentSources) {
-                    if (current.size > 1) {
-                        process.writeErrorLine("Warning: Multiple files or directories collected with '--and', but not redirected with '--to'!");
-                    }
-                    for (fileOrDir in current.sequence) {
-                        translations.append([fileOrDir]->fileOrDir);
-                    }
-                }
-                currentSources = SequenceAppender { argument };
-            }
-            i++;
-        }
-        if (exists current = currentSources) {
-            if (current.size > 1) {
-                process.writeErrorLine("Warning: Multiple files or directories collected with '--and', but not redirected with '--to'!");
-            }
-            for (fileOrDir in current.sequence) {
-                translations.append([fileOrDir]->fileOrDir);
-            }
-        }
         value ret = SequenceBuilder<[CharStream, Writer(), Anything(Throwable)]>();
-        void translate(String source, Directory targetDirectory) {
-            value resource = parsePath(source).resource.linkedResource;
-            object visitor extends Visitor() {
-                shared actual void file(File file) {
-                    if (file.name.endsWith(".ceylon")) {
-                        value firstPart = file.path.elementPaths.first;
-                        assert (exists firstPart);
-                        value target = targetDirectory.path.childPath(file.path.relativePath(firstPart)).resource.linkedResource;
-                        File targetFile;
-                        switch (target)
-                        case (is File) {
-                            targetFile = target;
-                        }
-                        case (is Nil) {
-                            try {
-                                createParentDirectories(target);
-                            } catch (AssertionError e) {
-                                process.writeErrorLine("Can’t create target file '``target.path``'!");
-                                return;
-                            }
-                            targetFile = target.createFile();
-                        }
-                        case (is Directory) {
-                            process.writeErrorLine("Can’t format file '``source``' to target directory '``target.path``'!");
-                            return;
-                        }
-                        value stream = ANTLRFileStream(file.path.string);
-                        ret.append([stream, () => targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
-                    }
-                }
-            }
-            switch (resource)
-            case (is Directory) {
-                resource.path.visit {
-                    visitor = visitor;
-                };
-            }
-            case (is File) {
-                visitor.file(resource);
-            }
-            case (is Nil) {
-                process.writeErrorLine("Warning: Source file '``source``' doesn’t exist, skipping!");
-            }
-        }
-        void translateToDirectory([String+] sources, Directory targetDirectory) {
-            if (sources.size == 1) {
-                // source/foo/bar → target/foo/bar
-                translate(sources.first, targetDirectory);
-            } else {
-                // source1/foo/bar → target/source1/foo/bar, source2/baz → target/source2/baz
-                for (source in sources) {
-                    value resource = parsePath(source).resource.linkedResource;
-                    Path targetPath;
-                    switch (resource)
-                    case (is Directory|Nil) {
-                        targetPath = targetDirectory.path.childPath(source);
-                    }
-                    case (is File) {
-                        targetPath = targetDirectory.path.childPath(resource.directory.path);
-                    }
-                    value targetResource = targetPath.resource.linkedResource;
-                    switch (targetResource)
-                    case (is Directory) {
-                        translate(source, targetResource);
-                    }
-                    case (is Nil) {
-                        try {
-                            createParentDirectories(targetResource);
-                        } catch (AssertionError e) {
-                            process.writeErrorLine("Can’t create target directory '``targetPath``'!");
-                            continue;
-                        }
-                        translate(source, targetResource.createDirectory());
-                    }
-                    case (is File) {
-                        process.writeErrorLine("Can’t format source '``source``' to target file '``targetPath``'!");
-                    }
-                }
-            }
-        }
-        variable Boolean printedAbsoluteFilePathsError = false;
-        value translationsS = translations.sequence.select((String[]->String translation) {
-                if (translation.key.any(compose(Path.absolute, parsePath))) {
-                    // TODO support absolute file paths
-                    if (!printedAbsoluteFilePathsError) {
-                        process.writeErrorLine("Absolute file paths are currently not supported! (Issue #48)");
-                        process.writeErrorLine("Skipping the following translation(s):");
-                        printedAbsoluteFilePathsError = true;
-                    }
-                    process.writeErrorLine(translation.string);
-                    return false;
-                }
-                return true;
-            });
-        for (translation in translationsS) {
+        
+        for (translation in parseTranslations(arguments)) {
             assert (nonempty sources = translation.key);
             value target = translation.item;
             value targetResource = parsePath(target).resource.linkedResource;
@@ -240,7 +295,7 @@ void createParentDirectories(Nil nil) {
                 }
             }
             case (is Directory) {
-                translateToDirectory(sources, targetResource);
+                ret.appendAll(translate(sources, targetResource));
             }
             case (is Nil) {
                 if (is File sourceFile = parsePath(sources.first).resource.linkedResource, sources.size == 1) {
@@ -260,7 +315,7 @@ void createParentDirectories(Nil nil) {
                         process.writeErrorLine("Can’t create target directory '``target``'!");
                     }
                     Directory targetDirectory = targetResource.createDirectory();
-                    translateToDirectory(sources, targetDirectory);
+                    ret.appendAll(translate(sources, targetDirectory));
                 }
             }
         }
