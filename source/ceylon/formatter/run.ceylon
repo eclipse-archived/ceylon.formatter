@@ -21,13 +21,11 @@ import com.redhat.ceylon.compiler.typechecker.tree {
 import ceylon.time { ... }
 import ceylon.file {
     Writer,
-    Resource,
     Path,
     parsePath,
     Directory,
     File,
     Nil,
-    Link,
     Visitor
 }
 import ceylon.formatter.options {
