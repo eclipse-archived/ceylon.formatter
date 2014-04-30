@@ -156,12 +156,12 @@ object stopAndDontConsume extends Stop() { consume = false; }
  * `spaceBefore = maxDesire - 1, spaceAfter = maxDesire - 1`
  * `indentBefore = Indent(0), indentAfter = Indent(0)`
  * `lineBreaksBefore, lineBreaksAfter` as determined by the [[options]]
-     * [[beforeLineCommentLineBreaks|FormattingOptions.beforeLineCommentLineBreaks]] and
-       [[afterLineCommentLineBreaks|FormattingOptions.afterLineCommentLineBreaks]] for `// line comments`
-     * [[beforeSingleCommentLineBreaks|FormattingOptions.beforeSingleCommentLineBreaks]] and
-       [[afterSingleCommentLineBreaks|FormattingOptions.afterSingleCommentLineBreaks]] for `/* single-line multi comments */`
-     * [[beforeMultiCommentLineBreaks|FormattingOptions.beforeMultiCommentLineBreaks]] and
-       [[afterMultiCommentLineBreaks|FormattingOptions.afterMultiCommentLineBreaks]] for
+     * [[lineBreaksBeforeLineComment|FormattingOptions.lineBreaksBeforeLineComment]] and
+       [[lineBreaksAfterLineComment|FormattingOptions.lineBreaksAfterLineComment]] for `// line comments`
+     * [[lineBreaksBeforeSingleComment|FormattingOptions.lineBreaksBeforeSingleComment]] and
+       [[lineBreaksAfterSingleComment|FormattingOptions.lineBreaksAfterSingleComment]] for `/* single-line multi comments */`
+     * [[lineBreaksBeforeMultiComment|FormattingOptions.lineBreaksBeforeMultiComment]] and
+       [[lineBreaksAfterMultiComment|FormattingOptions.lineBreaksAfterMultiComment]] for
        ~~~
        /*
           multi-line
