@@ -75,7 +75,7 @@ void createParentDirectories(Nil nil) {
  For example, the common root of `a/b/c` and `a/b/d` is `a/b`,
  the common root of `/a/b/c` and `/a/d/e` is `/a`
  and the common root of `a` and `b` is the empty path."
-shared /* TODO unshare #45 */ Path commonRoot(
+Path commonRoot(
     "The paths. Must be either all absolute or all relative."
     variable [Path+] paths) {
     Boolean allAbsolute = paths.every(Path.absolute);
@@ -120,7 +120,7 @@ shared /* TODO unshare #45 */ Path commonRoot(
    f/g -> m/n/f/g
  ]
  ~~~"
-shared /* TODO unshare #45 */ <String[]->String>[] parseTranslations(String[] arguments) {
+<String[]->String>[] parseTranslations(String[] arguments) {
     variable Integer i = 0;
     variable SequenceAppender<String>? currentSources = null;
     SequenceBuilder<String[]->String> translations = SequenceBuilder<String[]->String>();
