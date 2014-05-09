@@ -599,7 +599,6 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
          handle the part before this token:
          fast-forward, intersect allowed line breaks, write out line breaks
          */
-        intersectAllowedLineBreaks(lineBreaksBefore, false);
         fastForward((AntlrToken? current) {
                 if (exists current) {
                     assert (exists lineBreaks = givenLineBreaks);
@@ -643,6 +642,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                     return { stopAndDontConsume }; // end fast-forwarding
                 }
             });
+        intersectAllowedLineBreaks(lineBreaksBefore, false);
         for (i in 0:lineBreakAmount(givenLineBreaks)) {
             tokenQueue.add(LineBreak());
         }
