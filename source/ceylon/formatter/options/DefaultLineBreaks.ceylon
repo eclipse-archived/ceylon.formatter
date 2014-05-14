@@ -34,7 +34,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
                 if (exists token) {
                     if (token.text.split(Character.equals('\n')).longerThan(1)) {
                         // multi-line literal
-                        Integer? elementIndex = elements.indexes(token.equals).first;
+                        Integer? elementIndex = elements.firstIndexWhere(token.equals);
                         assert (exists elementIndex);
                         return elementIndex;
                     }
@@ -49,7 +49,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
                      we’ve reached the end of the tokens without exceeding the maxLineLength;
                      return the index of the first LineBreak or null if there isn’t one
                      */
-                    return elements.indexes((QueueElement elem) => elem is LineBreak).first;
+                    return elements.firstIndexWhere((QueueElement elem) => elem is LineBreak);
                 }
             }
             if (tokenIndex > 1) {
@@ -85,7 +85,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
              we’ve reached the end of the tokens without finding a suitable token;
              return the index of the first LineBreak or null if there isn’t one
              */
-            return elements.indexes((QueueElement elem) => elem is LineBreak).first;
+            return elements.firstIndexWhere((QueueElement elem) => elem is LineBreak);
         }
         assert (exists token); // TODO revisit, unnecessary assert
         
@@ -108,7 +108,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
              we’ve reached the end of the tokens without finding a suitable token;
              return the index of the first LineBreak or null if there isn’t one
              */
-            return elements.indexes((QueueElement elem) => elem is LineBreak).first;
+            return elements.firstIndexWhere((QueueElement elem) => elem is LineBreak);
         }
         return elementIndex;
     }

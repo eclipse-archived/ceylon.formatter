@@ -750,13 +750,13 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
          1. Pop the context and its successors from the [[tokenStack]]
          2. Go through the `tokenQueue` from the beginning until `element` and do the same as above."
     void closeContext0(ClosingElement&QueueElement element) {
-        Integer? startIndex = tokenQueue.indexes((QueueElement e) {
+        Integer? startIndex = tokenQueue.firstIndexWhere((QueueElement e) {
                 if (is OpeningElement e, e.context == element.context) {
                     return true;
                 }
                 return false;
-            }).first;
-        Integer? endIndex = tokenQueue.indexes(element.equals).first;
+            });
+        Integer? endIndex = tokenQueue.firstIndexWhere(element.equals);
         
         if (exists endIndex) {
             if (exists startIndex) {
@@ -764,7 +764,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 filterQueue(startIndex, endIndex);
             } else {
                 // second case: affects token stack and queue
-                Integer? stackIndex = tokenStack.indexes(element.context.equals).first;
+                Integer? stackIndex = tokenStack.firstIndexWhere(element.context.equals);
                 if (exists stackIndex) {
                     for (i in stackIndex .. tokenStack.size - 1) {
                         tokenStack.deleteLast();
@@ -775,7 +775,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         } else {
             // third case: only affects token stack
             assert (is Null startIndex);
-            Integer? stackIndex = tokenStack.indexes(element.context.equals).first;
+            Integer? stackIndex = tokenStack.firstIndexWhere(element.context.equals);
             if (exists stackIndex) {
                 for (i in stackIndex .. tokenStack.size - 1) {
                     tokenStack.deleteLast();
@@ -822,14 +822,14 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 offset,
                 length);
         } else {
-            index = tokenQueue.indexes(function(QueueElement element) {
+            index = tokenQueue.firstIndexWhere(function(QueueElement element) {
                     if (is LineBreak element) {
                         return true;
                     } else if (is Token element, element.text.split('\n'.equals).longerThan(1)) {
                         return true;
                     }
                     return false;
-                }).first;
+                });
         }
         if (exists index) {
             if (!is LineBreak t = tokenQueue[index]) {

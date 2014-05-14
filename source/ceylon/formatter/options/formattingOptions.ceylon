@@ -109,7 +109,7 @@ shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = pro
     variable FormattingOptions baseOptions = configOptions();
     
     String[] splitArguments = concatenate(*arguments.map((String s) {
-                if (exists index = s.indexes('='.equals).first) {
+                if (exists index = s.firstIndexWhere('='.equals)) {
                     return [s[... index - 1], s[index + 1 ...]];
                 }
                 return [s];
@@ -183,7 +183,7 @@ VariableOptions variableFormattingFile(String filename, FormattingOptions baseOp
             if (line.startsWith("#")) {
                 continue;
             }
-            if (exists i = line.indexes('='.equals).first) {
+            if (exists i = line.firstIndexWhere('='.equals)) {
                 String key = line[... i - 1];
                 String item = line[i + 1 ...];
                 if (exists appender = lines[key]) {

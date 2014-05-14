@@ -62,7 +62,7 @@ VariableOptions variableFormattingFile_meta(String filename, FormattingOptions b
         // read other options
         for (String line in lines) {
             if (!line.startsWith("#") && !line.startsWith("include=")) {
-                Integer? indexOfEquals = line.indexes((Character c) => c == '=').first;
+                Integer? indexOfEquals = line.firstIndexWhere((Character c) => c == '=');
                 "Line does not contain an equality sign"
                 assert (exists indexOfEquals);
                 String optionName = line.segment(0, indexOfEquals);
