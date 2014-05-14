@@ -62,7 +62,7 @@ VariableOptions variableFormattingFile_meta(String filename, FormattingOptions b
         // read other options
         for (String line in lines) {
             if (!line.startsWith("#") && !line.startsWith("include=")) {
-                Integer? indexOfEquals = line.firstIndexWhere((Character c) => c == '=');
+                Integer? indexOfEquals = line.firstIndexWhere('='.equals);
                 "Line does not contain an equality sign"
                 assert (exists indexOfEquals);
                 String optionName = line.segment(0, indexOfEquals);
@@ -74,7 +74,7 @@ VariableOptions variableFormattingFile_meta(String filename, FormattingOptions b
                 String fullTypeString = attribute.type.string;
                 Integer? endOfPackageIndex = fullTypeString.inclusions("::").first;
                 assert (exists endOfPackageIndex);
-                String trimmedTypeString = fullTypeString[endOfPackageIndex + 2 ...].trim((Character c) => c == '?');
+                String trimmedTypeString = fullTypeString[endOfPackageIndex + 2 ...].trim('?'.equals);
                 String parseFunctionName = "parse" + trimmedTypeString;
                 FunctionDeclaration? parseFunction =
                         `package ceylon.language`.getFunction(parseFunctionName)
