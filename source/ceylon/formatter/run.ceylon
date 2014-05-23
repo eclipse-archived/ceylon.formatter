@@ -18,7 +18,6 @@ import org.antlr.runtime {
 import com.redhat.ceylon.compiler.typechecker.tree {
     Tree
 }
-import ceylon.time { ... }
 import ceylon.file {
     Writer,
     Path,
@@ -336,25 +335,25 @@ see (`function parseTranslations`)
 shared void run() {
     variable [FormattingOptions, String[]] options = commandLineOptions();
     {[CharStream, Writer(), Anything(Throwable)]*} files = commandLineFiles(options[1]);
-    Instant start = now();
+    value start = system.milliseconds;
     for ([CharStream, Writer(), Anything(Throwable)] file in files) {
-        Instant t1 = now();
+        value t1 = system.milliseconds;
         CeylonLexer lexer = CeylonLexer(file[0]);
         Tree.CompilationUnit cu = CeylonParser(CommonTokenStream(lexer)).compilationUnit();
-        Instant t2 = now();
+        value t2 = system.milliseconds;
         lexer.reset(); // FormattingVisitor needs to read the tokens again
         try {
             format(cu, options[0], file[1](), BufferedTokenStream(lexer));
         } catch (Throwable t) {
             file[2](t);
         }
-        Instant t3 = now();
+        value t3 = system.milliseconds;
         if (options[0].measureTime) {
-            process.writeErrorLine("Compiler: ``t1.durationTo(t2)``, formatter: ``t2.durationTo(t3)``");
+            process.writeErrorLine("Compiler: `` t2 - t1 ``ms, formatter: `` t3 - t2 ``ms");
         }
     }
-    Instant end = now();
+    value end = system.milliseconds;
     if (options[0].measureTime) {
-        process.writeErrorLine("Total: ``start.durationTo(end).string``");
+        process.writeErrorLine("Total: `` end - start ``ms");
     }
 }

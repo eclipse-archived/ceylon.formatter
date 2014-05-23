@@ -27,9 +27,6 @@ import ceylon.formatter.options {
     Tabs,
     Mixed
 }
-import ceylon.time.internal.math {
-    floorDiv
-}
 
 "The maximum value that is safe to use as [[FormattingWriter.writeToken]]’s `space[Before|After]` argument.
  
@@ -200,7 +197,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                     if (char == '\t') {
                         m_CurrentWidth = (m_CurrentWidth % tabWidth == 0)
                                 then m_CurrentWidth + tabWidth
-                                else (floorDiv(m_CurrentWidth, tabWidth) + 1) * tabWidth;
+                                else ((m_CurrentWidth / tabWidth) + 1) * tabWidth;
                     } else {
                         m_CurrentWidth += 1;
                     }
