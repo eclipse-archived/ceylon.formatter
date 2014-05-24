@@ -334,7 +334,15 @@ see (`function parseTranslations`)
 "Run the module `ceylon.formatter`."
 shared void run() {
     variable [FormattingOptions, String[]] options = commandLineOptions();
-    {[CharStream, Writer(), Anything(Throwable)]*} files = commandLineFiles(options[1]);
+    variable Boolean measureTime = false;
+    value fileArgs = options[1].select((String s) {
+        if (s == "--measureTime") {
+            measureTime = true;
+            return false;
+        }
+        return true;
+    });
+    {[CharStream, Writer(), Anything(Throwable)]*} files = commandLineFiles(fileArgs);
     value start = system.milliseconds;
     for ([CharStream, Writer(), Anything(Throwable)] file in files) {
         value t1 = system.milliseconds;
@@ -348,12 +356,12 @@ shared void run() {
             file[2](t);
         }
         value t3 = system.milliseconds;
-        if (options[0].measureTime) {
+        if (measureTime) {
             process.writeErrorLine("Compiler: `` t2 - t1 ``ms, formatter: `` t3 - t2 ``ms");
         }
     }
     value end = system.milliseconds;
-    if (options[0].measureTime) {
+    if (measureTime) {
         process.writeErrorLine("Total: `` end - start ``ms");
     }
 }

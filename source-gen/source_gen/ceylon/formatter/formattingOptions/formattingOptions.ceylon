@@ -244,12 +244,6 @@
         "Integer"; "indentBeforeTypeInfo"; /* = */ "2";
     },
     FormattingOption {
-        "If [[true]], print timing information to standard error.
-         The output is purely informational and its format may change at any time without notice;
-         it should not be used in scripts or something similar.";
-        "Boolean"; "measureTime"; /* = */ "false";
-    },
-    FormattingOption {
         """Decide how line breaks after specifier expression’s main tokens should be handled.
            
            * [[stack]]:
