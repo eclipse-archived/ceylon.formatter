@@ -227,7 +227,7 @@ Path commonRoot(
     case (is Nil) {
         process.writeErrorLine("Warning: Source file '``source``' doesn’t exist, skipping!");
     }
-    return /* ret.sequence */ [*ret]; // TODO remove ceylon/ceylon-compiler#1655 workaround
+    return ret.sequence;
 }
 
 "Translate one or more sources to a target directory."
@@ -269,7 +269,7 @@ see (`function parseTranslations`)
             }
         }
     }
-    return /* ret.sequence */ [*ret]; // TODO remove ceylon/ceylon-compiler#1655 workaround
+    return ret.sequence;
 }
 
 "Parses a list of paths from the command line.
@@ -322,7 +322,7 @@ see (`function parseTranslations`)
                 }
             }
         }
-        return /* ret.sequence */ [*ret]; // TODO remove ceylon/ceylon-compiler#1655 workaround
+        return ret.sequence;
     } else {
         // no input or output files, pipe mode
         object sysoutWriter satisfies Writer {
