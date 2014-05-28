@@ -13,6 +13,10 @@ import ceylon.formatter.options {
 import ceylon.file {
     Writer
 }
+import ceylon.collection {
+    MutableList,
+    LinkedList
+}
 
 test
 shared void testDefaultLineBreaks() {
@@ -39,10 +43,10 @@ shared void testDefaultLineBreaks() {
                     w.Token("noBreakHere``i``", false, null, maxDesire, maxDesire)
             ], 0, 20));
     
-    SequenceBuilder<FormattingWriter.QueueElement> s = SequenceBuilder<FormattingWriter.QueueElement>();
+    MutableList<FormattingWriter.QueueElement> s = LinkedList<FormattingWriter.QueueElement>();
     for (i in 1..10) {
-        s.append(w.Token("noBreakHere``i``", false, null, maxDesire, maxDesire));
+        s.add(w.Token("noBreakHere``i``", false, null, maxDesire, maxDesire));
     }
-    s.append(w.LineBreak());
+    s.add(w.LineBreak());
     assert (exists location2 = defaultLineBreaks.lineBreakLocation(s.sequence, 0, 20), location2 == 10);
 }

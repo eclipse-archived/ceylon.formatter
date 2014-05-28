@@ -899,7 +899,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         
         variable Token? previousToken = null;
         "The elements we have to handle later in case we’re writing a multi-line token"
-        value elementsToHandle = SequenceBuilder<QueueElement>();
+        value elementsToHandle = LinkedList<QueueElement>();
         "The function that handles elements. If the last token is a multi-line token,
          it [[writes|write]] tokens directly and adds the elements to [[elementsToHandle]].
          otherwise it writes tokens [[with context|writeWithContext]] and opens/closes
@@ -916,7 +916,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 if (is Token t = elem) {
                     write(t);
                 }
-                elementsToHandle.append(elem);
+                elementsToHandle.add(elem);
                 return null;
             };
         } else {
@@ -1139,9 +1139,9 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             }
         }
         intersectAllowedLineBreaks(before, false);
-        SequenceBuilder<QueueElement> ret = SequenceBuilder<QueueElement>();
+        MutableList<QueueElement> ret = LinkedList<QueueElement>();
         for (i in 0:lineBreakAmount(givenLineBreaks else 1)) {
-            ret.append(LineBreak());
+            ret.add(LineBreak());
         }
         currentlyAllowedLinebreaks = after;
         givenLineBreaks = current.type == lineComment then 1 else 0;
@@ -1166,7 +1166,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                     then 0
                     else current.charPositionInLine;
         };
-        ret.append(token);
+        ret.add(token);
         return ret.sequence;
     }
     

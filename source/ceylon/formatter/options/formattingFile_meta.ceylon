@@ -12,6 +12,10 @@ import ceylon.language.meta.declaration {
 import ceylon.language.meta {
     type
 }
+import ceylon.collection {
+    MutableList,
+    LinkedList
+}
 "Reads a file with formatting options, parsing it using the metamodel.
  
  This function does exactly the same thing as [[ceylon.formatter.options::formattingFile]];
@@ -45,9 +49,9 @@ VariableOptions variableFormattingFile_meta(String filename, FormattingOptions b
     if (is File file = parsePath(filename).resource) {
         // read the file
         Reader reader = file.Reader();
-        SequenceBuilder<String> seq = SequenceBuilder<String>();
+        MutableList<String> seq = LinkedList<String>();
         while (exists line = reader.readLine()) {
-            seq.append(line);
+            seq.add(line);
         }
         String[] lines = seq.sequence;
         

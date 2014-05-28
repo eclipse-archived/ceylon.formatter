@@ -27,6 +27,10 @@ import ceylon.file {
     Nil,
     Visitor
 }
+import ceylon.collection {
+    MutableList,
+    LinkedList
+}
 import ceylon.formatter.options {
     FormattingOptions,
     commandLineOptions
@@ -121,15 +125,15 @@ Path commonRoot(
  ~~~"
 <String[]->String>[] parseTranslations(String[] arguments) {
     variable Integer i = 0;
-    variable SequenceAppender<String>? currentSources = null;
-    SequenceBuilder<String[]->String> translations = SequenceBuilder<String[]->String>();
+    variable MutableList<String>? currentSources = null;
+    MutableList<String[]->String> translations = LinkedList<String[]->String>();
     while (i < arguments.size) {
         assert (exists argument = arguments[i]);
         value nextArgument = arguments[i + 1];
         if (argument == "--and") {
             if (exists nextArgument) {
                 if (exists current = currentSources) {
-                    current.append(nextArgument);
+                    current.add(nextArgument);
                 } else {
                     process.writeErrorLine("Missing first file or directory before '--and ``nextArgument``'!");
                 }
@@ -140,7 +144,7 @@ Path commonRoot(
         } else if (argument == "--to") {
             if (exists nextArgument) {
                 if (exists current = currentSources) {
-                    translations.append(current.sequence->nextArgument);
+                    translations.add(current.sequence->nextArgument);
                     currentSources = null;
                 } else {
                     process.writeErrorLine("Missing files or directories before '--to ``nextArgument``'!");
@@ -155,10 +159,10 @@ Path commonRoot(
                     process.writeErrorLine("Warning: Multiple files or directories collected with '--and', but not redirected with '--to'!");
                 }
                 for (fileOrDir in current.sequence) {
-                    translations.append([fileOrDir]->fileOrDir);
+                    translations.add([fileOrDir]->fileOrDir);
                 }
             }
-            currentSources = SequenceAppender { argument };
+            currentSources = LinkedList { argument };
         }
         i++;
     }
@@ -167,7 +171,7 @@ Path commonRoot(
             process.writeErrorLine("Warning: Multiple files or directories collected with '--and', but not redirected with '--to'!");
         }
         for (fileOrDir in current.sequence) {
-            translations.append([fileOrDir]->fileOrDir);
+            translations.add([fileOrDir]->fileOrDir);
         }
     }
     return translations.sequence;
@@ -179,7 +183,7 @@ Path commonRoot(
  - for each file found, open a CharStream to read from it and a Writer to write to the correct file in [[targetDirectory]]
  - the target path is [[targetDirectory]] + (source path - [[root]])"
 [CharStream, Writer(), Anything(Throwable)][] translateSingleSource(String source, Path root, Directory targetDirectory) {
-    value ret = SequenceBuilder<[CharStream, Writer(), Anything(Throwable)]>();
+    value ret = LinkedList<[CharStream, Writer(), Anything(Throwable)]>();
     object visitor extends Visitor() {
         shared actual void file(File file) {
             if (file.name.endsWith(".ceylon")) {
@@ -206,7 +210,7 @@ Path commonRoot(
                     return;
                 }
                 value stream = ANTLRFileStream(file.path.string);
-                ret.append([stream, () => targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
+                ret.add([stream, () => targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
             }
         }
     }
@@ -223,17 +227,17 @@ Path commonRoot(
     case (is Nil) {
         process.writeErrorLine("Warning: Source file '``source``' doesn’t exist, skipping!");
     }
-    return ret.sequence;
+    return /* ret.sequence */ [*ret]; // TODO remove ceylon/ceylon-compiler#1655 workaround
 }
 
 "Translate one or more sources to a target directory."
 see (`function parseTranslations`)
 [CharStream, Writer(), Anything(Throwable)][] translate([String+] sources, Directory targetDirectory) {
-    value ret = SequenceBuilder<[CharStream, Writer(), Anything(Throwable)]>();
+    value ret = LinkedList<[CharStream, Writer(), Anything(Throwable)]>();
     value root = commonRoot(sources.collect(parsePath));
     if (sources.size == 1) {
         // source/foo/bar → target/foo/bar
-        ret.appendAll(translateSingleSource(sources.first, root, targetDirectory));
+        ret.addAll(translateSingleSource(sources.first, root, targetDirectory));
     } else {
         // source1/foo/bar → target/source1/foo/bar, source2/baz → target/source2/baz
         for (source in sources) {
@@ -249,7 +253,7 @@ see (`function parseTranslations`)
             value targetResource = targetPath.resource.linkedResource;
             switch (targetResource)
             case (is Directory) {
-                ret.appendAll(translateSingleSource(source, root, targetResource));
+                ret.addAll(translateSingleSource(source, root, targetResource));
             }
             case (is Nil) {
                 try {
@@ -258,21 +262,21 @@ see (`function parseTranslations`)
                     process.writeErrorLine("Can’t create target directory '``targetPath``'!");
                     continue;
                 }
-                ret.appendAll(translateSingleSource(source, root, targetResource.createDirectory()));
+                ret.addAll(translateSingleSource(source, root, targetResource.createDirectory()));
             }
             case (is File) {
                 process.writeErrorLine("Can’t format source '``source``' to target file '``targetPath``'!");
             }
         }
     }
-    return ret.sequence;
+    return /* ret.sequence */ [*ret]; // TODO remove ceylon/ceylon-compiler#1655 workaround
 }
 
 "Parses a list of paths from the command line.
  Returns a sequence of tuples of source [[CharStream]], target [[Writer]] and onError callback."
 [CharStream, Writer(), Anything(Throwable)][] commandLineFiles(String[] arguments) {
     if (nonempty arguments) {
-        value ret = SequenceBuilder<[CharStream, Writer(), Anything(Throwable)]>();
+        value ret = LinkedList<[CharStream, Writer(), Anything(Throwable)]>();
         
         for (translation in parseTranslations(arguments)) {
             assert (nonempty sources = translation.key);
@@ -283,7 +287,7 @@ see (`function parseTranslations`)
                 if (is File sourceFile = parsePath(sources.first).resource.linkedResource) {
                     if (sources.size == 1) {
                         value stream = ANTLRFileStream(sources.first);
-                        ret.append([stream, () => targetResource.Overwriter(), recoveryOnError(stream, targetResource)]);
+                        ret.add([stream, () => targetResource.Overwriter(), recoveryOnError(stream, targetResource)]);
                     } else {
                         process.writeErrorLine("Can’t format more than one source files or directories into a single target file!");
                         process.writeErrorLine("Skipping directive '``" --and ".join(sources)`` --to ``target``'.");
@@ -294,7 +298,7 @@ see (`function parseTranslations`)
                 }
             }
             case (is Directory) {
-                ret.appendAll(translate(sources, targetResource));
+                ret.addAll(translate(sources, targetResource));
             }
             case (is Nil) {
                 if (is File sourceFile = parsePath(sources.first).resource.linkedResource, sources.size == 1) {
@@ -306,7 +310,7 @@ see (`function parseTranslations`)
                         process.writeErrorLine("Can’t create target file '``target``'!");
                     }
                     value targetFile = targetResource.createFile();
-                    ret.append([stream, () => targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
+                    ret.add([stream, () => targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
                 } else {
                     try {
                         createParentDirectories(targetResource);
@@ -314,11 +318,11 @@ see (`function parseTranslations`)
                         process.writeErrorLine("Can’t create target directory '``target``'!");
                     }
                     Directory targetDirectory = targetResource.createDirectory();
-                    ret.appendAll(translate(sources, targetDirectory));
+                    ret.addAll(translate(sources, targetDirectory));
                 }
             }
         }
-        return ret.sequence;
+        return /* ret.sequence */ [*ret]; // TODO remove ceylon/ceylon-compiler#1655 workaround
     } else {
         // no input or output files, pipe mode
         object sysoutWriter satisfies Writer {

@@ -1,6 +1,8 @@
 import ceylon.collection {
     MutableMap,
-    HashMap
+    HashMap,
+    MutableList,
+    LinkedList
 }
 import ceylon.file {
     Reader,
@@ -115,7 +117,7 @@ shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = pro
                 return [s];
             }));
     value options = VariableOptions(baseOptions);
-    value remaining = SequenceBuilder<String>();
+    value remaining = LinkedList<String>();
     
     if (nonempty splitArguments) {
         variable Integer i = 0;
@@ -123,7 +125,7 @@ shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = pro
             assert (exists option = splitArguments[i]);
             String optionName = (sugarOptions[option] else option)["--".size...];
             if (option == "--") {
-                remaining.appendAll(splitArguments[(i + 1)...]);
+                remaining.addAll(splitArguments[(i + 1)...]);
                 break;
             } else if (optionName.startsWith("no-")) {
                 try {
@@ -131,7 +133,7 @@ shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = pro
                 } catch (ParseOptionException e) {
                     process.writeErrorLine("Option '``optionName["no-".size...]``' is not a boolean option and can’t be used as '``option``'!");
                 } catch (UnknownOptionException e) {
-                    remaining.append(option);
+                    remaining.add(option);
                 }
             } else if (exists preset = presets[option]) {
                 preset(options);
@@ -152,7 +154,7 @@ shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = pro
                         }
                     }
                 } catch (UnknownOptionException e) {
-                    remaining.append(option);
+                    remaining.add(option);
                 }
             } else {
                 try {
@@ -162,7 +164,7 @@ shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = pro
                     // …nope.
                     process.writeErrorLine("Missing value for option '``optionName``'!");
                 } catch (UnknownOptionException e) {
-                    remaining.append(option);
+                    remaining.add(option);
                 }
             }
             i++;
@@ -178,7 +180,7 @@ VariableOptions variableFormattingFile(String filename, FormattingOptions baseOp
     if (is File file = parsePath(filename).resource) {
         // read the file
         Reader reader = file.Reader();
-        MutableMap<String,SequenceAppender<String>> lines = HashMap<String,SequenceAppender<String>>();
+        MutableMap<String,MutableList<String>> lines = HashMap<String,MutableList<String>>();
         while (exists line = reader.readLine()) {
             if (line.startsWith("#")) {
                 continue;
@@ -187,34 +189,34 @@ VariableOptions variableFormattingFile(String filename, FormattingOptions baseOp
                 String key = line[... i - 1];
                 String item = line[i + 1 ...];
                 if (exists appender = lines[key]) {
-                    appender.append(item);
+                    appender.add(item);
                 } else {
-                    lines.put(key, SequenceAppender([item]));
+                    lines.put(key, LinkedList { item });
                 }
             } else {
                 // TODO report the error somewhere?
                 process.writeError("Missing value for option '``line``'!");
             }
         }
-        return parseFormattingOptions(lines.map((String->SequenceAppender<String> option) => option.key->option.item.sequence), baseOptions);
+        return parseFormattingOptions(lines.map((String->MutableList<String> option) => option.key->option.item.sequence), baseOptions);
     } else {
         throw Exception("File '``filename``' not found!");
     }
 }
 
-VariableOptions parseFormattingOptions({<String->{String+}>*} entries, FormattingOptions baseOptions = FormattingOptions()) {
+VariableOptions parseFormattingOptions({<String->{String*}>*} entries, FormattingOptions baseOptions = FormattingOptions()) {
     // read included files
     variable VariableOptions options = VariableOptions(baseOptions);
-    if (exists includes = entries.find((String->{String+} entry) => entry.key == "include")?.item) {
+    if (exists includes = entries.find((String->{String*} entry) => entry.key == "include")?.item) {
         for (include in includes) {
             options = variableFormattingFile(include, options);
         }
     }
     
     // read other options
-    for (String->{String+} entry in entries.filter((String->{String+} entry) => entry.key != "include")) {
+    for (String->{String*} entry in entries.filter((String->{String*} entry) => entry.key != "include")) {
         String optionName = entry.key;
-        String optionValue = entry.item.last;
+        assert (exists optionValue = entry.item.last);
         try {
             parseFormattingOption(optionName, optionValue, options);
         } catch (Exception e) {
