@@ -336,12 +336,12 @@ shared void run() {
     variable [FormattingOptions, String[]] options = commandLineOptions();
     variable Boolean measureTime = false;
     value fileArgs = options[1].select((String s) {
-        if (s == "--measureTime") {
-            measureTime = true;
-            return false;
-        }
-        return true;
-    });
+            if (s == "--measureTime") {
+                measureTime = true;
+                return false;
+            }
+            return true;
+        });
     {[CharStream, Writer(), Anything(Throwable)]*} files = commandLineFiles(fileArgs);
     value start = system.milliseconds;
     for ([CharStream, Writer(), Anything(Throwable)] file in files) {
