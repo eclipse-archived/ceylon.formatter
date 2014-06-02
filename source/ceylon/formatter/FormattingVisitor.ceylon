@@ -344,8 +344,7 @@ shared class FormattingVisitor(
         };
         assert (exists context);
         // TODO replace casesList with ceylon-spec#947’s solution
-        // TODO should be MutableList<StaticType|BaseMemberExpression>, ceylon-compiler#1572
-        MutableList<Node> casesList = ArrayList<Node>();
+        MutableList<StaticType|BaseMemberExpression> casesList = ArrayList<StaticType|BaseMemberExpression>();
         casesList.addAll(CeylonIterable(that.types));
         casesList.addAll(CeylonIterable(that.baseMemberExpressions));
         assert (nonempty cases = casesList.sort(byIncreasing(compose(Token.tokenIndex, Node.token))));
