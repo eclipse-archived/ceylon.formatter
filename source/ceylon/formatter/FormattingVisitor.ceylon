@@ -622,7 +622,7 @@ shared class FormattingVisitor(
     
     shared actual void visitFinallyClause(FinallyClause that) {
         fWriter.writeToken {
-            that.mainToken;
+            that.mainToken; // "finally"
             spaceBefore = true;
             spaceAfter = true;
         };
@@ -757,7 +757,7 @@ shared class FormattingVisitor(
     
     shared actual void visitImport(Import that) {
         fWriter.writeToken {
-            that.mainToken;
+            that.mainToken; // "import"
             lineBreaksBefore = 1..0;
             lineBreaksAfter = noLineBreak;
             spaceBefore = false;
@@ -1155,7 +1155,7 @@ shared class FormattingVisitor(
     
     shared actual void visitOuter(Outer that) {
         fWriter.writeToken {
-            that.mainToken;
+            that.mainToken; // "outer"
         };
     }
     
@@ -1281,7 +1281,7 @@ shared class FormattingVisitor(
     
     shared actual void visitPositiveOp(PositiveOp that) {
         fWriter.writeToken {
-            that.mainToken; // "-"
+            that.mainToken; // "+"
             spaceAfter = false;
             lineBreaksAfter = noLineBreak;
         };
