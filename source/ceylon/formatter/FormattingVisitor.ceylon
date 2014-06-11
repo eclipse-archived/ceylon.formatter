@@ -147,7 +147,7 @@ shared class FormattingVisitor(
         value context = fWriter.openContext();
         that.annotationList.visit(this);
         fWriter.writeToken {
-            that.mainToken; // "interface"
+            that.mainToken; // "interface" or "dynamic"
             lineBreaksAfter = noLineBreak;
             spaceBefore = true;
             spaceAfter = true;
