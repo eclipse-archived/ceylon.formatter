@@ -5,15 +5,16 @@ import ceylon.formatter {
         LineBreak=LineBreak
     }
 }
+// TODO don’t fully qualify FormattingWriter.QueueElement, Token, LineBreak (ceylon/ceylon-spec#989)
 class DefaultLineBreaks() extends LineBreakStrategy() {
     
-    shared actual Integer? lineBreakLocation(QueueElement[] elements, Integer offset, Integer maxLineLength) {
+    shared actual Integer? lineBreakLocation(FormattingWriter.QueueElement[] elements, Integer offset, Integer maxLineLength) {
         "Only the [[FormattingWriter.Token]] elements from [[elements]].
          
          This allows us to access previous and next tokens directly
          instead of having to deal with non-token elements."
-        Token[] tokens = elements.filter((QueueElement elem) => elem is Token).collect((QueueElement element) {
-                assert (is Token element);
+        FormattingWriter.Token[] tokens = elements.filter((FormattingWriter.QueueElement elem) => elem is FormattingWriter.Token).collect((FormattingWriter.QueueElement element) {
+                assert (is FormattingWriter.Token element);
                 return element;
             });
         
@@ -30,7 +31,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
             tokenIndex = 1;
         } else {
             while (currentLength <= maxLineLength) {
-                Token? token = tokens[tokenIndex];
+                FormattingWriter.Token? token = tokens[tokenIndex];
                 if (exists token) {
                     if (token.text.split(Character.equals('\n')).longerThan(1)) {
                         // multi-line literal
@@ -49,7 +50,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
                      we’ve reached the end of the tokens without exceeding the maxLineLength;
                      return the index of the first LineBreak or null if there isn’t one
                      */
-                    return elements.firstIndexWhere((QueueElement elem) => elem is LineBreak);
+                    return elements.firstIndexWhere((FormattingWriter.QueueElement elem) => elem is LineBreak);
                 }
             }
             if (tokenIndex > 1) {
@@ -79,13 +80,13 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
             }
             tokenIndex++; // we want the index of the second token of the pair
         }
-        Token? token = tokens[tokenIndex];
+        FormattingWriter.Token? token = tokens[tokenIndex];
         if (is Null token) {
             /*
              we’ve reached the end of the tokens without finding a suitable token;
              return the index of the first LineBreak or null if there isn’t one
              */
-            return elements.firstIndexWhere((QueueElement elem) => elem is LineBreak);
+            return elements.firstIndexWhere((FormattingWriter.QueueElement elem) => elem is LineBreak);
         }
         assert (exists token); // TODO revisit, unnecessary assert
         
@@ -108,7 +109,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
              we’ve reached the end of the tokens without finding a suitable token;
              return the index of the first LineBreak or null if there isn’t one
              */
-            return elements.firstIndexWhere((QueueElement elem) => elem is LineBreak);
+            return elements.firstIndexWhere((FormattingWriter.QueueElement elem) => elem is LineBreak);
         }
         return elementIndex;
     }
