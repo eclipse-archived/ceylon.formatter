@@ -815,7 +815,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 offset += firstToken.preIndent;
             }
             index = options.lineBreakStrategy.lineBreakLocation(
-                tokenQueue.sequence,
+                tokenQueue.sequence(),
                 offset,
                 length);
         } else {
@@ -961,7 +961,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             }
             multiLineWantsSpaceAfter = null;
         }
-        for (token in elementsToHandle.sequence) {
+        for (token in elementsToHandle.sequence()) {
             handleContext(token);
         }
         if (is OpeningToken lastToken, lastToken.indentAfterOnlyWhenLineBreak) {
@@ -1167,7 +1167,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                     else current.charPositionInLine;
         };
         ret.add(token);
-        return ret.sequence;
+        return ret.sequence();
     }
     
     "Enqueue a line break if the last queue element isn’t a line break, then flush the queue."

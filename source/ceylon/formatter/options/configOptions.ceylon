@@ -26,6 +26,6 @@ Iterable<T,Absent> assertNonnulls<T,Absent>(Iterable<T?,Absent> it)
         given Absent satisfies Null
         => { for (t in it) t else nothing };
 {T+} assertNonempty<T>({T*} it) {
-    assert (nonempty seq = it.sequence);
+    assert (nonempty seq = it.sequence());
     return seq;
 }

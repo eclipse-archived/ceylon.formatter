@@ -144,7 +144,7 @@ Path commonRoot(
         } else if (argument == "--to") {
             if (exists nextArgument) {
                 if (exists current = currentSources) {
-                    translations.add(current.sequence->nextArgument);
+                    translations.add(current.sequence()->nextArgument);
                     currentSources = null;
                 } else {
                     process.writeErrorLine("Missing files or directories before '--to ``nextArgument``'!");
@@ -158,7 +158,7 @@ Path commonRoot(
                 if (current.size > 1) {
                     process.writeErrorLine("Warning: Multiple files or directories collected with '--and', but not redirected with '--to'!");
                 }
-                for (fileOrDir in current.sequence) {
+                for (fileOrDir in current.sequence()) {
                     translations.add([fileOrDir]->fileOrDir);
                 }
             }
@@ -170,11 +170,11 @@ Path commonRoot(
         if (current.size > 1) {
             process.writeErrorLine("Warning: Multiple files or directories collected with '--and', but not redirected with '--to'!");
         }
-        for (fileOrDir in current.sequence) {
+        for (fileOrDir in current.sequence()) {
             translations.add([fileOrDir]->fileOrDir);
         }
     }
-    return translations.sequence;
+    return translations.sequence();
 }
 
 "Process a single source from a translation, that is:
@@ -227,7 +227,7 @@ Path commonRoot(
     case (is Nil) {
         process.writeErrorLine("Warning: Source file '``source``' doesn’t exist, skipping!");
     }
-    return ret.sequence;
+    return ret.sequence();
 }
 
 "Translate one or more sources to a target directory."
@@ -269,7 +269,7 @@ see (`function parseTranslations`)
             }
         }
     }
-    return ret.sequence;
+    return ret.sequence();
 }
 
 "Parses a list of paths from the command line.
@@ -322,7 +322,7 @@ see (`function parseTranslations`)
                 }
             }
         }
-        return ret.sequence;
+        return ret.sequence();
     } else {
         // no input or output files, pipe mode
         object sysoutWriter satisfies Writer {

@@ -53,7 +53,7 @@ VariableOptions variableFormattingFile_meta(String filename, FormattingOptions b
         while (exists line = reader.readLine()) {
             seq.add(line);
         }
-        String[] lines = seq.sequence;
+        String[] lines = seq.sequence();
         
         // read included files
         variable VariableOptions options = VariableOptions(baseOptions);

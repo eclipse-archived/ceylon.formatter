@@ -170,7 +170,7 @@ shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = pro
             i++;
         }
     }
-    return [options, remaining.sequence];
+    return [options, remaining.sequence()];
 }
 
 "An internal version of [[formattingFile]] that specifies a return type of [[VariableOptions]],
@@ -198,7 +198,7 @@ VariableOptions variableFormattingFile(String filename, FormattingOptions baseOp
                 process.writeError("Missing value for option '``line``'!");
             }
         }
-        return parseFormattingOptions(lines.map((String->MutableList<String> option) => option.key->option.item.sequence), baseOptions);
+        return parseFormattingOptions(lines.map((String->MutableList<String> option) => option.key->option.item.sequence()), baseOptions);
     } else {
         throw Exception("File '``filename``' not found!");
     }
@@ -228,7 +228,7 @@ VariableOptions parseFormattingOptions({<String->{String*}>*} entries, Formattin
 }
 
 shared Range<Integer>? parseIntegerRange(String string) {
-    value parts = string.split('.'.equals).sequence;
+    value parts = string.split('.'.equals).sequence();
     if (parts.size == 2,
         exists first = parseInteger(parts[0] else "invalid"),
         exists last = parseInteger(parts[1] else "invalid")) {

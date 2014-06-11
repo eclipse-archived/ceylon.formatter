@@ -48,5 +48,5 @@ shared void testDefaultLineBreaks() {
         s.add(w.Token("noBreakHere``i``", false, null, maxDesire, maxDesire));
     }
     s.add(w.LineBreak());
-    assert (exists location2 = defaultLineBreaks.lineBreakLocation(s.sequence, 0, 20), location2 == 10);
+    assert (exists location2 = defaultLineBreaks.lineBreakLocation(s.sequence(), 0, 20), location2 == 10);
 }

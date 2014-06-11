@@ -15,8 +15,8 @@ void testParseTranslations() {
         "source --to source-formatted test-source --to test-source-formatted"->{ ["source"]->"source-formatted", ["test-source"]->"test-source-formatted" }
     };
     for (testCase in testCases) {
-        value actual = parseTranslations(testCase.key.split().sequence);
-        value expected = testCase.item.sequence;
+        value actual = parseTranslations(testCase.key.split().sequence());
+        value expected = testCase.item.sequence();
         assert (actual == expected);
     }
 }
