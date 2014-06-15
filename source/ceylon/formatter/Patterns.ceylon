@@ -137,40 +137,6 @@ void writeSemicolon(FormattingWriter writer, Token semicolon, FormattingWriter.F
     };
 }
 
-"Write an optional `<` before `inner` and an optional `>` after.
- For grouped types (`{<String->String>*}`)."
-void writeOptionallyGrouped(FormattingWriter writer, Anything() inner) {
-    variable value context = writer.writeToken {
-        "<";
-        lineBreaksAfter = noLineBreak;
-        spaceAfter = false;
-        optional = true;
-    };
-    while (exists c = context) {
-        context = writer.writeToken {
-            "<";
-            lineBreaksAfter = noLineBreak;
-            spaceAfter = false;
-            optional = true;
-        };
-    }
-    inner();
-    context = writer.writeToken {
-        ">";
-        lineBreaksBefore = noLineBreak;
-        spaceBefore = false;
-        optional = true;
-    };
-    while (exists c = context) {
-        context = writer.writeToken {
-            ">";
-            lineBreaksBefore = noLineBreak;
-            spaceBefore = false;
-            optional = true;
-        };
-    }
-}
-
 void writeSomeMemberOp(FormattingWriter writer, Token token) {
     assert (token.text in { ".", "?.", "*." });
     writer.writeToken {
@@ -214,7 +180,6 @@ void writeTypeArgumentOrParameterList(FormattingWriter writer, Visitor visitor, 
         context;
         lineBreaksBefore = noLineBreak;
         spaceBefore = false;
-        optional = true; // an optionally grouped type might already have eaten the closing angle bracket
     };
     writer.closeContext(context);
 }
