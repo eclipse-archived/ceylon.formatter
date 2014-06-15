@@ -50,7 +50,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
                      we’ve reached the end of the tokens without exceeding the maxLineLength;
                      return the index of the first LineBreak or null if there isn’t one
                      */
-                    return elements.firstIndexWhere((FormattingWriter.QueueElement elem) => elem is LineBreak);
+                    return elements.firstIndexWhere((FormattingWriter.QueueElement elem) => elem is FormattingWriter.LineBreak);
                 }
             }
             if (tokenIndex > 1) {
@@ -86,7 +86,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
              we’ve reached the end of the tokens without finding a suitable token;
              return the index of the first LineBreak or null if there isn’t one
              */
-            return elements.firstIndexWhere((FormattingWriter.QueueElement elem) => elem is LineBreak);
+            return elements.firstIndexWhere((FormattingWriter.QueueElement elem) => elem is FormattingWriter.LineBreak);
         }
         assert (exists token); // TODO revisit, unnecessary assert
         
