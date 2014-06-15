@@ -446,7 +446,6 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         lineBreaksAfter = 0..1,
         spaceBefore = 0,
         spaceAfter = 0,
-        optional = false,
         tokenInStream = token,
         indentAfterOnlyWhenLineBreak = false,
         nextIndentBefore = 0) {
@@ -477,17 +476,6 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
          [[true]] and [[false]] are sugar for [[maxDesire]] and [[minDesire]], respectively."
         see (`value maxDesire`, `value minDesire`)
         Integer|Boolean spaceAfter;
-        "If the token is marked optional, then it is only written if it also occurs in the
-         [[token stream|tokens]].
-         
-         This should be rarely used, as there are typically not many optional tokens; one example
-         are the angle brackets for grouping types: they are required in complicated types like
-         `{<Key->Value>*} map`, but around `<String> name`, they are optional.
-         
-         (If the token stream doesn’t exist, the token is currently always written; however,
-         in the future a more sophisticated method to avoid writing too many unnecessary optional
-         tokens might be added.)"
-        Boolean optional;
         "The token that is expected to occur in the token stream for this token.
          
          In virtually all cases, this is the same as [[token]]; however, for identifiers, the
@@ -565,30 +553,6 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         allowLineBreakBefore = lineBreaksBefore.any(0.smallerThan);
         preIndent = allowLineBreakBefore then indentBefore + this.nextIndentBefore else 0;
         postIndent = lineBreaksAfter.any(0.smallerThan) then indentAfter;
-        
-        /*
-         look for optional token
-         if it’s not there, return immediately
-         the following sections will perform irreversible changes (intersect currentlyAllowedLineBreaks etc.)
-         */
-        if (optional, exists tokens) { // TODO if no token stream, we’ll always write optionals. Be smarter!
-            variable value i = 1;
-            try {
-                while (exists currentToken = tokens.\iLT(i++)) {
-                    if (currentToken.type in { lineComment, multiComment, ws }) {
-                        continue;
-                    }
-                    if (currentToken.text == tokenInStreamText) {
-                        break;
-                    } else {
-                        return null;
-                    }
-                }
-            } catch (Exception e) {
-                // reached the end of the token stream
-                return null;
-            }
-        }
         
         this.nextIndentBefore = nextIndentBefore;
         
