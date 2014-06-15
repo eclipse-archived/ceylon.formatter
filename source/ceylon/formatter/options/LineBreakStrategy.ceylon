@@ -1,7 +1,5 @@
 import ceylon.formatter {
-    FormattingWriter {
-        QueueElement=QueueElement
-    }
+    FormattingWriter
 }
 
 "A strategy to break a series of tokens into multiple lines to accomodate a maximum line length."
@@ -22,7 +20,7 @@ shared abstract class LineBreakStrategy() {
      * then (this is independent of the “if” above), `elements[0..i]` should be removed and written."
     shared formal Integer? lineBreakLocation(
         "The tokens of the line."
-        FormattingWriter.QueueElement[] elements, // TODO use just QueueElement when ceylon/ceylon-spec#989 is fixed
+        FormattingWriter.QueueElement[] elements,
         "The initial line length (usually indentation)."
         Integer offset,
         "The maximum line length."

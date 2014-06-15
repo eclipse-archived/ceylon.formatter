@@ -1,11 +1,6 @@
 import ceylon.formatter {
-    FormattingWriter {
-        QueueElement=QueueElement,
-        Token=Token,
-        LineBreak=LineBreak
-    }
+    FormattingWriter
 }
-// TODO don’t fully qualify FormattingWriter.QueueElement, Token, LineBreak (ceylon/ceylon-spec#989)
 class DefaultLineBreaks() extends LineBreakStrategy() {
     
     shared actual Integer? lineBreakLocation(FormattingWriter.QueueElement[] elements, Integer offset, Integer maxLineLength) {
