@@ -436,7 +436,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
      See the [[class documentation|FormattingWriter]] for more information on the token model
      and how the various parameters of a token interact.
      
-     All arguments (except [[token]], of course) default to a “save to ignore” / “don’t care” value."
+     All parameters (except [[token]], of course) default to a “save to ignore” / “don’t care” value."
     shared FormattingContext? writeToken(
         token,
         context = null,
