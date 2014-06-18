@@ -79,3 +79,8 @@ test
 shared void test56() {
     testIssue(56);
 }
+
+test
+shared void test59() {
+    testIssue(59);
+}

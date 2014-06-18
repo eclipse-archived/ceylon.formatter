@@ -439,6 +439,15 @@ shared class FormattingVisitor(
         writeSemicolon(fWriter, that.mainEndToken, context);
     }
     
+    shared actual void visitDefaultedType(DefaultedType that) {
+        that.type.visit(this);
+        fWriter.writeToken {
+            that.mainEndToken; // "="
+            lineBreaksBefore = noLineBreak;
+            spaceBefore = false;
+        };
+    }
+    
     shared actual void visitDefaultOp(DefaultOp that) {
         that.leftTerm.visit(this);
         fWriter.writeToken {
