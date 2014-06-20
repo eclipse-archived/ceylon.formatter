@@ -403,7 +403,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         value inc2 = other.decreasing then other.reversed else other;
         value intersect = max { inc1.first, inc2.first }..min { inc1.last, inc2.last };
         assert (!intersect.decreasing);
-        currentlyAllowedLinebreaks = currentlyAllowedLinebreaks.decreasing then intersect.reversed else intersect;
+        currentlyAllowedLinebreaks = currentlyAllowedLinebreaks.decreasing then intersect.last..intersect.first else intersect;
     }
     "Require at leasts [[limit]] line breaks between the latest token and the next one to be [[written|writeToken]]."
     see (`function intersectAllowedLineBreaks`)
