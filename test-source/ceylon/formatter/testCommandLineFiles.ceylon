@@ -1,5 +1,6 @@
 import ceylon.test {
-    test
+    test,
+    assertEquals
 }
 import ceylon.file {
     parsePath
@@ -21,6 +22,6 @@ void testCommandLineFiles() {
         assert (nonempty paths = testCase[0].collect(parsePath));
         value actual = commonRoot(paths);
         value expected = parsePath(testCase[1]);
-        assert (actual == expected);
+        assertEquals(actual, expected, testCase.string);
     }
 }
