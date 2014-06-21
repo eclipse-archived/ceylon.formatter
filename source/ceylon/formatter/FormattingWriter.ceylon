@@ -786,7 +786,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             index = tokenQueue.firstIndexWhere(function(QueueElement element) {
                     if (is LineBreak element) {
                         return true;
-                    } else if (is Token element, element.text.lines.longerThan(1)) {
+                    } else if (is Token element, element.text.contains('\n')) {
                         return true;
                     }
                     return false;
@@ -794,7 +794,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         }
         if (exists index) {
             if (!is LineBreak t = tokenQueue[index]) {
-                if (is Token element = t, element.text.lines.longerThan(1)) {
+                if (is Token element = t, element.text.contains('\n')) {
                     // do *not* insert a LineBreak
                 } else {
                     tokenQueue.insert(index, LineBreak());
@@ -870,7 +870,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
          [[EmptyOpenings|EmptyOpening]]/[[-Closings|EmptyClosing]]."
         Anything(QueueElement) elementHandler;
         Boolean hasMultiLineToken;
-        if (is Token lastToken, lastToken.text.lines.longerThan(1)) {
+        if (is Token lastToken, lastToken.text.contains('\n')) {
             hasMultiLineToken = true;
         } else {
             hasMultiLineToken = false;
