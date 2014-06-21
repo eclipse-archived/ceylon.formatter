@@ -182,7 +182,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         shared actual void flush() => writer.flush();
         
         shared actual void write(String string) {
-            [String*] lines = [*string.split(Character.equals('\n'))];
+            String[] lines = string.lines.sequence();
             writer.write(lines.first else "");
             for (line in lines.rest) {
                 writer.writeLine();
@@ -786,7 +786,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             index = tokenQueue.firstIndexWhere(function(QueueElement element) {
                     if (is LineBreak element) {
                         return true;
-                    } else if (is Token element, element.text.split('\n'.equals).longerThan(1)) {
+                    } else if (is Token element, element.text.lines.longerThan(1)) {
                         return true;
                     }
                     return false;
@@ -794,7 +794,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         }
         if (exists index) {
             if (!is LineBreak t = tokenQueue[index]) {
-                if (is Token element = t, element.text.split('\n'.equals).longerThan(1)) {
+                if (is Token element = t, element.text.lines.longerThan(1)) {
                     // do *not* insert a LineBreak
                 } else {
                     tokenQueue.insert(index, LineBreak());
@@ -870,7 +870,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
          [[EmptyOpenings|EmptyOpening]]/[[-Closings|EmptyClosing]]."
         Anything(QueueElement) elementHandler;
         Boolean hasMultiLineToken;
-        if (is Token lastToken, lastToken.text.split('\n'.equals).longerThan(1)) {
+        if (is Token lastToken, lastToken.text.lines.longerThan(1)) {
             hasMultiLineToken = true;
         } else {
             hasMultiLineToken = false;
@@ -977,10 +977,10 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         Integer sourceColumn = token.sourceColumn;
         "The column where we want to align the text to."
         Integer targetColumn = token.targetColumn();
-        {String*} lines = token.text.split {
+        String[] lines = token.text.split {
             splitting = '\n'.equals;
             groupSeparators = false; // keep empty lines
-        };
+        }.sequence();
         String? firstLine = lines.first;
         "The token must not be empty"
         assert (exists firstLine);
