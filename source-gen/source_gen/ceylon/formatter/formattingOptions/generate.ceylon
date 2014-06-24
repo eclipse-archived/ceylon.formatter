@@ -23,7 +23,7 @@ class Generator() satisfies Destroyable {
         assert (is File gitignoreResource);
         gitignoreFile = gitignoreResource;
     }
-    gitignore = gitignoreFile.Overwriter();
+    gitignore = gitignoreFile.Overwriter("UTF-8");
     gitignore.writeLine(".gitignore");
     
     shared void generate() {
@@ -45,7 +45,7 @@ class Generator() satisfies Destroyable {
     }
     
     void generateFileFormattingOptions() {
-        try (writer = file("source/ceylon/formatter/options/FormattingOptions_generated.ceylon").Overwriter()) {
+        try (writer = file("source/ceylon/formatter/options/FormattingOptions_generated.ceylon").Overwriter("UTF-8")) {
             writeHeader(writer);
             writeImports(writer);
             generateSparseFormattingOptions(writer);
@@ -63,7 +63,7 @@ class Generator() satisfies Destroyable {
     }
     
     void generateFileEnum(Enum enum) {
-        try (writer = file("source/ceylon/formatter/options/``enum.classname``.ceylon").Overwriter()) {
+        try (writer = file("source/ceylon/formatter/options/``enum.classname``.ceylon").Overwriter("UTF-8")) {
             writeHeader(writer);
             generateEnumClass(writer, enum);
             for (String instance in enum.instances) {
