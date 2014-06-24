@@ -32,7 +32,7 @@ import ceylon.collection {
  yet (at the time of writing, there's exactly *one*) to determine any difference reliably.
  (If at the time you're reading this, there already are a lot more options, remind me to update
  this documentation.)"
-shared FormattingOptions formattingFile_meta(
+deprecated FormattingOptions formattingFile_meta(
     "The file to read"
     String filename,
     "The options that will be used if the file and its included files
