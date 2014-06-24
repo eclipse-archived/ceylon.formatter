@@ -69,8 +69,8 @@ VariableOptions variableFormattingFile_meta(String filename, FormattingOptions b
                 Integer? indexOfEquals = line.firstIndexWhere('='.equals);
                 "Line does not contain an equality sign"
                 assert (exists indexOfEquals);
-                String optionName = line.segment(0, indexOfEquals);
-                String optionValue = line.segment(indexOfEquals + 1, line.size - indexOfEquals - 1);
+                String optionName = line[...indexOfEquals];
+                String optionValue = line[indexOfEquals + 1 ...];
                 
                 Attribute<VariableOptions>? attribute = `VariableOptions`.getAttribute<VariableOptions>(optionName);
                 assert (exists attribute);
