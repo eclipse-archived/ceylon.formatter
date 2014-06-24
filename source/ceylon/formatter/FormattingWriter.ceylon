@@ -973,32 +973,26 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
      level (see [[tokenStack]]) using [[options]]`.`[[indentMode|FormattingOptions.indentMode]],
      then aligned to the column with spaces."
     void write(Token token) {
-        if (token.text.contains('\n')) {
-            "The column where the text was originally aligned to."
-            Integer sourceColumn = token.sourceColumn;
-            "The column where we want to align the text to."
-            Integer targetColumn = token.targetColumn();
-            String[] lines = token.text.split {
-                splitting = '\n'.equals;
-                groupSeparators = false; // keep empty lines
-            }.sequence();
-            String? firstLine = lines.first;
-            "The token must not be empty"
-            assert (exists firstLine);
-            countingWriter.write(firstLine);
-            for (line in lines.rest) {
-                countingWriter.writeLine();
-                writeIndentation();
-                while (countingWriter.currentWidth < targetColumn) {
-                    // TODO this is horribly inefficient
-                    countingWriter.write(" ");
-                }
-                countingWriter.write(trimIndentation(line, sourceColumn));
+        "The column where the text was originally aligned to."
+        Integer sourceColumn = token.sourceColumn;
+        "The column where we want to align the text to."
+        Integer targetColumn = token.targetColumn();
+        String[] lines = token.text.split {
+            splitting = '\n'.equals;
+            groupSeparators = false; // keep empty lines
+        }.sequence();
+        String? firstLine = lines.first;
+        "The token must not be empty"
+        assert (exists firstLine);
+        countingWriter.write(firstLine);
+        for (line in lines.rest) {
+            countingWriter.writeLine();
+            writeIndentation();
+            while (countingWriter.currentWidth < targetColumn) {
+                // TODO this is horribly inefficient
+                countingWriter.write(" ");
             }
-        } else {
-            // ignore all that indentation + line splitting, our token is only one line
-            // (this is the very common case)
-            countingWriter.write(token.text);
+            countingWriter.write(trimIndentation(line, sourceColumn));
         }
     }
     
