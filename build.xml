@@ -2,7 +2,7 @@
 
     <property file="build.properties" />
     <property name="ceylon.verbosity" value="false"/>
-    <property name="ceylon.executable" value="${basedir}/../ceylon-dist/dist/bin/ceylon"/>
+    <property name="ceylon.executable" value="${dist.bin.dir}/ceylon"/>
     <property name="out.repo" location="modules"/>
     <property name="src-gen.repo" location="src-gen-modules"/>
     <property name="test.repo" location="test-modules"/>
@@ -14,13 +14,13 @@
     
     <taskdef resource="net/sf/antcontrib/antcontrib.properties">
         <classpath>
-            <pathelement location="${basedir}/../ceylon-dist/lib/ant-contrib-1.0b3.jar"/>
+            <pathelement location="${dist.root.dir}/lib/ant-contrib-1.0b3.jar"/>
         </classpath>
     </taskdef>
 
     <taskdef resource="taskdef.properties">
         <classpath>
-            <pathelement path="${basedir}/../ceylon-dist/osgi/lib/org.osgi.impl.bundle.repoindex.ant-2.1.2.jar" />
+            <pathelement path="${dist.root.dir}/osgi/lib/org.osgi.impl.bundle.repoindex.ant-2.1.2.jar" />
         </classpath>
     </taskdef>
 
@@ -260,5 +260,18 @@
     <target name="osgi-p2" depends="compile-source,osgi-p2-quick"/>
 
     <target name="ide" depends="osgi-p2"/>
-    <target name="ide-quick" depends="osgi-p2-quick"/>
+    <target name="ide-quick" depends="osgi-p2-quick">
+        <property name="archivePath" 
+            value="${out.repo}/ceylon/formatter/${module.ceylon.formatter.version}/ceylon.formatter-${module.ceylon.formatter.version}.car"/>
+        <basename file="${archivePath}" property="archiveFileName"/>
+        <property name="proxy-project" value="../ceylon-ide-eclipse/required-bundle-proxies/${archiveFileName}"/>
+        <mkdir dir="${proxy-project}"/>
+        <delete failonerror="false" dir="${proxy-project}/META-INF"/>
+        <copy toDir="${proxy-project}">
+            <zipfileset src="${archivePath}" includes="META-INF/**"/>
+        </copy>
+        <manifest file="${proxy-project}/META-INF/MANIFEST.MF" mode="update">
+            <attribute name="Bundle-Classpath" value="${archiveFileName}"/>
+        </manifest>
+    </target>
 </project>
