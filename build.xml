@@ -83,13 +83,14 @@
         </ceylon-compile>
     </target>
 
-    <target name="generate-source">
+    <target name="generate-source" depends="compile-source-gen">
         <ceylon-run module="source_gen.ceylon.formatter">
             <reposet refid="reposet.run.source-gen"/> 
         </ceylon-run>
     </target>
 
-    <target name="compile-source">
+    <target name="compile-source"
+            description="Compiles the Ceylon Formatter modules to the 'modules' repository without re-generating sources">
         <ceylon-compile executable="${ceylon.executable}"
             verbose="${ceylon.verbosity}"
             encoding="UTF-8"
@@ -98,17 +99,17 @@
         </ceylon-compile>
     </target>
 
-    <target name="compile" depends="compile-source-gen,generate-source,compile-source"
+    <target name="compile" depends="generate-source,compile-source"
             description="Compiles the Ceylon Formatter modules to the 'modules' repository" />
 
     <path id="test-sources-path">
-        <pathelement location="test-source"/>
         <pathelement location="source"/>
+        <pathelement location="test-source"/>
     </path>
     
     <property name="test-sources" refid="test-sources-path"/>
     
-    <target name="compile-test" depends="compile"
+    <target name="compile-test" depends="generate-source"
         description="Compiles the test modules to the 'test-modules' repository" >
         <ceylon-compile executable="${ceylon.executable}"
             src="${test-sources}"
