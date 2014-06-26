@@ -1032,6 +1032,23 @@ shared class FormattingVisitor(
     shared actual void visitMetaLiteral(MetaLiteral that)
             => writeMetaLiteral(fWriter, this, that, null);
     
+    shared actual void visitMethodArgument(MethodArgument that) {
+        value context = fWriter.openContext();
+        that.type.visit(this);
+        that.identifier.visit(this);
+        for (paramList in CeylonIterable(that.parameterLists)) {
+            paramList.visit(this);
+        }
+        if (exists block = that.block) {
+            block.visit(this);
+        } else {
+            if (exists specifier = that.specifierExpression) {
+                specifier.visit(this);
+            }
+            writeSemicolon(fWriter, that.mainEndToken, context);
+        }
+    }
+    
     shared actual void visitMethodDeclaration(MethodDeclaration that) {
         value context = fWriter.openContext();
         visitAnyMethod(that);
