@@ -4,6 +4,9 @@ import com.redhat.ceylon.compiler.typechecker.tree {
     VisitorAdaptor,
     NaturalVisitor
 }
+import com.redhat.ceylon.compiler.typechecker.model {
+    ParameterListModel=ParameterList
+}
 import com.redhat.ceylon.compiler.typechecker.parser {
     CeylonLexer {
         uidentifier=\iUIDENTIFIER,
@@ -52,6 +55,14 @@ shared class FormattingVisitor(
            doc ("<-- space")
            print("<-- no space");"""
     variable Boolean visitingAnnotation = false;
+    
+    "Used to mark parameter lists that have an identifier (parameter lists of classes + methods).
+     
+     Background: Parameter lists of classes and functions should have an indentBefore,
+     but parameter lists of anonymous functions shouldn’t. To distinguish them,
+     we set the model of parameter lists of classes and functions to this object."
+    see (`function visitAnyClass`, `function visitAnyMethod`, `function visitParameterList`)
+    object parameterListWithIdentifier extends ParameterListModel() {}
     
     // initialize TokenStream
     if (exists tokens) { tokens.la(1); }
@@ -130,6 +141,9 @@ shared class FormattingVisitor(
         };
         that.identifier.visit(this);
         that.typeParameterList?.visit(this);
+        if (exists params = that.parameterList) {
+            params.model = parameterListWithIdentifier;
+        }
         that.parameterList?.visit(this);
         that.caseTypes?.visit(this);
         that.extendedType?.visit(this);
@@ -172,6 +186,7 @@ shared class FormattingVisitor(
         that.identifier.visit(this);
         that.typeParameterList?.visit(this);
         for (ParameterList list in CeylonIterable(that.parameterLists)) {
+            list.model = parameterListWithIdentifier;
             list.visit(this);
         }
         that.typeConstraintList?.visit(this);
@@ -1229,7 +1244,7 @@ shared class FormattingVisitor(
         
         value context = fWriter.writeToken {
             that.mainToken; // "("
-            indentBefore = 2;
+            indentBefore = that.model === parameterListWithIdentifier then 2 else 0;
             indentAfter = 1;
             lineBreaksAfter = multiLine then 1..1 else 0..1;
             spaceBefore = options.spaceAfterParamListOpeningParen;
