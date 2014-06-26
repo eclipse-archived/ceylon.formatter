@@ -58,7 +58,7 @@ shared Integer desire(Boolean|Integer desire) {
 shared Range<Integer> noLineBreak = 0..0;
 
 "Used in [[FormattingWriter.fastForward]]."
-abstract class Stop() of stopAndConsume|stopAndDontConsume { shared formal Boolean consume; }
+abstract class Stop() of stopAndConsume | stopAndDontConsume { shared formal Boolean consume; }
 "Stop fast-forwarding and [[consume|org.antlr.runtime::IntStream.consume]] the current token."
 see (`value stopAndDontConsume`)
 object stopAndConsume extends Stop() { consume = true; }
@@ -216,13 +216,13 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         shared formal Integer postIndent;
     }
     
-    interface Element of OpeningElement|ClosingElement {
+    interface Element of OpeningElement | ClosingElement {
         shared formal FormattingContext context;
     }
     interface OpeningElement satisfies Element {}
     interface ClosingElement satisfies Element {}
     
-    shared abstract class Empty() of EmptyOpening|EmptyClosing {}
+    shared abstract class Empty() of EmptyOpening | EmptyClosing {}
     class EmptyOpening(Integer postIndent = 0) extends Empty() satisfies OpeningElement {
         shared actual object context satisfies FormattingContext {
             postIndent = outer.postIndent;

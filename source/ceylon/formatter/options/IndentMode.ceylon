@@ -5,7 +5,7 @@ import ceylon.collection {
 
 "A mode to indent code based on levels of indentation."
 shared abstract class IndentMode()
-        of Spaces|Tabs|Mixed {
+        of Spaces | Tabs | Mixed {
     
     "The width of one indentation level."
     shared formal Integer widthOfLevel;

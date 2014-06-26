@@ -42,7 +42,7 @@ shared class FormattingVisitor(
     "The writer to which the subject is written."
     Writer writer,
     "The options for the formatter that control the format of the written code."
-    FormattingOptions options) extends VisitorAdaptor() satisfies NaturalVisitor&Destroyable {
+    FormattingOptions options) extends VisitorAdaptor() satisfies NaturalVisitor & Destroyable {
     
     FormattingWriter fWriter = FormattingWriter(tokens, writer, options);
     
