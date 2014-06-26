@@ -480,3 +480,8 @@ test
 shared void testClassSpecifiers() {
     testFile("classSpecifiers");
 }
+
+test
+shared void testParamListPreIndent() {
+    testFile("paramListPreIndent");
+}

@@ -1228,6 +1228,7 @@ shared class FormattingVisitor(
         
         value context = fWriter.writeToken {
             that.mainToken; // "("
+            indentBefore = 2;
             indentAfter = 1;
             lineBreaksAfter = multiLine then 1..1 else 0..1;
             spaceBefore = options.spaceAfterParamListOpeningParen;
