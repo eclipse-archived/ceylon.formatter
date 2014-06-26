@@ -293,7 +293,7 @@
         "LineBreak"; "lineBreak"; /* = */ "lf";
     },
     FormattingOption {
-        "Decide whether `else` should be on its own line.
+        "Decide whether `else` and `catch` should be on its own line.
          For example:
          ~~~
          if (something) {

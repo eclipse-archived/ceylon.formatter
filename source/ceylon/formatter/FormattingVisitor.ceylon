@@ -361,6 +361,7 @@ shared class FormattingVisitor(
         fWriter.writeToken {
             that.mainToken; // "catch"
             spaceBefore = true;
+            lineBreaksBefore = options.elseOnOwnLine then 1..1 else 0..0;
         };
         that.catchVariable.visit(this);
         that.block.visit(this);
