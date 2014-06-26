@@ -348,10 +348,9 @@ shared class FormattingVisitor(
         for (item in cases.rest) {
             fWriter.writeToken {
                 "|";
-                spaceBefore = false; // TODO option
-                spaceAfter = false;
                 lineBreaksBefore = noLineBreak;
-                lineBreaksAfter = noLineBreak;
+                spaceBefore = options.spaceAroundSatisfiesOf;
+                spaceAfter = options.spaceAroundSatisfiesOf;
             };
             item.visit(this);
         }
@@ -1407,6 +1406,7 @@ shared class FormattingVisitor(
             spaceAfter = true;
         };
         assert (exists context);
+        value typesContext = fWriter.openContext(2 * options.indentBeforeTypeInfo);
         value types = CeylonIterable(that.types).sequence();
         "Must satisfy at least one type"
         assert (nonempty types);
@@ -1415,12 +1415,12 @@ shared class FormattingVisitor(
             fWriter.writeToken {
                 "&";
                 lineBreaksBefore = noLineBreak;
-                lineBreaksAfter = noLineBreak;
-                spaceBefore = false;
-                spaceAfter = false;
+                spaceBefore = options.spaceAroundSatisfiesOf;
+                spaceAfter = options.spaceAroundSatisfiesOf;
             };
             type.visit(this);
         }
+        // fWriter.closeContext(typesContext); // omitted because it will be closed by context anyway
         fWriter.closeContext(context);
     }
     

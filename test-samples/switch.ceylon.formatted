@@ -15,7 +15,7 @@ void testSwitch() {
     }
 }
 
-abstract class T() of t1|t2|t3 {}
+abstract class T() of t1 | t2 | t3 {}
 object t1 extends T() {}
 object t2 extends T() {}
 object t3 extends T() {}

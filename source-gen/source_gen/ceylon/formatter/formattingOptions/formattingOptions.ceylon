@@ -312,6 +312,22 @@
          }
          ~~~";
         "Boolean"; "elseOnOwnLine"; /* = */ "false";
+    },
+    FormattingOption {
+        "Decide whether there should be spaces around satisfied interfaces and case types.
+         For example:
+         ~~~
+         class MyClass()
+                 satisfies MyInterface&MyOtherInterface
+                 of CaseType1|CaseType2 { ... }
+         ~~~
+         vs.
+         ~~~
+         class MyClass()
+                 satisfies MyInterface & MyOtherInterface
+                 of CaseType1 | CaseType2 { ... }
+         ~~~";
+        "Boolean"; "spaceAroundSatisfiesOf"; /* = */ "true";
     }
 };
 
