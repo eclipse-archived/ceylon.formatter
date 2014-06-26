@@ -496,7 +496,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
          Here, the `Html` constructor and named arguments should be indented; however, in
          ~~~
          Html html
-                 => Html
+                 => Html {
              head = ...;
              body = ...;
          }
