@@ -2,9 +2,7 @@ import ceylon.formatter.options {
     FormattingOptions
 }
 import com.redhat.ceylon.compiler.typechecker.tree {
-    Tree {
-        CompilationUnit
-    }
+    Node
 }
 import org.antlr.runtime {
     TokenStream
@@ -24,10 +22,13 @@ object stdoutWriter satisfies Writer {
     }
 }
 
-"Format the given [[CompilationUnit]] and write it to the given [[Writer]]."
+"Format the given [[CompilationUnit|com.redhat.ceylon.compiler.typechecker.tree::Tree.CompilationUnit]]
+ and write it to the given [[Writer]]."
 shared void format(
-    "A [[CompilationUnit]], e. g. from the Ceylon compiler."
-    CompilationUnit compilationUnit,
+    "A node that you want to format,
+     e. g. a [[CompilationUnit|com.redhat.ceylon.compiler.typechecker.tree::Tree.CompilationUnit]]
+     from the Ceylon compiler."
+    Node node,
     "The options for the formatter. These dictate the line breaking strategy,
      the bracing style, the maximum line length, and much more.
      
@@ -45,12 +46,12 @@ shared void format(
          });
      ~~~"
     FormattingOptions options = FormattingOptions(),
-    "The [[Writer]] to which the formatted [[compilationUnit]] is written.
+    "The [[Writer]] to which the formatted [[node]] is written.
      
      Defaults to standard output."
     Writer output = stdoutWriter,
     "An ANTLR Token Stream from which the `CompilationUnit` was parsed.
-     This only makes sense if you got [[compilationUnit]] from the Ceylon compiler,
+     This only makes sense if you got [[node]] from the Ceylon compiler,
      otherwise you should keep the default value `null`.
      
      Note that you probably do *not* want a [[org.antlr.runtime::CommonTokenStream]]
@@ -60,7 +61,7 @@ shared void format(
     
     variable Throwable? error = null;
     try (formattingVisitor = FormattingVisitor(tokens, output, options)) {
-        compilationUnit.visit(formattingVisitor);
+        node.visit(formattingVisitor);
     } catch (Throwable t) {
         error = t;
         throw t;
