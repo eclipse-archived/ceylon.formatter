@@ -15,6 +15,9 @@ import ceylon.formatter.options {
 import ceylon.file {
     Writer
 }
+import ceylon.collection {
+    StringBuilder
+}
 
 void testLineBreaks(LineBreak option, String lineBreak) {
     value sb = StringBuilder();
