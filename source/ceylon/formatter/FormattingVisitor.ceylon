@@ -45,9 +45,16 @@ shared class FormattingVisitor(
     "The writer to which the subject is written."
     Writer writer,
     "The options for the formatter that control the format of the written code."
-    FormattingOptions options) extends VisitorAdaptor() satisfies NaturalVisitor & Destroyable {
+    FormattingOptions options,
+    "The initial indentation level."
+    Integer initialIndentation = 0)
+        extends VisitorAdaptor()
+        satisfies NaturalVisitor & Destroyable {
     
     FormattingWriter fWriter = FormattingWriter(tokens, writer, options);
+    if (initialIndentation != 0) {
+        fWriter.openContext(initialIndentation);
+    }
     
     """When visiting an annotation, some elements are formatted differently.
        For example:

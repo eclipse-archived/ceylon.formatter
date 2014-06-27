@@ -57,10 +57,15 @@ shared void format(
      Note that you probably do *not* want a [[org.antlr.runtime::CommonTokenStream]]
      (which is what you normally give to the compiler), because that skips comments.
      Use [[org.antlr.runtime::BufferedTokenStream]] instead."
-    TokenStream? tokens = null) {
+    TokenStream? tokens = null,
+    "The initial indentation to use.
+     
+     You probably shouldn’t use this when [[node]] is a `CompilationUnit`,
+     but it’s useful when formatting other nodes."
+    Integer initialIndentation = 0) {
     
     variable Throwable? error = null;
-    try (formattingVisitor = FormattingVisitor(tokens, output, options)) {
+    try (formattingVisitor = FormattingVisitor(tokens, output, options, initialIndentation)) {
         node.visit(formattingVisitor);
     } catch (Throwable t) {
         error = t;
