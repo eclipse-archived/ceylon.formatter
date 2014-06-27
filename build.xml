@@ -33,7 +33,7 @@
     </path>
     
     <typedef resource="com/redhat/ceylon/ant/antlib.xml" classpathref="ant-tasks"/>
-
+    
     <reposet id="reposet.run.source-gen">
         <repo url="${src-gen.repo}"/>
     </reposet>
@@ -70,6 +70,8 @@
         <delete dir="${out.repo}"/>
         <delete dir="${test.repo}"/>
         <delete dir="${osgi.dist}"/>
+        <delete dir="source/ceylon/formatter/options" includesfile="source/ceylon/formatter/options/.gitignore"/>
+        <delete file="source/ceylon/formatter/options/.gitignore"/> <!-- the .gitignore includes itself, but ant doesn't delete it -->
     </target>
     
     <target name="compile-source-gen">
