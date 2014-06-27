@@ -37,7 +37,7 @@ import ceylon.collection {
 
 "A [[com.redhat.ceylon.compiler.typechecker.tree::Visitor]] that writes a formatted version of the
  element (typically a [[com.redhat.ceylon.compiler.typechecker.tree::Tree.CompilationUnit]]) to a
- [[java.io::Writer]]."
+ [[Writer]]."
 shared class FormattingVisitor(
     "The [[TokenStream]] from which the element was parsed;
      this is mainly needed to preserve comments, as they're not present in the AST."
