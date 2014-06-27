@@ -269,6 +269,8 @@ shared class FormattingVisitor(
             that.mainToken;
             spaceBefore = true;
             spaceAfter = true;
+            indentBefore = 2;
+            nextIndentBefore = 2;
         };
         that.rightTerm.visit(this);
     }
