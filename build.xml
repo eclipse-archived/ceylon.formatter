@@ -70,8 +70,13 @@
         <delete dir="${out.repo}"/>
         <delete dir="${test.repo}"/>
         <delete dir="${osgi.dist}"/>
-        <delete dir="source/ceylon/formatter/options" includesfile="source/ceylon/formatter/options/.gitignore"/>
-        <delete file="source/ceylon/formatter/options/.gitignore"/> <!-- the .gitignore includes itself, but ant doesn't delete it -->
+        <if>
+          <available file="source/ceylon/formatter/options/.gitignore"/>
+          <then>
+            <delete dir="source/ceylon/formatter/options" includesfile="source/ceylon/formatter/options/.gitignore"/>
+            <delete file="source/ceylon/formatter/options/.gitignore"/> <!-- the .gitignore includes itself, but ant doesn't delete it -->
+          </then>
+        </if>
     </target>
     
     <target name="compile-source-gen">
