@@ -101,7 +101,8 @@
         <ceylon-compile executable="${ceylon.executable}"
             verbose="${ceylon.verbosity}"
             encoding="UTF-8"
-            pack200="true">
+            pack200="true"
+            out="${out.repo}">
             <moduleset refid="modules.source"/>
         </ceylon-compile>
     </target>
