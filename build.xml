@@ -283,4 +283,14 @@
             <attribute name="Bundle-Classpath" value="${archiveFileName}"/>
         </manifest>
     </target>
+    
+    <target name="format" depends="compile"
+            description="formats the formatter with itself">
+        <ceylon-run module="ceylon.formatter">
+            <reposet refid="reposet.compile.source"/>
+            <arg value="source"/>
+            <arg value="test-source"/>
+            <arg value="source-gen"/>
+        </ceylon-run>
+    </target>
 </project>
