@@ -980,7 +980,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         String[] lines = token.text.split {
             splitting = '\n'.equals;
             groupSeparators = false; // keep empty lines
-        }.sequence();
+        }.collect((String s) => s.trimTrailing('\r'.equals));
         String? firstLine = lines.first;
         "The token must not be empty"
         assert (exists firstLine);
