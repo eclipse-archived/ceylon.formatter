@@ -1832,12 +1832,17 @@ shared class FormattingVisitor(
             => writeMetaLiteral(fWriter, this, that, "given");
     
     shared actual void visitTypeSpecifier(TypeSpecifier that) {
+        /*
+         used for aliasy things (class =>, interface =>, alias =>)
+         and for default type arguments
+         */
         fWriter.writeToken {
-            that.mainToken; // "=>"
+            that.mainToken; // "=>" or "="
             spaceBefore = true;
             spaceAfter = true;
-            lineBreaksBefore = noLineBreak;
+            indentBefore = 2;
             indentAfter = 1;
+            lineBreaksBefore = that.mainToken.text == "=>" then 0..1 else noLineBreak;
         };
         that.type.visit(this);
     }
