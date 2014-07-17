@@ -92,7 +92,7 @@ class Generator() satisfies Destroyable {
         writer.write(
             "\"A superclass of [[FormattingOptions]] where attributes are optional.
               
-              The indented use is that users take a \\\"default\\\" `FormattingOptions` object and apply some
+              The intended use is that users take a \\\"default\\\" `FormattingOptions` object and apply some
               `SparseFormattingOptions` on top of it using [[CombinedOptions]]; this way, they don't have
               to specify every option each time that they need to provide `FormattingOptions` somewhere.\"\n");
         writer.write("shared class SparseFormattingOptions(");
