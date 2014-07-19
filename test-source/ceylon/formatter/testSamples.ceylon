@@ -488,3 +488,8 @@ test
 shared void testParamListPreIndent() {
     testFile("paramListPreIndent");
 }
+
+test
+shared void testLineCommentLineBreakCollision() {
+    testFile("lineCommentLineBreakCollision");
+}
