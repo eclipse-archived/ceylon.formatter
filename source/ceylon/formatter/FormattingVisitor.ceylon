@@ -1037,7 +1037,7 @@ shared class FormattingVisitor(
             lineBreaksBefore = visitingAnnotation then 0..3 else 0..1;
         };
         if (exists Token endToken = that.mainEndToken) {
-            throw Error("Literal has end token ('``endToken``')! Investigate"); // breakpoint here
+            throw AssertionError("Literal has end token ('``endToken``')! Investigate"); // breakpoint here
         }
     }
     

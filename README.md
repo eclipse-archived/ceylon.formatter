@@ -40,7 +40,7 @@ IDE integration is planned, and a first version will hopefully be finished in ti
 Contact
 -------
 
-If you have found a bug or want to suggest a feature, [create an issue](https://github.com/lucaswerkmeister/ceylon.formatter/issues/new). You can also send me an e-mail (address is on my Github page).
+If you have found a bug or want to suggest a feature, [create an issue](https://github.com/ceylon/ceylon.formatter/issues/new). You can also send me an e-mail (address is on my Github page).
 
 License
 -------

@@ -382,16 +382,19 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
          the intersection will be applied between the comments and the next token, while without it, the intersection
          will be applied between the latest token and the comments."
         Boolean fastForwardFirst = true) {
+        variable Boolean previousTokenWasLineComment = false;
         if (fastForwardFirst) {
             fastForward((AntlrToken? current) {
                     if (exists current) {
                         assert (exists lineBreaks = givenLineBreaks);
                         if (current.type == lineComment || current.type == multiComment) {
+                            previousTokenWasLineComment = true;
                             return fastForwardComment(current);
                         } else if (current.type == ws) {
                             givenLineBreaks = lineBreaks + current.text.count('\n'.equals);
                             return empty;
                         } else {
+                            previousTokenWasLineComment = false;
                             return { stopAndDontConsume }; // end fast-forwarding
                         }
                     } else {
@@ -401,7 +404,24 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         }
         value inc1 = currentlyAllowedLinebreaks.decreasing then currentlyAllowedLinebreaks.reversed else currentlyAllowedLinebreaks;
         value inc2 = other.decreasing then other.reversed else other;
-        value intersect = max { inc1.first, inc2.first }..min { inc1.last, inc2.last };
+        variable value intersect = max { inc1.first, inc2.first }..min { inc1.last, inc2.last };
+        if (intersect.decreasing) {
+            if (previousTokenWasLineComment) {
+                /*
+                 There is a line comment, which means that there *must* be a
+                 line break afterwards. However, the other line breaks don’t
+                 want to allow that. Resolve manually.
+                */
+                assert (other == noLineBreak);
+                /*
+                 Note: in theory, it’s also possible that other wants *at least*
+                 even *more* line breaks that lineBreaksAfterLineComment wants
+                 to allow *at most*. But it’s correct to throw an AssertionError
+                 in that crazy case :)
+                 */
+                intersect = options.lineBreaksAfterLineComment;
+            }
+        }
         assert (!intersect.decreasing);
         currentlyAllowedLinebreaks = currentlyAllowedLinebreaks.decreasing then intersect.last..intersect.first else intersect;
     }
@@ -560,6 +580,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
          handle the part before this token:
          fast-forward, intersect allowed line breaks, write out line breaks
          */
+        variable Boolean previousTokenWasLineComment = false;
         fastForward((AntlrToken? current) {
                 if (exists current) {
                     assert (exists lineBreaks = givenLineBreaks);
@@ -568,6 +589,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                          we treat comments as regular tokens
                          just with the difference that their before- and afterToken range isn’t given, but an option instead
                          */
+                        previousTokenWasLineComment = true;
                         return fastForwardComment(current);
                     } else if (current.type == ws) {
                         givenLineBreaks = lineBreaks + current.text.count('\n'.equals);
@@ -603,7 +625,12 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                     return { stopAndDontConsume }; // end fast-forwarding
                 }
             });
-        intersectAllowedLineBreaks(lineBreaksBefore, false);
+        if (previousTokenWasLineComment && lineBreaksBefore == noLineBreak) {
+            // Must have line breaks after a line comment
+            intersectAllowedLineBreaks(0..1, false);
+        } else {
+            intersectAllowedLineBreaks(lineBreaksBefore, false);
+        }
         for (i in 0:lineBreakAmount(givenLineBreaks)) {
             tokenQueue.add(LineBreak());
         }
