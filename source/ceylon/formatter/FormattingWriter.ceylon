@@ -193,7 +193,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
                 writer.writeLine();
                 m_CurrentWidth = 0;
             } else {
-                for (char in lines.last else "") {
+                for (char in (lines.last else "")) {
                     if (char == '\t') {
                         m_CurrentWidth = (m_CurrentWidth % tabWidth == 0)
                                 then m_CurrentWidth + tabWidth
