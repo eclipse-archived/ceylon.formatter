@@ -210,6 +210,10 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
             writer.write(options.lineBreak.string);
             m_CurrentWidth = 0;
         }
+        
+        shared actual void writeBytes({Byte*} bytes) {
+            throw AssertionError("Can’t write bytes");
+        }
     }
     
     shared interface FormattingContext {

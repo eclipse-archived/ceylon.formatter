@@ -34,6 +34,10 @@ void testLineBreaks(LineBreak option, String lineBreak) {
             "FormattingWriter shouldn’t rely on Writer’s line break handling!"
             assert (false);
         }
+        
+        shared actual void writeBytes({Byte*} bytes) {
+            throw AssertionError("Can’t write bytes");
+        }
     }
     try (fWriter = FormattingWriter(null, writer, FormattingOptions {
             lineBreak = option;

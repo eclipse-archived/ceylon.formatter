@@ -25,6 +25,7 @@ shared void testDefaultLineBreaks() {
         shared actual void flush() {}
         shared actual void write(String string) {}
         shared actual void writeLine(String line) {}
+        shared actual void writeBytes({Byte*} bytes) {}
     }
     FormattingWriter w = FormattingWriter(null, writer, FormattingOptions());
     

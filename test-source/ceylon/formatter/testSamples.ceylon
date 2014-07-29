@@ -47,6 +47,9 @@ void testFile(String filename) {
             shared actual void write(String string) => content.append(string);
             shared actual void writeLine(String line) => content.append(line).appendNewline();
             shared actual String string => content.string;
+            shared actual void writeBytes({Byte*} bytes) {
+                throw AssertionError("Can’t write bytes");
+            }
         }
         CeylonLexer lexer = CeylonLexer(ANTLRFileStream(fullFilename));
         CompilationUnit cu = CeylonParser(CommonTokenStream(lexer)).compilationUnit();

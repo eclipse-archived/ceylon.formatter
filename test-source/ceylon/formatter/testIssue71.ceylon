@@ -56,6 +56,9 @@ shared void testIssue71() {
                 b1.append(string);
             }
             shared actual void writeLine(String line) { assert (false); }
+            shared actual void writeBytes({Byte*} bytes) {
+                throw AssertionError("Can’t write bytes");
+            }
         }
         format(cu, FormattingOptions { lineBreak = lf; }, w1, BufferedTokenStream(lexer));
         assertFalse(b1.string.contains("\r\n"));
@@ -68,6 +71,9 @@ shared void testIssue71() {
                 b2.append(string);
             }
             shared actual void writeLine(String line) { assert (false); }
+            shared actual void writeBytes({Byte*} bytes) {
+                throw AssertionError("Can’t write bytes");
+            }
         }
         format(cu, FormattingOptions { lineBreak = crlf; }, w2, BufferedTokenStream(lexer));
         value string = b2.string;
