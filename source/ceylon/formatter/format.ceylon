@@ -20,6 +20,9 @@ object stdoutWriter satisfies Writer {
     shared actual void writeLine(String line) {
         process.writeLine(line);
     }
+    shared actual void writeBytes({Byte*} bytes) {
+        throw AssertionError("Can’t write bytes");
+    }
 }
 
 "Format the given [[CompilationUnit|com.redhat.ceylon.compiler.typechecker.tree::Tree.CompilationUnit]]

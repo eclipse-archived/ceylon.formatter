@@ -325,13 +325,7 @@ see (`function parseTranslations`)
         return ret.sequence();
     } else {
         // no input or output files, pipe mode
-        object sysoutWriter satisfies Writer {
-            shared actual void close() => flush();
-            shared actual void flush() => process.flush();
-            shared actual void write(String string) => process.write(string);
-            shared actual void writeLine(String line) => process.writeLine(line);
-        }
-        return [[ANTLRInputStream(sysin), () => sysoutWriter, noop]];
+        return [[ANTLRInputStream(sysin), () => stdoutWriter, noop]];
     }
 }
 
