@@ -52,7 +52,7 @@ shared class Spaces(spacesPerLevel) extends IndentMode() {
     
     widthOfLevel = spacesPerLevel;
     
-    shared actual variable String string = spacesPerLevel.string + " spaces";
+    shared actual String string = spacesPerLevel.string + " spaces";
     
     object cache satisfies Cached<String> {
         shared actual MutableMap<Integer,String> cache = HashMap<Integer,String> {
@@ -82,7 +82,7 @@ shared class Tabs(width) extends IndentMode() {
     
     widthOfLevel = width;
     
-    shared actual variable String string = widthOfLevel.string + "-wide tabs";
+    shared actual String string = widthOfLevel.string + "-wide tabs";
     
     object cache satisfies Cached<String> {
         shared actual MutableMap<Integer,String> cache = HashMap<Integer,String> {
@@ -128,7 +128,7 @@ shared class Mixed(tabs, spaces) extends IndentMode() {
     
     widthOfLevel = spaces.widthOfLevel;
     
-    shared actual variable String string = "mix " + tabs.string + ", " + spaces.string;
+    shared actual String string = "mix " + tabs.string + ", " + spaces.string;
     
     MutableMap<Integer,String> cache = HashMap<Integer,String> { 0->"" };
     
