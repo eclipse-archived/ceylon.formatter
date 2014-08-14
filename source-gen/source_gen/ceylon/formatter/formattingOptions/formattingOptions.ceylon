@@ -77,7 +77,7 @@
            
            Don’t do that. (You can already see in this small example how the combination
            "shared by" can be potentially confusing.)""";
-        "All|{String*}"; "inlineAnnotations"; /* = */ """{ "abstract", "actual", "annotation", "default", "final", "formal", "native", "optional", "shared", "variable" }""";
+        "All|{String*}"; "inlineAnnotations"; /* = */ """{ "abstract", "actual", "annotation", "default", "final", "formal", "late", "native", "optional", "shared", "variable" }""";
     },
     FormattingOption {
         """Decide if there should be a space in front of a positional argument list for a method or class.
