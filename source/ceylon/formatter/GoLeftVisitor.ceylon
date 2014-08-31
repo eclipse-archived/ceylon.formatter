@@ -13,10 +13,13 @@ abstract class GoLeftVisitor() extends VisitorAdaptor() {
             => that.leftTerm.visit(this);
     
     shared actual void visitElementRange(ElementRange that)
-            => that.lowerBound.visit(this);
+            => that.lowerBound?.visit(this);
     
     shared actual void visitEntryOp(EntryOp that)
             => that.leftTerm.visit(this);
+    
+    shared actual void visitIndexExpression(IndexExpression that)
+            => that.primary.visit(this);
     
     shared actual void visitInvocationExpression(InvocationExpression that)
             => that.primary.visit(this);
