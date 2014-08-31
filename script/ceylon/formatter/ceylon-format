@@ -1,0 +1,42 @@
+USAGE='[OPTION]... ( FILE [--and FILE]... [--to FILE] )...'
+DESCRIPTION='format Ceylon source code'
+LONG_USAGE='    ceylon run ceylon.formatter source
+
+or, if you’re worried about it breaking your source code (which shouldn’t happen –
+if anything bad happens, error recovery kicks in and the original file is destroyed)
+or you just want to test it out:
+
+    ceylon run ceylon.formatter source --to source-formatted
+
+You can also format multiple folders at the same time:
+
+    ceylon run ceylon.formatter source --and test-source --to formatted
+
+which will recreate the ‘source’ and ‘test-source’ folders inside the new ‘formatted’ folder.
+
+OPTIONS
+
+--help
+    Print this help message.
+
+--version
+    Print version information. The first line is always just the module name and version
+    in the format that ‘ceylon run’ understands (“ceylon.formatter/x.y.z”), which might be
+    useful for scripts.
+
+--${option name}=${option value}
+    Set a formatting option. See the documentation of the FormattingOptions class for a list of
+    options. The most useful ones are:
+    
+    --maxLineLength
+        The maximum line length, or “unlimited”.
+    
+    --indentMode
+        The indentation mode. Syntax: “x spaces” or “y-wide tabs” or “mix x-wide tabs, y spaces”.
+    
+    --lineBreak
+        “lf”, “crlf”, or “os” for the operating system’s native line breaks.'
+
+. $CEYLON_HOME/bin/ceylon-sh-setup
+
+$CEYLON run ceylon.formatter/1.1.0 "$@"
