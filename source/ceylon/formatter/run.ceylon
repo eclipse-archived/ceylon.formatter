@@ -23,6 +23,7 @@ import ceylon.file {
     Path,
     parsePath,
     Directory,
+    ExistingResource,
     File,
     Nil,
     Visitor
@@ -311,7 +312,7 @@ see (`function parseTranslations`)
                     }
                     value targetFile = targetResource.createFile();
                     ret.add([stream, () => targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
-                } else {
+                } else if (parsePath(sources.first).resource is ExistingResource) {
                     try {
                         createParentDirectories(targetResource);
                     } catch (AssertionError e) {
