@@ -2,13 +2,14 @@ import java.lang {
     JString=String
 }
 import com.redhat.ceylon.common.config {
-    CeylonConfig {
-        getConfig=get
-    }
+    ConfigFinder
+}
+import java.io {
+    JFile=File
 }
 
 shared FormattingOptions configOptions() {
-    value config = getConfig();
+    value config = ConfigFinder("format.default", "ceylon.format").loadDefaultConfig(JFile("."));
     if (config.isSectionDefined("formatter")) {
         return parseFormattingOptions {
             for (JString key in assertNonnulls(config.getOptionNames("formatter").array))
