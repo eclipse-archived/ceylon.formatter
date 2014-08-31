@@ -560,7 +560,6 @@ shared class FormattingVisitor(
         fWriter.writeToken {
             that.mainToken; // "else"
             lineBreaksBefore = options.elseOnOwnLine then 1..1 else 0..0;
-            lineBreaksAfter = noLineBreak;
         };
         that.visitChildren(this);
     }
@@ -1673,7 +1672,6 @@ shared class FormattingVisitor(
         fWriter.writeToken {
             that.mainToken; // "else"
             lineBreaksBefore = 1..1;
-            lineBreaksAfter = noLineBreak;
         };
         that.visitChildren(this);
     }
