@@ -257,12 +257,12 @@ class Generator() satisfies Destroyable {
     }
     
     void generateEnumClass(Writer writer, Enum enum) {
-        writer.writeLine("shared abstract class ``enum.classname``() of ``"|".join(enum.instances)`` {}");
+        writer.writeLine("shared abstract class ``enum.classname``(shared actual String string) of ``"|".join(enum.instances)`` {}");
         writer.writeLine();
     }
     
     void generateEnumInstance(Writer writer, String classname, String instance) {
-        writer.writeLine("shared object ``instance`` extends ``classname``() {}");
+        writer.writeLine("shared object ``instance`` extends ``classname``(\"``instance``\") {}");
     }
     
     shared actual Anything destroy(Throwable? error) => gitignore.destroy(error);

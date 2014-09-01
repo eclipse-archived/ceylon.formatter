@@ -26,6 +26,12 @@ shared abstract class LineBreakStrategy() {
         "The maximum line length."
         see (`value FormattingOptions.maxLineLength`)
         Integer maxLineLength);
+    
+    "A string representation of the line break strategy, suitable
+     for being saved and loaded via [[saveProfile]] and [[loadProfile]].
+     [[parseLineBreakStrategy]] should be able to parse it."
+    see (`function parseLineBreakStrategy`)
+    shared actual formal String string;
 }
 
 shared LineBreakStrategy? parseLineBreakStrategy(String string) {

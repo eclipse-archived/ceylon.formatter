@@ -207,7 +207,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         
         shared actual void writeLine(String line) {
             writer.write(line);
-            writer.write(options.lineBreak.string);
+            writer.write(options.lineBreak.text);
             m_CurrentWidth = 0;
         }
         

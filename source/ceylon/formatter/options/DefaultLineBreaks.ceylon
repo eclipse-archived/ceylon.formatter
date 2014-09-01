@@ -3,6 +3,8 @@ import ceylon.formatter {
 }
 class DefaultLineBreaks() extends LineBreakStrategy() {
     
+    string => "default";
+    
     shared actual Integer? lineBreakLocation(FormattingWriter.QueueElement[] elements, Integer offset, Integer maxLineLength) {
         "Only the [[FormattingWriter.Token]] elements from [[elements]].
          
