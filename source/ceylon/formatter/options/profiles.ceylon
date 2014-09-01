@@ -13,13 +13,13 @@ import ceylon.language.meta.declaration {
     ValueDeclaration
 }
 
-CeylonConfig findConfig(String profile, Boolean inherit) {
+CeylonConfig findConfig(String profile, Boolean inherit, String baseDir) {
     value configFinder = ConfigFinder("format.``profile``", "ceylon.format");
     CeylonConfig config;
     if (inherit) {
-        config = configFinder.loadDefaultConfig(JFile("."));
+        config = configFinder.loadDefaultConfig(JFile(baseDir));
     } else {
-        config = configFinder.loadFirstConfig(JFile("."));
+        config = configFinder.loadFirstConfig(JFile(baseDir));
     }
     return config;
 }
@@ -42,7 +42,7 @@ CeylonConfig findConfig(String profile, Boolean inherit) {
    from the profile file in the user and system-wide configuration
    directories (as per the default Ceylon configuration mechanism);
    otherwise, only the options from the profile file itself are used."""
-shared FormattingOptions loadProfile(profile = "default", inherit = true) {
+shared FormattingOptions loadProfile(profile = "default", inherit = true, baseDir = ".") {
     """The profile name.
        
        The options are loaded from a configuration file with the name
@@ -60,8 +60,13 @@ shared FormattingOptions loadProfile(profile = "default", inherit = true) {
        By default, options are inherited; however, certain users (for example,
        an IDE) might want to disable this."""
     Boolean inherit;
+    "The base directory (e. g., the project directory.)
+     
+     (The parent of the `.ceylon` directory, *not* that
+     directory itself!)"
+    String baseDir;
     
-    value config=findConfig(profile, inherit);
+    value config = findConfig(profile, inherit, baseDir);
     if (config.isSectionDefined("formatter")) {
         return parseFormattingOptions {
             for (JString key in assertNonnulls(config.getOptionNames("formatter").array))
@@ -80,15 +85,20 @@ shared FormattingOptions loadProfile(profile = "default", inherit = true) {
  For more informations on profiles, see the
  [[loadProfile]] documentation."
 see (`function loadProfile`)
-shared void saveProfile(profile, name = "default") {
+shared void saveProfile(profile, name = "default", baseDir = ".") {
     "The formatting options to save.
      
      (Only non-[[null]] options will be saved.)"
     SparseFormattingOptions profile;
     "The profile name."
     String name;
+    "The base directory (e. g., the project directory.)
+     
+     (The parent of the `.ceylon` directory, *not* that
+     directory itself!)"
+    String baseDir;
     
-    value config = findConfig(name, false);
+    value config = findConfig(name, false, baseDir);
     for (declaration in `class SparseFormattingOptions`.declaredMemberDeclarations<ValueDeclaration>()) {
         String optionName = declaration.name;
         value optionValue = declaration.memberGet(profile);
