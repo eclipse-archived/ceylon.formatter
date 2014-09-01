@@ -187,6 +187,16 @@
         
     </target>
 
+    <target name="install"
+            depends="publish">
+        <ceylon-plugin mode="pack">
+            <moduleset refid="modules.source"/>
+        </ceylon-plugin>
+        <ceylon-plugin mode="install" force="true">
+            <moduleset refid="modules.source"/>
+        </ceylon-plugin>
+    </target>
+
     <target name="copyModuleArchiveForOSGI">
         <loadproperties>
             <zipentry zipfile="${currentFile}" name="META-INF/MANIFEST.MF"/>
