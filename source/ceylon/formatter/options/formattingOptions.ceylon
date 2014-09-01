@@ -122,7 +122,7 @@ shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = pro
         profileName = null;
     }
     
-    variable FormattingOptions baseOptions = configOptions(profileName else configProfileName() else "default");
+    variable FormattingOptions baseOptions = loadProfile(profileName else configProfileName() else "default");
     
     value options = VariableOptions(baseOptions);
     value remaining = LinkedList<String>();

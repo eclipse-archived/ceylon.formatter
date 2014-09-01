@@ -27,7 +27,7 @@ import java.io {
    from the profile file in the user and system-wide configuration
    directories (as per the default Ceylon configuration mechanism);
    otherwise, only the options from the profile file itself are used."""
-shared FormattingOptions configOptions(profile = "default", inherit = true) {
+shared FormattingOptions loadProfile(profile = "default", inherit = true) {
     """The profile name.
        
        The options are loaded from a configuration file with the name
@@ -68,7 +68,7 @@ shared FormattingOptions configOptions(profile = "default", inherit = true) {
 
 "Loads the profile name from the Ceylon configuration
  (key `formattool.profile`)."
-see (`function configOptions`)
+see (`function loadProfile`)
 shared String? configProfileName()
         => CeylonConfig.get("formattool.profile");
 
