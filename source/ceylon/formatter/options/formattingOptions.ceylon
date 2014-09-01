@@ -108,14 +108,22 @@ shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = pro
         process.exit(0);
     }
     
-    variable FormattingOptions baseOptions = configOptions();
-    
     String[] splitArguments = concatenate(*arguments.map((String s) {
                 if (exists index = s.firstIndexWhere('='.equals)) {
                     return [s[... index - 1], s[index + 1 ...]];
                 }
                 return [s];
             }));
+    
+    String? profileName;
+    if (exists profileArgumentIndex = splitArguments.firstIndexWhere("--profile".equals)) {
+        profileName = splitArguments[profileArgumentIndex + 1];
+    } else {
+        profileName = null;
+    }
+    
+    variable FormattingOptions baseOptions = configOptions(profileName else configProfileName() else "default");
+    
     value options = VariableOptions(baseOptions);
     value remaining = LinkedList<String>();
     
@@ -127,6 +135,8 @@ shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = pro
             if (option == "--") {
                 remaining.addAll(splitArguments[(i + 1)...]);
                 break;
+            } else if (optionName == "profile") {
+                i++; // skip profile name
             } else if (optionName.startsWith("no-")) {
                 try {
                     parseFormattingOption(optionName["no-".size...], "false", options);
