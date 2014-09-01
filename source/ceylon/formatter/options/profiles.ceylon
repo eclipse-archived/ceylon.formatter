@@ -3,10 +3,25 @@ import java.lang {
 }
 import com.redhat.ceylon.common.config {
     CeylonConfig,
-    ConfigFinder
+    ConfigFinder,
+    ConfigWriter
 }
 import java.io {
     JFile=File
+}
+import ceylon.language.meta.declaration {
+    ValueDeclaration
+}
+
+CeylonConfig findConfig(String profile, Boolean inherit) {
+    value configFinder = ConfigFinder("format.``profile``", "ceylon.format");
+    CeylonConfig config;
+    if (inherit) {
+        config = configFinder.loadDefaultConfig(JFile("."));
+    } else {
+        config = configFinder.loadFirstConfig(JFile("."));
+    }
+    return config;
 }
 
 """Loads formatting options from the given profile.
@@ -46,13 +61,7 @@ shared FormattingOptions loadProfile(profile = "default", inherit = true) {
        an IDE) might want to disable this."""
     Boolean inherit;
     
-    value configFinder = ConfigFinder("format.``profile``", "ceylon.format");
-    CeylonConfig config;
-    if (inherit) {
-        config = configFinder.loadDefaultConfig(JFile("."));
-    } else {
-        config = configFinder.loadFirstConfig(JFile("."));
-    }
+    value config=findConfig(profile, inherit);
     if (config.isSectionDefined("formatter")) {
         return parseFormattingOptions {
             for (JString key in assertNonnulls(config.getOptionNames("formatter").array))
@@ -64,6 +73,36 @@ shared FormattingOptions loadProfile(profile = "default", inherit = true) {
     } else {
         return FormattingOptions();
     }
+}
+
+"Saves formatting options to the given profile.
+ 
+ For more informations on profiles, see the
+ [[loadProfile]] documentation."
+see (`function loadProfile`)
+shared void saveProfile(profile, name = "default") {
+    "The formatting options to save.
+     
+     (Only non-[[null]] options will be saved.)"
+    SparseFormattingOptions profile;
+    "The profile name."
+    String name;
+    
+    value config = findConfig(name, false);
+    for (declaration in `class SparseFormattingOptions`.declaredMemberDeclarations<ValueDeclaration>()) {
+        String optionName = declaration.name;
+        value optionValue = declaration.memberGet(profile);
+        if (exists optionValue) {
+            String string;
+            if (is {Object*} optionValue, !optionValue is Range<Integer>) {
+                string = " ".join(optionValue.map(Object.string));
+            } else {
+                string = optionValue.string;
+            }
+            config.setOption("formatter.``optionName``", string);
+        }
+    }
+    ConfigWriter.write(config, JFile(".ceylon/format.``name``"));
 }
 
 "Loads the profile name from the Ceylon configuration
