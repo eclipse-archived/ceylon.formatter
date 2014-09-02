@@ -274,8 +274,8 @@
         </exec>
     </target>
 
-    <target name="osgi" depends="compile-source,osgi-quick"/>
-    <target name="osgi-p2" depends="compile-source,osgi-p2-quick"/>
+    <target name="osgi" depends="compile,osgi-quick"/>
+    <target name="osgi-p2" depends="compile,osgi-p2-quick"/>
 
     <target name="ide" depends="osgi-p2"/>
     <target name="ide-quick" depends="osgi-p2-quick">
