@@ -804,7 +804,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         Integer? index;
         if (is Integer length = options.maxLineLength) {
             variable Integer offset = options.indentMode.indent(
-                tokenStack.fold(0, (Integer partial, FormattingContext elem) => partial + elem.postIndent)
+                tokenStack.fold(0)((partial, elem) => partial + elem.postIndent)
             ).size;
             if (is Token firstToken = tokenQueue.find((QueueElement elem) => elem is Token), firstToken.preIndent != 0) {
                 offset += firstToken.preIndent;
@@ -982,8 +982,8 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         if (countingWriter.currentWidth > 0) {
             return;
         }
-        Integer indentLevel = tokenStack.fold(0,
-            (Integer partial, FormattingContext elem) => partial + elem.postIndent);
+        Integer indentLevel = tokenStack.fold(0)
+            ((partial, elem) => partial + elem.postIndent);
         countingWriter.write(options.indentMode.indent(indentLevel));
     }
     
