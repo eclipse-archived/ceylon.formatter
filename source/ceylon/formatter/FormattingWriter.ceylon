@@ -1167,14 +1167,12 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
     
     "Enqueue a line break if the last queue element isn’t a line break, then flush the queue."
     shared actual void destroy(Throwable? error) {
-        if (!isEmpty) {
-            writeToken {
-                ""; // empty token, big effect: fastForward again, comments, newlines, etc.
-                lineBreaksBefore = 1..1;
-                lineBreaksAfter = 0..0;
-                spaceBefore = false;
-                spaceAfter = false;
-            };
-        }
+        writeToken {
+            ""; // empty token, big effect: fastForward again, comments, newlines, etc.
+            lineBreaksBefore = isEmpty then 0..0 else 1..1;
+            lineBreaksAfter = 0..0;
+            spaceBefore = false;
+            spaceAfter = false;
+        };
     }
 }
