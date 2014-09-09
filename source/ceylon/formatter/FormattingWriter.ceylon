@@ -982,8 +982,7 @@ shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOpti
         if (countingWriter.currentWidth > 0) {
             return;
         }
-        Integer indentLevel = tokenStack.fold(0)
-            ((partial, elem) => partial + elem.postIndent);
+        Integer indentLevel = tokenStack.fold(0)((partial, elem) => partial + elem.postIndent);
         countingWriter.write(options.indentMode.indent(indentLevel));
     }
     
