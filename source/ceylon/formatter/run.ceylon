@@ -45,36 +45,6 @@ void recoveryOnError(ANTLRFileStream stream, File file)(Throwable t) {
     }
 }
 
-"Creates all parent directories in a path (but not the [[nil]] resource itself)."
-void createParentDirectories(Nil nil) {
-    value parts = nil.path.elementPaths;
-    assert (nonempty parts);
-    if (parts.size == 1) {
-        return;
-    }
-    value initial = parts.first.resource;
-    assert (is Directory|Nil initial);
-    variable Directory current;
-    switch (initial)
-    case (is Directory) {
-        current = initial;
-    }
-    case (is Nil) {
-        current = initial.createDirectory();
-    }
-    for (part in parts.rest[... parts.size - 3]) {
-        value next = current.path.childPath(part).resource.linkedResource;
-        assert (is Directory|Nil next);
-        switch (next)
-        case (is Directory) {
-            current = next;
-        }
-        case (is Nil) {
-            current = next.createDirectory();
-        }
-    }
-}
-
 "Determines the common root of several paths.
  For example, the common root of `a/b/c` and `a/b/d` is `a/b`,
  the common root of `/a/b/c` and `/a/d/e` is `/a`
@@ -198,13 +168,7 @@ Path commonRoot(
                     targetFile = target;
                 }
                 case (is Nil) {
-                    try {
-                        createParentDirectories(target);
-                    } catch (AssertionError e) {
-                        process.writeErrorLine("Can’t create target file '``target.path``'!");
-                        return;
-                    }
-                    targetFile = target.createFile();
+                    targetFile = target.createFile { includingParentDirectories = true; };
                 }
                 case (is Directory) {
                     process.writeErrorLine("Can’t format file '``source``' to target directory '``target.path``'!");
@@ -257,13 +221,7 @@ see (`function parseTranslations`)
                 ret.addAll(translateSingleSource(source, root, targetResource));
             }
             case (is Nil) {
-                try {
-                    createParentDirectories(targetResource);
-                } catch (AssertionError e) {
-                    process.writeErrorLine("Can’t create target directory '``targetPath``'!");
-                    continue;
-                }
-                ret.addAll(translateSingleSource(source, root, targetResource.createDirectory()));
+                ret.addAll(translateSingleSource(source, root, targetResource.createDirectory { includingParentDirectories = true; }));
             }
             case (is File) {
                 process.writeErrorLine("Can’t format source '``source``' to target file '``targetPath``'!");
@@ -305,20 +263,10 @@ see (`function parseTranslations`)
                 if (is File sourceFile = parsePath(sources.first).resource.linkedResource, sources.size == 1) {
                     // single file to single file
                     value stream = ANTLRFileStream(sources.first);
-                    try {
-                        createParentDirectories(targetResource);
-                    } catch (AssertionError e) {
-                        process.writeErrorLine("Can’t create target file '``target``'!");
-                    }
-                    value targetFile = targetResource.createFile();
+                    value targetFile = targetResource.createFile { includingParentDirectories = true; };
                     ret.add([stream, () => targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
                 } else if (parsePath(sources.first).resource is ExistingResource) {
-                    try {
-                        createParentDirectories(targetResource);
-                    } catch (AssertionError e) {
-                        process.writeErrorLine("Can’t create target directory '``target``'!");
-                    }
-                    Directory targetDirectory = targetResource.createDirectory();
+                    Directory targetDirectory = targetResource.createDirectory { includingParentDirectories = true; };
                     ret.addAll(translate(sources, targetDirectory));
                 }
             }
