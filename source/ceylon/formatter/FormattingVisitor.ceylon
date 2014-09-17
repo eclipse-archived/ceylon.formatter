@@ -483,6 +483,11 @@ shared class FormattingVisitor(
         that.rightTerm.visit(this);
     }
     
+    shared actual void visitDynamic(Dynamic that) {
+        writeModifier(fWriter, that.mainToken); // "dynamic"
+        that.namedArgumentList.visit(this);
+    }
+    
     shared actual void visitDynamicClause(DynamicClause that) {
         writeModifier(fWriter, that.mainToken); // "dynamic"
         that.block.visit(this);
@@ -1110,7 +1115,7 @@ shared class FormattingVisitor(
     
     shared actual void visitNamedArgumentList(NamedArgumentList that) {
         value context = fWriter.writeToken {
-            that.mainToken; // "{"
+            that.mainToken; // "{" or "[" (dynamic value)
             spaceAfter = true;
             lineBreaksAfter = 1..0;
             indentBefore = 1;
@@ -1121,7 +1126,7 @@ shared class FormattingVisitor(
         }
         that.sequencedArgument?.visit(this);
         fWriter.writeToken {
-            that.mainEndToken; // "}"
+            that.mainEndToken; // "}" or "]" (dynamic value)
             context;
             spaceBefore = true;
             lineBreaksBefore = 1..0;
