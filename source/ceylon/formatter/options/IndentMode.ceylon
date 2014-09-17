@@ -41,6 +41,10 @@ interface Cached<Item> satisfies Correspondence<Integer,Item>
         cache.put(key, constructed);
         return constructed;
     }
+    
+    shared actual Boolean defines(Integer key) {
+        return true;
+    }
 }
 
 "Indent using spaces."
