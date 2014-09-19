@@ -117,7 +117,7 @@ shared class FormattingVisitor(
         that.visitChildren(this);
         visitingAnnotation = false;
         if (is {String*} inlineAnnotations = options.inlineAnnotations) {
-            if (is BaseMemberExpression bme = that.primary, 
+            if (is BaseMemberExpression bme = that.primary,
                 exists text = bme.identifier.text,
                 text in inlineAnnotations) {
                 // no line break for these annotations
@@ -1240,7 +1240,7 @@ shared class FormattingVisitor(
         object multiLineVisitor extends VisitorAdaptor() {
             shared actual void visitAnnotation(Annotation annotation) {
                 if (is {String*} inlineAnnotations = options.inlineAnnotations) {
-                    if (is BaseMemberExpression bme = annotation.primary, 
+                    if (is BaseMemberExpression bme = annotation.primary,
                         exists text = bme.identifier.text,
                         text in inlineAnnotations) {
                         // not multiLine
