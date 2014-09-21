@@ -97,10 +97,10 @@ shared void saveProfile(profile, name = "default", baseDir = ".", relativePath =
      (The parent of the `.ceylon` directory, *not* that
      directory itself!)"
     String baseDir;
-    "The relative path of the file name.)
+    "The relative path of the file name.
      
-     (The parent of the `.ceylon` directory, *not* that
-     directory itself!)"
+     (The relative path from `baseDir`, defaults
+     to `.ceylon/format.{profile}`)"
     String relativePath;
         
     value config = findConfig(name, false, baseDir);
