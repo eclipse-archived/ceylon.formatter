@@ -85,7 +85,7 @@ shared FormattingOptions loadProfile(profile = "default", inherit = true, baseDi
  For more informations on profiles, see the
  [[loadProfile]] documentation."
 see (`function loadProfile`)
-shared void saveProfile(profile, name = "default", baseDir = ".") {
+shared void saveProfile(profile, name = "default", baseDir = ".", relativePath = ".ceylon/format.``name``") {
     "The formatting options to save.
      
      (Only non-[[null]] options will be saved.)"
@@ -97,7 +97,12 @@ shared void saveProfile(profile, name = "default", baseDir = ".") {
      (The parent of the `.ceylon` directory, *not* that
      directory itself!)"
     String baseDir;
-    
+    "The relative path of the file name.
+     
+     (The relative path from `baseDir`, defaults
+     to `.ceylon/format.{profile}`)"
+    String relativePath;
+        
     value config = findConfig(name, false, baseDir);
     for (declaration in `class SparseFormattingOptions`.declaredMemberDeclarations<ValueDeclaration>()) {
         String optionName = declaration.name;
@@ -112,7 +117,7 @@ shared void saveProfile(profile, name = "default", baseDir = ".") {
             config.setOption("formatter.``optionName``", string);
         }
     }
-    ConfigWriter.write(config, JFile(".ceylon/format.``name``"));
+    ConfigWriter.write(config, JFile(baseDir, relativePath));
 }
 
 "Loads the profile name from the Ceylon configuration
