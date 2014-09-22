@@ -14,7 +14,7 @@ import ceylon.language.meta.declaration {
 }
 
 CeylonConfig findConfig(String profile, Boolean inherit, String baseDir) {
-    value configFinder = ConfigFinder("format.``profile``", "ceylon.format");
+    value configFinder = ConfigFinder("``profile``.format", "ceylon.format");
     CeylonConfig config;
     if (inherit) {
         config = configFinder.loadDefaultConfig(JFile(baseDir));
@@ -28,7 +28,7 @@ CeylonConfig findConfig(String profile, Boolean inherit, String baseDir) {
    
    A profile is a file with the name
    
-       "format.``profile``"
+       "``profile``.format"
    
    next to the regular Ceylon config file. It contains
    formatting options in a `formatter` section, like this:
@@ -47,7 +47,7 @@ shared FormattingOptions loadProfile(profile = "default", inherit = true, baseDi
        
        The options are loaded from a configuration file with the name
        
-           "format.``profile``"
+           "``profile``.format"
        
        using the normal configuration file lookup mechanism
        (that is, options are inherited from the user and system-wide
@@ -85,7 +85,7 @@ shared FormattingOptions loadProfile(profile = "default", inherit = true, baseDi
  For more informations on profiles, see the
  [[loadProfile]] documentation."
 see (`function loadProfile`)
-shared void saveProfile(profile, name = "default", baseDir = ".", relativePath = ".ceylon/format.``name``") {
+shared void saveProfile(profile, name = "default", baseDir = ".", relativePath = ".ceylon/``name``.format") {
     "The formatting options to save.
      
      (Only non-[[null]] options will be saved.)"
@@ -100,7 +100,7 @@ shared void saveProfile(profile, name = "default", baseDir = ".", relativePath =
     "The relative path of the file name.
      
      (The relative path from `baseDir`, defaults
-     to `.ceylon/format.{profile}`)"
+     to `.ceylon/{profile}.format`)"
     String relativePath;
         
     value config = findConfig(name, false, baseDir);
