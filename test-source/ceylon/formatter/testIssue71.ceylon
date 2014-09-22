@@ -26,9 +26,6 @@ import ceylon.formatter.options {
     lf,
     FormattingOptions
 }
-import ceylon.collection {
-    StringBuilder
-}
 
 test
 shared void testIssue71() {

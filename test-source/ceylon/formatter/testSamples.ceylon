@@ -27,9 +27,6 @@ import ceylon.formatter.options {
     CombinedOptions,
     SparseFormattingOptions
 }
-import ceylon.collection {
-    StringBuilder
-}
 
 "Tests that the formatter transforms `test-samples/<filename>.ceylon`
  into `test-samples/<filename>.ceylon.formatted`. If a file
