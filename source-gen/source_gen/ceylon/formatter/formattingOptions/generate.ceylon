@@ -150,7 +150,7 @@ class Generator() satisfies Destroyable {
         }
         writer.write(") extends SparseFormattingOptions() {\n");
         for (option in formattingOptions) {
-            writer.write("    \n    shared actual default ``option.type`` ``option.name``;\n");
+            writer.write("    \n    shared actual ``option.type`` ``option.name``;\n");
         }
         writer.write("}\n\n");
     }
@@ -165,33 +165,36 @@ class Generator() satisfies Destroyable {
               In the typical use case, `baseOptions` will be some default options (e.g. `FormattingOptions()`), and 
               `decoration` will be one `SparseFormattingOptions` object created on the fly:
               
-                  FormattingVisitor(tokens, writer, CombinedOptions(defaultOptions,
+                  FormattingVisitor(tokens, writer, combinedOptions(defaultOptions,
                       SparseFormattingOptions {
                           indentMode = Mixed(Tabs(8), Spaces(4));
                           // ...
                       }));\"\n");
-        writer.write("shared class CombinedOptions(FormattingOptions baseOptions, SparseFormattingOptions+ decoration) extends FormattingOptions() {\n");
+        writer.write("shared FormattingOptions combinedOptions(FormattingOptions baseOptions, SparseFormattingOptions* decoration)
+                              => FormattingOptions {
+                      ");
         for (option in formattingOptions) {
-            writer.write("    \n    shared actual ``option.type`` ``option.name`` {\n");
-            writer.write("        for (options in decoration) {\n");
-            writer.write("            if (exists option = options.``option.name``) {\n");
-            writer.write("                return option;\n");
-            writer.write("            }\n");
-            writer.write("        }\n");
-            writer.write("        return baseOptions.``option.name``;\n");
-            writer.write("    }\n");
+            writer.write("    ``option.type`` ``option.name`` {
+                                  for (options in decoration) {
+                                      if (exists option = options.``option.name``) {
+                                          return option;
+                                      }
+                                  } else {
+                                      return baseOptions.``option.name``;
+                                  }
+                              }
+                          ");
+
         }
-        writer.write("}\n\n");
+        writer.write("};\n\n");
     }
     
     void generateVariableOptions(Writer writer) {
         writer.write(
-            "\"A subclass of [[FormattingOptions]] that makes its attributes [[variable]].
-              
-              For internal use only.\"\n");
-        writer.write("class VariableOptions(FormattingOptions baseOptions) extends FormattingOptions() {\n    \n");
+            "\"A subclass of [[SparseFormattingOptions]] that makes its attributes [[variable]].\"\n");
+        writer.write("shared class VariableOptions(SparseFormattingOptions baseOptions) extends SparseFormattingOptions() {\n    \n");
         for (option in formattingOptions) {
-            writer.write("    shared actual variable ``option.type`` ``option.name`` = baseOptions.``option.name``;\n");
+            writer.write("    shared actual default variable ``option.type``? ``option.name`` = baseOptions.``option.name``;\n");
         }
         writer.write("}\n\n");
     }

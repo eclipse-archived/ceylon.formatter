@@ -40,12 +40,12 @@ FormattingOptions formattingFile_meta(
      don't specify an option"
     FormattingOptions baseOptions = FormattingOptions()) {
     
-    return variableFormattingFile_meta(filename, baseOptions);
+    return combinedOptions(baseOptions, variableFormattingFile_meta(filename, baseOptions));
 }
 
 "An internal version of [[formattingFile]] that specifies a return type of [[VariableOptions]],
  which is needed for the internally performed recursion."
-VariableOptions variableFormattingFile_meta(String filename, FormattingOptions baseOptions) {
+VariableOptions variableFormattingFile_meta(String filename, SparseFormattingOptions baseOptions) {
     
     if (is File file = parsePath(filename).resource) {
         // read the file

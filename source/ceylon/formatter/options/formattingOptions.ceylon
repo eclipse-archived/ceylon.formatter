@@ -46,7 +46,7 @@ shared FormattingOptions formattingFile(
     "The options that will be used if the file and its included files
      don't specify an option"
     FormattingOptions baseOptions = FormattingOptions())
-        => variableFormattingFile(filename, baseOptions);
+        => combinedOptions(baseOptions, variableFormattingFile(filename, baseOptions));
 
 Map<String,String> sugarOptions = HashMap { "-w"->"--maxLineLength", "--maxLineWidth"->"--maxLineLength" };
 Map<String,Anything(VariableOptions)> presets = HashMap {
@@ -180,12 +180,12 @@ shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = pro
             i++;
         }
     }
-    return [options, remaining.sequence()];
+    return [combinedOptions(FormattingOptions(), options), remaining.sequence()];
 }
 
 "An internal version of [[formattingFile]] that specifies a return type of [[VariableOptions]],
  which is needed for the internally performed recursion."
-VariableOptions variableFormattingFile(String filename, FormattingOptions baseOptions) {
+VariableOptions variableFormattingFile(String filename, SparseFormattingOptions baseOptions) {
     
     if (is File file = parsePath(filename).resource) {
         // read the file
@@ -214,7 +214,7 @@ VariableOptions variableFormattingFile(String filename, FormattingOptions baseOp
     }
 }
 
-VariableOptions parseFormattingOptions({<String->{String*}>*} entries, FormattingOptions baseOptions = FormattingOptions()) {
+VariableOptions parseFormattingOptions({<String->{String*}>*} entries, SparseFormattingOptions baseOptions = FormattingOptions()) {
     // read included files
     variable VariableOptions options = VariableOptions(baseOptions);
     if (exists includes = entries.find((String->{String*} entry) => entry.key == "include")?.item) {

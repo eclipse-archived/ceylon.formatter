@@ -24,7 +24,7 @@ import ceylon.formatter {
 import ceylon.formatter.options {
     FormattingOptions,
     formattingFile,
-    CombinedOptions,
+    combinedOptions,
     SparseFormattingOptions
 }
 
@@ -58,7 +58,7 @@ void testFile(String filename) {
             options = FormattingOptions();
         }
         try (visitor = FormattingVisitor(BufferedTokenStream(lexer), // don't use CommonTokenStream - we don't want to skip comments
-            output, CombinedOptions(options, SparseFormattingOptions {
+            output, combinedOptions(options, SparseFormattingOptions {
                     failFast = true;
                 }))) {
             cu.visit(visitor);
