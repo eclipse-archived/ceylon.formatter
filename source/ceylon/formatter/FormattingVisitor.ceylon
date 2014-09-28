@@ -1118,8 +1118,8 @@ shared class FormattingVisitor(
         value context = fWriter.writeToken {
             that.mainToken; // "{" or "[" (dynamic value)
             spaceAfter = true;
+            // TODO option for lineBreaksBefore
             lineBreaksAfter = 1..0;
-            indentBefore = 1;
             indentAfter = 1;
         };
         for (arg in CeylonIterable(that.namedArguments)) {
