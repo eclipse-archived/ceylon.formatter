@@ -1543,7 +1543,11 @@ shared class FormattingVisitor(
     
     shared actual void visitSpecifiedArgument(SpecifiedArgument that) {
         value context = fWriter.openContext();
-        that.identifier?.visit(this);
+        if (exists id = that.identifier,
+            // the typechecker adds synthetic identifiers for anonymous arguments
+            id.mainToken exists) {
+            id.visit(this);
+        }
         that.specifierExpression.visit(this);
         writeSemicolon(fWriter, that.mainEndToken, context);
     }
