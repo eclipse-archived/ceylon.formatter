@@ -1262,7 +1262,7 @@ shared class FormattingVisitor(
             indentBefore = that.model === parameterListWithIdentifier then 2 else 0;
             indentAfter = 1;
             lineBreaksAfter = multiLine then 1..1 else 0..1;
-            spaceBefore = options.spaceAfterParamListOpeningParen;
+            spaceBefore = options.spaceBeforeParamListOpeningParen;
             spaceAfter = options.spaceAfterParamListOpeningParen;
         };
         
