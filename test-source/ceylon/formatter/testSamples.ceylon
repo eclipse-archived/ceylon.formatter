@@ -475,11 +475,6 @@ shared void testSuperType() {
 }
 
 test
-shared void testOperatorStyleExpressions() {
-    testFile("operatorStyleExpressions");
-}
-
-test
 shared void testClassSpecifiers() {
     testFile("classSpecifiers");
 }
