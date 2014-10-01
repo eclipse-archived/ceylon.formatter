@@ -7,11 +7,15 @@ void issue83() {
     print(i-- - i);
     print(i - --i);
     print(i - -i);
-    print(-i--);
+    print(- i--);
     print(i-- - --i);
+    print(- i ^ i);
+    print(- --i ^ --i);
     print(i++ + i);
     print(i + ++i);
     print(i + +i);
-    print(+i++);
+    print(+ i++);
     print(i++ + ++i);
+    print(+ i ^ i);
+    print(+ ++i ^ ++i);
 }
