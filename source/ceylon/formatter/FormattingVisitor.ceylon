@@ -1132,7 +1132,7 @@ shared class FormattingVisitor(
     shared actual void visitNegativeOp(NegativeOp that) {
         fWriter.writeToken {
             that.mainToken; // "-"
-            spaceAfter = that.term is PrefixOperatorExpression; // #83
+            spaceAfter = !that.term is Primary; // #83
             lineBreaksAfter = noLineBreak;
         };
         that.term.visit(this);
@@ -1327,7 +1327,7 @@ shared class FormattingVisitor(
     shared actual void visitPositiveOp(PositiveOp that) {
         fWriter.writeToken {
             that.mainToken; // "+"
-            spaceAfter = that.term is PrefixOperatorExpression; // #83
+            spaceAfter = !that.term is Primary; // #83
             lineBreaksAfter = noLineBreak;
         };
         that.term.visit(this);
