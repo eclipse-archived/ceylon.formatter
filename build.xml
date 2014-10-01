@@ -152,7 +152,7 @@
         
     </target>
 
-    <target name="publish" depends="compile"
+    <target name="publish" depends="compile,scripts"
             description="Copies the Formatter modules to the user's repository">
         <copy todir="${ceylon.repo.dir}" overwrite="true">
             <fileset dir="${out.repo}">
@@ -185,13 +185,22 @@
             <moduleset refid="modules.source"/>
         </ceylon-doc>
         
+        <ceylon-plugin mode="pack"
+            out="${herd.repo}"
+            user="${herd.user}"
+            pass="${herd.pass}">
+            <moduleset refid="modules.source"/>
+        </ceylon-plugin>
+
     </target>
 
-    <target name="install"
-            depends="publish">
+    <target name="scripts">
         <ceylon-plugin mode="pack">
             <moduleset refid="modules.source"/>
         </ceylon-plugin>
+    </target>
+
+    <target name="install" depends="publish">
         <ceylon-plugin mode="install" force="true">
             <moduleset refid="modules.source"/>
         </ceylon-plugin>
