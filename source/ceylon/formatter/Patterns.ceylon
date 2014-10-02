@@ -130,7 +130,7 @@ void writeSemicolon(FormattingWriter writer, Token semicolon, FormattingWriter.F
     writer.writeToken {
         semicolon;
         lineBreaksBefore = noLineBreak;
-        lineBreaksAfter = 0..2;
+        lineBreaksAfter = writer.tokens exists then 0..2 else 1..0;
         spaceBefore = false;
         spaceAfter = true;
         context;

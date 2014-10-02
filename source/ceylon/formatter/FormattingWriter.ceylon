@@ -165,7 +165,7 @@ object stopAndDontConsume extends Stop() { consume = false; }
           comments
         */
        ~~~"
-shared class FormattingWriter(TokenStream? tokens, Writer writer, FormattingOptions options)
+shared class FormattingWriter(shared TokenStream? tokens, Writer writer, FormattingOptions options)
         satisfies Destroyable {
     
     Integer tabWidth => 4; // TODO see ceylon/ceylon-spec#866

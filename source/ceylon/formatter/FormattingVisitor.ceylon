@@ -291,7 +291,7 @@ shared class FormattingVisitor(
                 token; // "{"
                 indentAfter = 1;
                 lineBreaksBefore = options.braceOnOwnLine then 1..1 else noLineBreak;
-                lineBreaksAfter = 0..2;
+                lineBreaksAfter = tokens exists then 0..2 else 1..0;
                 spaceBefore = 10;
                 spaceAfter = statements nonempty;
             };
@@ -310,8 +310,8 @@ shared class FormattingVisitor(
         if (exists token = that.mainEndToken) {
             fWriter.writeToken {
                 token; // "}"
-                lineBreaksBefore = 0..1;
-                lineBreaksAfter = 0..3;
+                lineBreaksBefore = 1..0;
+                lineBreaksAfter = tokens exists then 0..3 else 2..0;
                 spaceBefore = statements nonempty;
                 spaceAfter = 5;
                 context;
