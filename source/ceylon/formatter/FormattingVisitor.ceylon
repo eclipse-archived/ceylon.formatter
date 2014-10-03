@@ -1702,7 +1702,6 @@ shared class FormattingVisitor(
         fWriter.writeToken {
             that.mainToken; // "try"
             spaceBefore = true;
-            spaceAfter = true;
         };
         if (exists resources = that.resourceList) {
             resources.visit(this);
