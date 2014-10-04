@@ -1,0 +1,6 @@
+lineBreaksBeforeLineComment=5..10
+lineBreaksAfterLineComment=5..10
+lineBreaksBeforeSingleComment=5..10
+lineBreaksAfterSingleComment=5..10
+lineBreaksBeforeMultiComment=5..10
+lineBreaksAfterMultiComment=5..10
