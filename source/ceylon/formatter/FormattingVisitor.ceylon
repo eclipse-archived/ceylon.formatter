@@ -421,6 +421,23 @@ shared class FormattingVisitor(
         that.visitChildren(this);
     }
     
+    shared actual void visitCompilationUnit(CompilationUnit compilationUnit) {
+        compilationUnit.importList.visit(this);
+        if (nonempty decs = CeylonIterable(compilationUnit.moduleDescriptors)
+                .chain(CeylonIterable(compilationUnit.packageDescriptors))
+                .chain(CeylonIterable(compilationUnit.declarations))
+                .sequence()) {
+            if (!compilationUnit.importList.imports.empty) {
+                fWriter.requireAtLeastLineBreaks(1);
+            }
+            decs.first.visit(this);
+            for (dec in decs.rest) {
+                fWriter.requireAtLeastLineBreaks(1);
+                dec.visit(this);
+            }
+        }
+    }
+    
     shared actual void visitConditionList(ConditionList that) {
         value context = fWriter.writeToken {
             that.mainToken; // "("
