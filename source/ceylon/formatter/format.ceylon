@@ -41,9 +41,9 @@ shared void format(
      
      You can also adapt any other `FormattingOptions` by using
      [[ceylon.formatter.options::SparseFormattingOptions]] and
-     [[ceylon.formatter.options::CombinedOptions]], like this:
+     [[ceylon.formatter.options::combinedOptions]], like this:
      ~~~
-     value myOptions = CombinedOptions(bossOptions,
+     value myOptions = combinedOptions(bossOptions,
          SparseFormattingOptions {
              indentMode = Spaces(4); // I don’t care what the boss says, spaces rule
          });
