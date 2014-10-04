@@ -66,6 +66,26 @@ object stopAndConsume extends Stop() { consume = true; }
 see (`value stopAndConsume`)
 object stopAndDontConsume extends Stop() { consume = false; }
 
+see (`value AllowedLineBreaks.source`)
+abstract class AllowedLineBreaksSource(shared actual String string)
+of token | comment | requireAtLeast {}
+object token extends AllowedLineBreaksSource("token") {}
+object comment extends AllowedLineBreaksSource("comment") {}
+object requireAtLeast extends AllowedLineBreaksSource("requireAtLeast") {}
+
+class AllowedLineBreaks(range, source) {
+    "The range of allowed line breaks."
+    shared Range<Integer> range;
+    "The source of this range of allowed line breaks.
+     
+     If the intersection with another range is empty,
+     that’s okay as long as at least one of the ranges
+     comes from a [[comment]]; then we choose that range."
+    shared AllowedLineBreaksSource source;
+    
+    string => "``range``, from ``source``";
+}
+
 "Writes tokens to an underlying [[writer]], respecting certain formatting settings and a maximum line width.
  
  The [[FormattingWriter]] manages the following aspects:
@@ -108,8 +128,8 @@ object stopAndDontConsume extends Stop() { consume = false; }
  
  Two [[Integer]] [[ranges|Range]] are associated with each token. One indicates how many line breaks
  may occur before the token, and the other indicates how many may occur after the token. Additionally,
- one may call [[requireAtLeastLineBreaks]] and [[intersectAllowedLineBreaks]] to further restrict
- how many line breaks may occur between two tokens.
+ one may call [[requireAtLeastLineBreaks]] to further restrict how many line breaks may occur between
+ two tokens.
  
  The intersection of these ranges for the border between two tokens is then used to determine how
  many line breaks should be written before the token.
@@ -121,6 +141,11 @@ object stopAndDontConsume extends Stop() { consume = false; }
    line breaks are written.
  * If [[tokens]] doesn’t exist, then the first element of the range is used (usually the lowest,
    unless the range is [[decreasing|Range.decreasing]]).
+ 
+ (Internally, the [[FormattingWriter]] also keeps track if a line break range came from [[writeToken]],
+ [[requireAtLeastLineBreaks]], or was added internally when dealing with comments; an empty
+ intersection of two ranges is usually a bug, unless one of the ranges comes from a comment,
+ in which case we just use that range instead.)
  
  Additionally, the [[FormattingWriter]] also breaks lines according to a maximum line length and
  a [[ceylon.formatter.options::LineBreakStrategy]], as determined by [[options]].
@@ -372,33 +397,30 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         return false;
     }
     
-    variable Range<Integer> currentlyAllowedLinebreaks = 0..0;
+    variable AllowedLineBreaks currentlyAllowedLinebreaks = AllowedLineBreaks(0..0, requireAtLeast);
     
     variable Integer? givenLineBreaks = tokens exists then 0;
     
     "Intersect the range of allowed line breaks between the latest token and the next one to be [[written|writeToken]]
      with the given range."
     see (`function requireAtLeastLineBreaks`)
-    shared void intersectAllowedLineBreaks(
-        Range<Integer> other,
+    void intersectAllowedLineBreaks(
+        AllowedLineBreaks other,
         "If [[true]], [[FormattingWriter.fastForward]] the token stream before intersecting the line breaks.
          This makes a difference if there are comments between the latest and the next token; with fast-forwarding,
          the intersection will be applied between the comments and the next token, while without it, the intersection
          will be applied between the latest token and the comments."
         Boolean fastForwardFirst = true) {
-        variable Boolean previousTokenWasLineComment = false;
         if (fastForwardFirst) {
             fastForward((AntlrToken? current) {
                     if (exists current) {
                         assert (exists lineBreaks = givenLineBreaks);
                         if (current.type == lineComment || current.type == multiComment) {
-                            previousTokenWasLineComment = true;
                             return fastForwardComment(current);
                         } else if (current.type == ws) {
                             givenLineBreaks = lineBreaks + current.text.count('\n'.equals);
                             return empty;
                         } else {
-                            previousTokenWasLineComment = false;
                             return { stopAndDontConsume }; // end fast-forwarding
                         }
                     } else {
@@ -406,40 +428,52 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                     }
                 });
         }
-        value inc1 = currentlyAllowedLinebreaks.decreasing then currentlyAllowedLinebreaks.reversed else currentlyAllowedLinebreaks;
-        value inc2 = other.decreasing then other.reversed else other;
+        Range<Integer> currentRange = currentlyAllowedLinebreaks.range;
+        Range<Integer> otherRange = other.range;
+        value inc1 = currentRange.decreasing then currentRange.reversed else currentRange;
+        value inc2 = otherRange.decreasing then otherRange.reversed else otherRange;
         variable value intersect = max { inc1.first, inc2.first }..min { inc1.last, inc2.last };
         if (intersect.decreasing) {
-            if (previousTokenWasLineComment) {
-                /*
-                 There is a line comment, which means that there *must* be a
-                 line break afterwards. However, the other line breaks don’t
-                 want to allow that. Resolve manually.
-                */
-                assert (other == noLineBreak);
-                /*
-                 Note: in theory, it’s also possible that other wants *at least*
-                 even *more* line breaks that lineBreaksAfterLineComment wants
-                 to allow *at most*. But it’s correct to throw an AssertionError
-                 in that crazy case :)
-                 */
-                intersect = options.lineBreaksAfterLineComment;
+            /*
+             The intersection was empty!
+             If one or both of the ranges came from a comment,
+             this is somewhat expected (because comments can
+             appear everywhere, and there are options to configure
+             their ranges), and we resolve the conflict by using
+             just the comment’s range.
+             Otherwise, it’s probably a bug.
+             */
+            if (currentlyAllowedLinebreaks.source == comment && other.source == comment) {
+                // use the union instead
+                intersect = min { inc1.first, inc2.first }..max { inc1.last, inc2.last };
+            } else if (currentlyAllowedLinebreaks.source == comment) {
+                intersect = currentRange;
+            } else if (other.source == comment) {
+                intersect = otherRange;
             }
         }
         assert (!intersect.decreasing);
-        currentlyAllowedLinebreaks = currentlyAllowedLinebreaks.decreasing then intersect.last..intersect.first else intersect;
+        currentlyAllowedLinebreaks
+                = AllowedLineBreaks {
+            range = currentRange.decreasing then intersect.last..intersect.first else intersect;
+            value source {
+                if (other.source == requireAtLeast) {
+                    return currentlyAllowedLinebreaks.source;
+                } else {
+                    return other.source;
+                }
+            }
+        };
     }
     "Require at leasts [[limit]] line breaks between the latest token and the next one to be [[written|writeToken]]."
-    see (`function intersectAllowedLineBreaks`)
     shared void requireAtLeastLineBreaks(
         Integer limit,
         "If [[true]], [[FormattingWriter.fastForward]] the token stream before intersecting the line breaks.
          This makes a difference if there are comments between the latest and the next token; with fast-forwarding,
          the intersection will be applied between the comments and the next token, while without it, the intersection
          will be applied between the latest token and the comments."
-        see (`function intersectAllowedLineBreaks`)
         Boolean fastForwardFirst = true)
-            => intersectAllowedLineBreaks(limit..runtime.maxIntegerValue, fastForwardFirst);
+            => intersectAllowedLineBreaks(AllowedLineBreaks(limit..runtime.maxIntegerValue, requireAtLeast), fastForwardFirst);
     
     "Based on [[currently allowed line breaks|currentlyAllowedLinebreaks]]
      and the [[given amount of line breaks|givenLineBreaks]],
@@ -449,9 +483,9 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
      or use the first value of the allowed range if they’re null."
     Integer lineBreakAmount(Integer? givenLineBreaks) {
         if (is Integer givenLineBreaks) {
-            return min { max { givenLineBreaks, min(currentlyAllowedLinebreaks) }, max(currentlyAllowedLinebreaks) };
+            return min { max { givenLineBreaks, min(currentlyAllowedLinebreaks.range) }, max(currentlyAllowedLinebreaks.range) };
         } else {
-            return currentlyAllowedLinebreaks.first;
+            return currentlyAllowedLinebreaks.range.first;
         }
     }
     
@@ -584,7 +618,6 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
          handle the part before this token:
          fast-forward, intersect allowed line breaks, write out line breaks
          */
-        variable Boolean previousTokenWasLineComment = false;
         fastForward((AntlrToken? current) {
                 if (exists current) {
                     assert (exists lineBreaks = givenLineBreaks);
@@ -593,7 +626,6 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                          we treat comments as regular tokens
                          just with the difference that their before- and afterToken range isn’t given, but an option instead
                          */
-                        previousTokenWasLineComment = true;
                         return fastForwardComment(current);
                     } else if (current.type == ws) {
                         givenLineBreaks = lineBreaks + current.text.count('\n'.equals);
@@ -629,12 +661,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                     return { stopAndDontConsume }; // end fast-forwarding
                 }
             });
-        if (previousTokenWasLineComment && lineBreaksBefore == noLineBreak) {
-            // Must have line breaks after a line comment
-            intersectAllowedLineBreaks(0..1, false);
-        } else {
-            intersectAllowedLineBreaks(lineBreaksBefore, false);
-        }
+        intersectAllowedLineBreaks(AllowedLineBreaks(lineBreaksBefore, package.token), false);
         for (i in 0:lineBreakAmount(givenLineBreaks)) {
             tokenQueue.add(LineBreak());
         }
@@ -643,7 +670,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
          handle this token:
          set allowed line breaks, add token
          */
-        currentlyAllowedLinebreaks = lineBreaksAfter;
+        currentlyAllowedLinebreaks = AllowedLineBreaks(lineBreaksAfter, package.token);
         FormattingContext? ret;
         Token t;
         see (`value Token.sourceColumn`)
@@ -1132,12 +1159,12 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                 after = options.lineBreaksAfterSingleComment;
             }
         }
-        intersectAllowedLineBreaks(before, false);
+        intersectAllowedLineBreaks(AllowedLineBreaks(before, comment), false);
         MutableList<QueueElement> ret = LinkedList<QueueElement>();
         for (i in 0:lineBreakAmount(givenLineBreaks else 1)) {
             ret.add(LineBreak());
         }
-        currentlyAllowedLinebreaks = after;
+        currentlyAllowedLinebreaks = AllowedLineBreaks(after, comment);
         givenLineBreaks = current.type == lineComment then 1 else 0;
         
         value token = OpeningToken {
