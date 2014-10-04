@@ -102,7 +102,7 @@ shared void saveProfile(profile, name = "default", baseDir = ".", relativePath =
      (The relative path from `baseDir`, defaults
      to `.ceylon/{profile}.format`)"
     String relativePath;
-        
+    
     value config = findConfig(name, false, baseDir);
     for (declaration in `class SparseFormattingOptions`.declaredMemberDeclarations<ValueDeclaration>()) {
         String optionName = declaration.name;
