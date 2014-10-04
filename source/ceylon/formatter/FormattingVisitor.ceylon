@@ -333,7 +333,7 @@ shared class FormattingVisitor(
         fWriter.writeToken {
             that.mainToken; // "case"
             spaceBefore = true;
-            spaceAfter = true; // TODO option
+            spaceAfter = options.spaceAfterControlStructureKeyword;
             lineBreaksBefore = 1..1;
             lineBreaksAfter = noLineBreak;
         };
@@ -385,7 +385,7 @@ shared class FormattingVisitor(
     shared actual void visitCatchClause(CatchClause that) {
         fWriter.writeToken {
             that.mainToken; // "catch"
-            spaceBefore = true;
+            spaceAfter = options.spaceAfterControlStructureKeyword;
             lineBreaksBefore = options.elseOnOwnLine then 1..1 else 0..0;
         };
         that.catchVariable.visit(this);
@@ -395,7 +395,6 @@ shared class FormattingVisitor(
     shared actual void visitCatchVariable(CatchVariable that) {
         value context = fWriter.writeToken {
             that.mainToken; // "("
-            spaceBefore = options.spaceBeforeCatchVariable;
             spaceAfter = false;
             lineBreaksBefore = noLineBreak;
             indentAfter = 1;
@@ -566,6 +565,7 @@ shared class FormattingVisitor(
         fWriter.writeToken {
             that.mainToken; // "else"
             lineBreaksBefore = options.elseOnOwnLine then 1..1 else 0..0;
+            spaceAfter = true;
         };
         that.visitChildren(this);
     }
@@ -654,8 +654,8 @@ shared class FormattingVisitor(
     shared actual void visitFinallyClause(FinallyClause that) {
         fWriter.writeToken {
             that.mainToken; // "finally"
-            spaceBefore = true;
             spaceAfter = true;
+            lineBreaksBefore = options.elseOnOwnLine then 1..1 else 0..0;
         };
         that.block.visit(this);
     }
@@ -663,8 +663,8 @@ shared class FormattingVisitor(
     shared actual void visitForClause(ForClause that) {
         fWriter.writeToken {
             that.mainToken; // "for"
+            spaceAfter = options.spaceAfterControlStructureKeyword;
             lineBreaksAfter = noLineBreak;
-            spaceAfter = options.spaceBeforeForOpeningParenthesis;
         };
         that.visitChildren(this);
     }
@@ -672,8 +672,8 @@ shared class FormattingVisitor(
     shared actual void visitForComprehensionClause(ForComprehensionClause that) {
         fWriter.writeToken {
             that.mainToken; // "for"
+            spaceAfter = options.spaceAfterControlStructureKeyword;
             lineBreaksAfter = noLineBreak;
-            spaceAfter = options.spaceBeforeForOpeningParenthesis;
         };
         that.forIterator.visit(this);
         value context = fWriter.openContext(1);
@@ -784,7 +784,7 @@ shared class FormattingVisitor(
         fWriter.writeToken {
             that.mainToken; // "if"
             lineBreaksAfter = noLineBreak;
-            spaceAfter = options.spaceBeforeIfOpeningParenthesis;
+            spaceAfter = options.spaceAfterControlStructureKeyword;
         };
         that.visitChildren(this);
     }
@@ -793,7 +793,7 @@ shared class FormattingVisitor(
         fWriter.writeToken {
             that.mainToken; // "if"
             lineBreaksAfter = noLineBreak;
-            spaceAfter = options.spaceBeforeIfOpeningParenthesis;
+            spaceAfter = options.spaceAfterControlStructureKeyword;
         };
         that.conditionList.visit(this);
         value context = fWriter.openContext(1);
@@ -1376,7 +1376,6 @@ shared class FormattingVisitor(
     shared actual void visitResourceList(ResourceList that) {
         value context = fWriter.writeToken {
             that.mainToken; // "("
-            spaceBefore = options.spaceBeforeResourceList;
             spaceAfter = false;
         };
         value resources = CeylonIterable(that.resources).sequence();
@@ -1649,7 +1648,7 @@ shared class FormattingVisitor(
         fWriter.writeToken {
             that.mainToken; // "switch"
             spaceBefore = true;
-            spaceAfter = true; // TODO option
+            spaceAfter = options.spaceAfterControlStructureKeyword;
             lineBreaksAfter = noLineBreak;
         };
         value context = fWriter.writeToken {
@@ -1672,6 +1671,7 @@ shared class FormattingVisitor(
         fWriter.writeToken {
             that.mainToken; // "else"
             lineBreaksBefore = 1..1;
+            spaceAfter = true;
         };
         that.visitChildren(this);
     }
@@ -1701,7 +1701,9 @@ shared class FormattingVisitor(
     shared actual void visitTryClause(TryClause that) {
         fWriter.writeToken {
             that.mainToken; // "try"
-            spaceBefore = true;
+            spaceAfter = that.resourceList exists
+                    then options.spaceAfterControlStructureKeyword
+                    else true;
         };
         if (exists resources = that.resourceList) {
             resources.visit(this);
@@ -1920,7 +1922,7 @@ shared class FormattingVisitor(
     shared actual void visitWhileClause(WhileClause that) {
         fWriter.writeToken {
             that.mainToken; // "while"
-            spaceAfter = options.spaceBeforeWhileOpeningParenthesis;
+            spaceAfter = options.spaceAfterControlStructureKeyword;
             lineBreaksAfter = noLineBreak;
         };
         that.conditionList.visit(this);

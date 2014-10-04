@@ -172,12 +172,6 @@
         "Boolean"; "spaceBeforeSequenceEnumerationClosingBrace"; /* = */ "true";
     },
     FormattingOption {
-        """Decide whether there should be a space before the opening parenthesis of a for clause.
-           
-           For example: `for (c in "text") { ... }` vs `for(c in "text") { ... }`""";
-        "Boolean"; "spaceBeforeForOpeningParenthesis"; /* = */ "true";
-    },
-    FormattingOption {
         """Decide whether there should be a space after the opening parenthesis of a value iterator.
            
            For example: `for ( c in "text" ) { ... }` vs `for (c in "text") { ... }`""";
@@ -190,36 +184,12 @@
         "Boolean"; "spaceBeforeValueIteratorClosingParenthesis"; /* = */ "false";
     },
     FormattingOption {
-        """Decide whether there should be a space before the opening parenthesis of an if clause.
-           
-           For example: `if ('c' in "text") { ... }` vs `if('c' in "text") { ... }`""";
-        "Boolean"; "spaceBeforeIfOpeningParenthesis"; /* = */ "true";
-    },
-    FormattingOption {
         """Decide whether, in the case of an error, the formatter should attempt to recover and
            continue or immediately exit.
            
            This is mostly for internal use; in the finished formatter, there shouldn’t be any errors
            when formatting syntactically valid code.""";
         "Boolean"; "failFast"; /* = */ "true";
-    },
-    FormattingOption {
-        """Decide whether there should be a space before a try-with-resources resource list.
-           
-           For example: `try (w = file.Writer()) { ... }` vs `try(w = file.Writer()) { ... }`""";
-        "Boolean"; "spaceBeforeResourceList"; /* = */ "true";
-    },
-    FormattingOption {
-        """Decide whether there should be a space before a `catch` variable.
-           
-           For example: `catch (Exception e) { ... }` vs `catch(Exception e) { ... }`""";
-        "Boolean"; "spaceBeforeCatchVariable"; /* = */ "true";
-    },
-    FormattingOption {
-        """Decide whether there should be a space before the opening parenthesis of a while clause.
-           
-           For example: `while (bool)` vs `while(bool)`""";
-        "Boolean"; "spaceBeforeWhileOpeningParenthesis"; /* = */ "true";
     },
     FormattingOption {
         """Decide whether there should be a space after the comma in a type argument or parameter list.
@@ -328,6 +298,20 @@
                  of CaseType1 | CaseType2 { ... }
          ~~~";
         "Boolean"; "spaceAroundSatisfiesOf"; /* = */ "true";
+    },
+    FormattingOption {
+        "Decide whether there should be a space between
+         a control structure keyword and its opening parenthesis.
+         
+         This applies to the following keywords:
+         - `if`
+         - `for`
+         - `while`
+         - `try`, when followed by a resource list
+         - `catch`
+         - `switch`
+         - `case`";
+        "Boolean"; "spaceAfterControlStructureKeyword"; /* = */ "true";
     }
 };
 
