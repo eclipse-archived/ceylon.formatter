@@ -41,12 +41,14 @@
         "Decide whether to put a space after the closing parenthesis (')') of a method definition’s
          parameter list or not.
          
-         For example: `void foo(String bar)` vs `void foo(String bar) `
+         This only applies when the parameter list is followed by a brace
+         (as is the case for simple functions and classes).
+         If it is instead followed by a fat arrow, a space is always added;
+         if it’s followed by a semicolon (formal), or a comma or closing paren
+         (parameter list of functional parameter), no space is be added.
          
-         You can set this to an `Integer` instead of a `Boolean` for finer-grained control over
-         the space; `true` means the same as [[ceylon.formatter::maxDesire]], and `false` means
-         the same as [[ceylon.formatter::minDesire]].";
-        "Boolean|Integer"; "spaceAfterParamListClosingParen"; /* = */ "-10";
+         For example: `void foo(String bar) {}` vs `void foo(String bar){}`";
+        "Boolean"; "spaceAfterParamListClosingParen"; /* = */ "true";
     },
     FormattingOption {
         """Decide which annotations should be on the same line as their declaration.

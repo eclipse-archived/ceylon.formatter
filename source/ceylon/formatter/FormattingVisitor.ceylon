@@ -1297,7 +1297,7 @@ shared class FormattingVisitor(
             that.mainEndToken; // ")"
             lineBreaksBefore = noLineBreak;
             spaceBefore = options.spaceBeforeParamListClosingParen;
-            spaceAfter = options.spaceAfterParamListClosingParen;
+            spaceAfter = options.spaceAfterParamListClosingParen then 10 else false;
             context = context;
         };
     }
