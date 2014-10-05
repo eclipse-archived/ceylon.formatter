@@ -27,8 +27,7 @@ import ceylon.interop.java {
     CeylonIterable
 }
 import ceylon.formatter.options {
-    FormattingOptions,
-    multiLine
+    FormattingOptions
 }
 import ceylon.collection {
     MutableList,
@@ -834,20 +833,18 @@ shared class FormattingVisitor(
         value context = fWriter.writeToken {
             that.mainToken; // "{"
             lineBreaksBefore = noLineBreak;
+            lineBreaksAfter = options.lineBreaksBetweenImportElements;
             indentAfter = 1;
             spaceBefore = true;
             spaceAfter = true;
         };
         if (exists membersOrTypes = that.importMemberOrTypes, nonempty elements = CeylonIterable(membersOrTypes).sequence()) {
-            if (options.importStyle == multiLine) {
-                fWriter.requireAtLeastLineBreaks(1);
-            }
             variable value innerContext = fWriter.openContext();
             void writeCommaAndVisitNext(Node node) {
                 fWriter.writeToken {
                     ",";
                     lineBreaksBefore = noLineBreak;
-                    lineBreaksAfter = (options.importStyle == multiLine then 1 else 0)..1;
+                    lineBreaksAfter = options.lineBreaksBetweenImportElements;
                     spaceBefore = false;
                     spaceAfter = true;
                     innerContext;
@@ -862,9 +859,6 @@ shared class FormattingVisitor(
             if (exists wildcard = that.importWildcard) {
                 writeCommaAndVisitNext(wildcard);
             }
-            if (options.importStyle == multiLine) {
-                fWriter.requireAtLeastLineBreaks(1);
-            }
             fWriter.closeContext(innerContext);
         } else {
             assert (exists wildcard = that.importWildcard);
@@ -872,6 +866,7 @@ shared class FormattingVisitor(
         }
         fWriter.writeToken {
             that.mainEndToken; // "}"
+            lineBreaksBefore = options.lineBreaksBetweenImportElements;
             lineBreaksAfter = 0..3;
             spaceBefore = true;
             spaceAfter = 1000;

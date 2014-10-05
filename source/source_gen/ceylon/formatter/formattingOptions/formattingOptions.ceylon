@@ -102,14 +102,24 @@
         "Boolean"; "spaceBeforeAnnotationPositionalArgumentList"; /* = */ "true";
     },
     FormattingOption {
-        """The formatting style for import statements.
+        """The range of line breaks allowed between import elements.
            
-           * [[singleLine]]
+           `0..0` is a “forced single-line” style:
            ~~~
            import java.lang { Thread, JString=String, Runtime { runtime } }
            ~~~
            
-           * [[multiLine]]
+           `0..1` is “freeform” style:
+           ~~~
+           import java.lang {
+               Thread, JString=String,
+               Runtime {
+                   runtime
+               }
+           }
+           ~~~
+           
+           `1..1` is “forced multi-line” style:
            ~~~
            import java.lang {
                Thread,
@@ -118,8 +128,10 @@
                    runtime
                }
            }
-           ~~~""";
-        "ImportStyle"; "importStyle"; /* = */ "multiLine";
+           ~~~
+           
+           (Of course, wider ranges like `0..3` are also permitted.)""";
+        "Range<Integer>"; "lineBreaksBetweenImportElements"; /* = */ "1..1";
     },
     FormattingOption {
         """Decide if there should be spaces around the equals sign ('=') of an import alias, that is
@@ -320,7 +332,6 @@
 {Enum+} enums = {
     Enum("Unlimited"),
     Enum("All"),
-    Enum("ImportStyle", { "singleLine", "multiLine" }),
     Enum("IndentationAfterSpecifierExpressionStart", { "stack", "addIndentBefore" }),
     Enum { "LineBreak"; { "os", "lf", "crlf" }; generate = false; }
 };

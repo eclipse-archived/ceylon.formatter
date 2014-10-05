@@ -160,6 +160,11 @@ shared void testImportMultiLine() {
 }
 
 test
+shared void testImportFreeForm() {
+    testFile("importFreeForm");
+}
+
+test
 shared void testDoc() {
     testFile("doc");
 }
