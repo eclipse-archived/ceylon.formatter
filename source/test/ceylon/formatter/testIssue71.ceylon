@@ -1,3 +1,6 @@
+import ceylon.formatter {
+    format
+}
 import ceylon.test {
     test,
     assertEquals,

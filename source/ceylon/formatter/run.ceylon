@@ -49,7 +49,7 @@ void recoveryOnError(ANTLRFileStream stream, File file)(Throwable t) {
  For example, the common root of `a/b/c` and `a/b/d` is `a/b`,
  the common root of `/a/b/c` and `/a/d/e` is `/a`
  and the common root of `a` and `b` is the empty path."
-Path commonRoot(
+shared Path commonRoot(
     "The paths. Must be either all absolute or all relative."
     variable [Path+] paths) {
     Boolean allAbsolute = paths.every(Path.absolute);
@@ -94,7 +94,7 @@ Path commonRoot(
    f/g -> m/n/f/g
  ]
  ~~~"
-<String[]->String>[] parseTranslations(String[] arguments) {
+shared <String[]->String>[] parseTranslations(String[] arguments) {
     variable Integer i = 0;
     variable MutableList<String>? currentSources = null;
     MutableList<String[]->String> translations = LinkedList<String[]->String>();

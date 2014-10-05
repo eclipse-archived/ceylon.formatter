@@ -4,8 +4,6 @@
     <property name="ceylon.verbosity" value="false"/>
     <property name="ceylon.executable" value="${dist.bin.dir}/ceylon"/>
     <property name="out.repo" location="modules"/>
-    <property name="src-gen.repo" location="src-gen-modules"/>
-    <property name="test.repo" location="test-modules"/>
     
     <property name="osgi" location="${basedir}/osgi" />
     <property name="osgi.p2" location="${osgi}/p2" />
@@ -35,7 +33,7 @@
     <typedef resource="com/redhat/ceylon/ant/antlib.xml" classpathref="ant-tasks"/>
     
     <reposet id="reposet.run.source-gen">
-        <repo url="${src-gen.repo}"/>
+        <repo url="${out.repo}"/>
     </reposet>
 
     <reposet id="reposet.compile.source">
@@ -49,7 +47,7 @@
     
     <reposet id="reposet.run.test">
         <reposet refid="reposet.compile.test"/>
-        <repo url="${test.repo}"/>
+        <repo url="${out.repo}"/>
     </reposet>
     
     <moduleset id="modules.source-gen">
@@ -61,14 +59,12 @@
     </moduleset>
     
     <moduleset id="modules.test">
-        <module name="ceylon.formatter"/>
+        <module name="test.ceylon.formatter"/>
     </moduleset>
     
     <target name="clean"
         description="Deletes the test-modules and modules directories">
-        <delete dir="${src-gen.repo}"/>
         <delete dir="${out.repo}"/>
-        <delete dir="${test.repo}"/>
         <delete dir="${osgi.dist}"/>
         <if>
           <available file="source/ceylon/formatter/options/.gitignore"/>
@@ -81,8 +77,8 @@
     
     <target name="compile-source-gen">
         <ceylon-compile executable="${ceylon.executable}"
-            src="source-gen"
-            out="${src-gen.repo}"
+            src="source"
+            out="${out.repo}"
             verbose="${ceylon.verbosity}"
             encoding="UTF-8"
             pack200="true">
@@ -97,7 +93,7 @@
     </target>
 
     <target name="compile-source"
-            description="Compiles the Ceylon Formatter modules to the 'modules' repository without re-generating sources">
+            description="Compiles the Ceylon Formatter modules without re-generating sources">
         <ceylon-compile executable="${ceylon.executable}"
             verbose="${ceylon.verbosity}"
             encoding="UTF-8"
@@ -108,20 +104,19 @@
     </target>
 
     <target name="compile" depends="generate-source,compile-source"
-            description="Compiles the Ceylon Formatter modules to the 'modules' repository" />
+            description="Compiles the Ceylon Formatter module to the 'modules' repository" />
 
     <path id="test-sources-path">
         <pathelement location="source"/>
-        <pathelement location="test-source"/>
     </path>
     
     <property name="test-sources" refid="test-sources-path"/>
     
-    <target name="compile-test" depends="generate-source"
-        description="Compiles the test modules to the 'test-modules' repository" >
+    <target name="compile-test"
+        description="Compiles the test module" >
         <ceylon-compile executable="${ceylon.executable}"
             src="${test-sources}"
-            out="${test.repo}"
+            out="${out.repo}"
             verbose="${ceylon.verbosity}"
             encoding="UTF-8">
             <reposet refid="reposet.compile.test"/> 
@@ -129,8 +124,8 @@
         </ceylon-compile>
     </target>
 
-    <target name="test" depends="compile-test"
-        description="Runs the compiled test modules from the 'test-modules' repository">
+    <target name="test" depends="compile,compile-test"
+        description="Runs the compiled test module">
         <ceylon-test>
             <reposet refid="reposet.run.test"/>
             <moduleset refid="modules.test"/>
@@ -138,7 +133,7 @@
     </target>
 
     <target name="doc" 
-            description="Documents the Formatter modules to the 'modules' repository">
+            description="Documents the Formatter module">
         
         <ceylon-doc executable="${ceylon.executable}"
             includesourcecode="true"
@@ -308,8 +303,9 @@
         <ceylon-run module="ceylon.formatter">
             <reposet refid="reposet.compile.source"/>
             <arg value="source"/>
-            <arg value="test-source"/>
-            <arg value="source-gen"/>
         </ceylon-run>
     </target>
+	
+	<target name="update" depends="publish,ide"
+	        description="Publish to repository and IDE"/>
 </project>
