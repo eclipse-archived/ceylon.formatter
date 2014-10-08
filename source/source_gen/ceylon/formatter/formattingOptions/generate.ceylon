@@ -184,7 +184,6 @@ class Generator() satisfies Destroyable {
                                   }
                               }
                           ");
-
         }
         writer.write("};\n\n");
     }

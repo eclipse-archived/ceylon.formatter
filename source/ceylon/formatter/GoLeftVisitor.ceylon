@@ -1,6 +1,8 @@
 import com.redhat.ceylon.compiler.typechecker.tree {
     VisitorAdaptor,
-    Tree { ... }
+    Tree {
+        ...
+    }
 }
 
 "A visitor that doesn’t descend into terms, but instead only moves left."

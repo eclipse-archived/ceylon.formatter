@@ -3,7 +3,9 @@ import ceylon.test {
     fail,
     test
 }
-import ceylon.file { ... }
+import ceylon.file {
+    ...
+}
 import com.redhat.ceylon.compiler.typechecker.tree {
     Tree {
         CompilationUnit

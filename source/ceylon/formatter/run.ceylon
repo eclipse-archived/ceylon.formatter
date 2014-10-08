@@ -1,4 +1,6 @@
-import java.io { ... }
+import java.io {
+    ...
+}
 import java.lang {
     System {
         sysin=\iin

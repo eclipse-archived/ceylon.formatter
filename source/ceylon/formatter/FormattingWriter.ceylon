@@ -68,7 +68,7 @@ object stopAndDontConsume extends Stop() { consume = false; }
 
 see (`value AllowedLineBreaks.source`)
 abstract class AllowedLineBreaksSource(shared actual String string)
-of token | comment | requireAtLeast {}
+        of token | comment | requireAtLeast {}
 object token extends AllowedLineBreaksSource("token") {}
 object comment extends AllowedLineBreaksSource("comment") {}
 object requireAtLeast extends AllowedLineBreaksSource("requireAtLeast") {}

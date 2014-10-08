@@ -1,5 +1,7 @@
 import com.redhat.ceylon.compiler.typechecker.tree {
-    Tree { ... },
+    Tree {
+        ...
+    },
     Node,
     VisitorAdaptor,
     NaturalVisitor
