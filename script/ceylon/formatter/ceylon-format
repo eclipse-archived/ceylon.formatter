@@ -1,3 +1,5 @@
+#!/bin/sh
+
 USAGE='[OPTION]... ( FILE [--and FILE]... [--to FILE] )...'
 DESCRIPTION='format Ceylon source code'
 LONG_USAGE='    ceylon run ceylon.formatter source
