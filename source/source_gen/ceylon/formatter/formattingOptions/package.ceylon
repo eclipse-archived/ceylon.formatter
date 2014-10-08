@@ -1,6 +1,7 @@
 "Auto-generate
  * `FormattingOptions`
  * `SparseFormattingOptions`
- * `CombinedOptions`
- * `VariableFormattingOptions`"
+ * `combinedOptions`
+ * `VariableFormattingOptions`
+ * `parseFormattingOption`"
 shared package source_gen.ceylon.formatter.formattingOptions;

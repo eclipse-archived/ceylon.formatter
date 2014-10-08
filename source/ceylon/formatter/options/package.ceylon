@@ -18,9 +18,9 @@
  
          FormattingVisitor(tokens, writer, FormattingOptions());
  
- * [[Combine|CombinedOptions]] existing `FormattingOptions` with manually created [[SparseFormattingOptions]]:
+ * [[Combine|combinedOptions]] existing `FormattingOptions` with manually created [[SparseFormattingOptions]]:
  
-         FormattingVisitor(tokens, writer, CombinedOptions(defaultOptions, SparseFormattingOptions {
+         FormattingVisitor(tokens, writer, combinedOptions(defaultOptions, SparseFormattingOptions {
              indentMode = Mixed(Tabs(8), Spaces(4));
              // ...
          }));"

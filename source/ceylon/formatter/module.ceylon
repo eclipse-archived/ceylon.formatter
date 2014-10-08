@@ -77,10 +77,10 @@
    }
    ~~~
    You can also use [[ceylon.formatter.options::SparseFormattingOptions]]
-   and [[ceylon.formatter.options::CombinedOptions]] to compose several sets
+   and [[ceylon.formatter.options::combinedOptions]] to compose several sets
    of options, like this:
    ~~~ceylon
-   CombinedOptions {
+   combinedOptions {
        baseOptions = companyWideOptions;
        SparseFormattingOptions {
            indentMode = Spaces(1); // our department has very small screens :-(
