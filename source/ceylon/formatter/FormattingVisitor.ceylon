@@ -646,8 +646,8 @@ shared class FormattingVisitor(
         expressions.first.visit(this);
         for (expression in expressions.rest) {
             fWriter.writeToken {
-                ","; // not in the AST
-                spaceBefore = false;
+                "|"; // not in the AST
+                spaceBefore = true; // TODO options!
                 spaceAfter = true;
                 lineBreaksBefore = noLineBreak;
             };

@@ -26,7 +26,7 @@ void testSwitchWithMultipleCases() {
     case (t1) {
         // do stuff
     }
-    case (t2, t3) {
+    case (t2 | t3) {
         // do other stuff
     }
 }
