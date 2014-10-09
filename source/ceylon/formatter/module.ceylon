@@ -2,10 +2,11 @@
    
    # Command line usage
    
-   (If the `ceylon format` plugin wasn’t installed by default
-   in your distribution, you can add it by cloning the formatter
-   repository and running `ant install`; alternatively, write
-   `ceylon run ceylon.formatter` instead of `ceylon format`.)
+   Note: if the `ceylon format` plugin wasn’t installed by default
+   in your distribution, you can add it by running:
+   ~~~sh
+   ceylon plugin install ceylon.formatter/1.1.0
+   ~~~
    
    To format all Ceylon code in the `source` and `test-source` directories:
    ~~~sh
@@ -51,10 +52,11 @@
    
    - for [[Boolean]] or [[Integer]] values, use a Ceylon-style literal (`1`, `true`)
    - for [[Range]] values, use a Ceylon-style range operator `x..y`
-   - for [[ceylon.formatter.options::IndentMode]] values, see the documentation
-     of [[ceylon.formatter.options::parseIndentMode]]
+   - for [[IndentMode|ceylon.formatter.options::IndentMode]] values, see
+     the documentation of [[parseIndentMode|ceylon.formatter.options::parseIndentMode]]
    - for [[Iterable]] values, list the individual elements, separated by spaces
-   - for [[ceylon.formatter.options::LineBreakStrategy]], the only valid value is `default`
+   - for [[LineBreakStrategy|ceylon.formatter.options::LineBreakStrategy]],
+     the only valid value is `default`
    - for enumerated types, use the name of one of the object cases (`lf`, `all`)
    
    # Library usage
@@ -64,11 +66,11 @@
    or any other node.
    
    If the node was parsed from an existing file, don’t forget
-   to pass the token stream to [[format]] ([[format.tokens]]) –
+   to pass the token stream to [[format]] –
    without the token stream, the formatter can’t obtain the comments,
-   so they’ll not be present in the formatted file.
+   so they won’t be present in the formatted file.
    
-   To construct [[ceylon.formatter.options::FormattingOptions]],
+   To construct [[FormattingOptions|ceylon.formatter.options::FormattingOptions]],
    usage of named arguments is highly recommended:
    ~~~ceylon
    FormattingOptions {
@@ -76,8 +78,8 @@
        maxLineLength = 80;
    }
    ~~~
-   You can also use [[ceylon.formatter.options::SparseFormattingOptions]]
-   and [[ceylon.formatter.options::combinedOptions]] to compose several sets
+   You can also use [[SparseFormattingOptions|ceylon.formatter.options::SparseFormattingOptions]]
+   and [[combinedOptions|ceylon.formatter.options::combinedOptions]] to compose several sets
    of options, like this:
    ~~~ceylon
    combinedOptions {
