@@ -245,8 +245,9 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitAttributeSetterDefinition(AttributeSetterDefinition that) {
-        value context = writeModifier(fWriter, that.mainToken); // "assign"
-        assert (exists context);
+        value context = fWriter.openContext();
+        that.annotationList?.visit(this);
+        writeModifier(fWriter, that.mainToken); // "assign"
         that.identifier.visit(this);
         if (exists expr = that.specifierExpression) {
             expr.visit(this);
