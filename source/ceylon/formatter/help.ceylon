@@ -73,13 +73,13 @@ shared String? help(topic) {
     case ("options") {
         StringBuilder ret = StringBuilder();
         ret.append("The following options are available:");
-        // for (option in `class SparseFormattingOptions`.declaredMemberDeclarations<ValueDeclaration>()) {
-        // TODO workaround for ceylon/ceylon.language#566
-        //for (option in `class SparseFormattingOptions`.memberDeclarations<ValueDeclaration>().filter((ValueDeclaration element) => element.container == `class SparseFormattingOptions`)) {
-        for (option in `SparseFormattingOptions`.getAttributes<SparseFormattingOptions,Anything,Nothing>().filter((Attribute<SparseFormattingOptions,Anything,Nothing> element) {
+        for (option in `SparseFormattingOptions`
+            .getAttributes<SparseFormattingOptions,Anything,Nothing>()
+            .filter((Attribute<SparseFormattingOptions,Anything,Nothing> element) {
                 assert (exists c = element.container);
                 return c == `SparseFormattingOptions`;
             })) {
+            
             value optionDec = option.declaration;
             ret.append("\n\n");
             ret.append(optionDec.name);
