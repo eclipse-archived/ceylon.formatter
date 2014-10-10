@@ -129,3 +129,8 @@ test
 shared void test86_manyLineBreaks() {
     testIssue(86, "manyLineBreaks");
 }
+
+test
+shared void test90() {
+    testIssue(90);
+}
