@@ -1,3 +1,11 @@
+/*
+ NOTE:
+ 
+ The documentation is also used by --help=options
+ and printed _unformatted_ there.
+ Please use indented code blocks instead of fenced ones,
+ since the former are easier to read in plain text.
+ */
 {FormattingOption+} formattingOptions = {
     FormattingOption {
         "The indentation mode.";
@@ -105,41 +113,37 @@
         """The range of line breaks allowed between import elements.
            
            `0..0` is a “forced single-line” style:
-           ~~~
-           import java.lang { Thread, JString=String, Runtime { runtime } }
-           ~~~
+           
+               import java.lang { Thread, JString=String, Runtime { runtime } }
            
            `0..1` is “freeform” style:
-           ~~~
-           import java.lang {
-               Thread, JString=String,
-               Runtime {
-                   runtime
+           
+               import java.lang {
+                   Thread, JString=String,
+                   Runtime {
+                       runtime
+                   }
                }
-           }
-           ~~~
            
            `1..1` is “forced multi-line” style:
-           ~~~
-           import java.lang {
-               Thread,
-               JString=String,
-               Runtime {
-                   runtime
+           
+               import java.lang {
+                   Thread,
+                   JString=String,
+                   Runtime {
+                       runtime
+                   }
                }
-           }
-           ~~~
            
            (Of course, wider ranges like `0..3` are also permitted.)""";
         "Range<Integer>"; "lineBreaksBetweenImportElements"; /* = */ "1..1";
     },
     FormattingOption {
         """Decide if there should be spaces around the equals sign ('=') of an import alias, that is
-           ~~~
-           import java.lang { JString=String }
-           // vs
-           import java.lang { JString = String }
-           ~~~""";
+           
+               import java.lang { JString=String }
+               // vs
+               import java.lang { JString = String }""";
         "Boolean"; "spaceAroundImportAliasEqualsSign"; "false";
     },
     FormattingOption {
@@ -231,40 +235,37 @@
         """Decide how line breaks after specifier expression’s main tokens should be handled.
            
            * [[stack]]:
-           ~~~
-           Html html =>
-               Html {
-                   head = ...;
-                   body = ...;
-               }
-           ~~~
+                   Html html =>
+                       Html {
+                           head = ...;
+                           body = ...;
+                       }
            * [[addIndentBefore]]:
-           ~~~
-           Html html =>
-                   Html {
-               head = ...;
-               body = ...;
-           }
-           ~~~
+                   Html html =>
+                           Html {
+                       head = ...;
+                       body = ...;
+                   }
+           
            The Eclipse IDE’s “Correct Indentation” action produces [[addIndentBefore]].
            See [#37](https://github.com/lucaswerkmeister/ceylon.formatter/issues/37) for more information.
            
            To clarify: this option only applies if you have a line break directly after the `=` or `=>` token.
            Both
-           ~~~
-           Html html
-                   => Html {
-               head = ...;
-               body = ...;
-           }
-           ~~~
+           
+               Html html
+                       => Html {
+                   head = ...;
+                   body = ...;
+               }
+           
            (line break *before* `=>`) and
-           ~~~
-           Html html => Html {
-               head = ...;
-               body = ...;
-           }
-           ~~~
+           
+               Html html => Html {
+                   head = ...;
+                   body = ...;
+               }
+           
            (no line break around `=>` at all) are unaffected by this option.""";
         "IndentationAfterSpecifierExpressionStart"; "indentationAfterSpecifierExpressionStart"; /* = */ "addIndentBefore";
     },
@@ -279,38 +280,36 @@
     FormattingOption {
         "Decide whether `else` and `catch` should be on its own line.
          For example:
-         ~~~
-         if (something) {
-             // ...
-         } else {
-             // ...
-         }
-         ~~~
+         
+             if (something) {
+                 // ...
+             } else {
+                 // ...
+             }
+         
          vs.
-         ~~~
-         if (something) {
-             // ...
-         }
-         else {
-             // ...
-         }
-         ~~~";
+         
+             if (something) {
+                 // ...
+             }
+             else {
+                 // ...
+             }";
         "Boolean"; "elseOnOwnLine"; /* = */ "false";
     },
     FormattingOption {
         "Decide whether there should be spaces around satisfied interfaces and case types.
          For example:
-         ~~~
-         class MyClass()
-                 satisfies MyInterface&MyOtherInterface
-                 of CaseType1|CaseType2 { ... }
-         ~~~
+         
+             class MyClass()
+                     satisfies MyInterface&MyOtherInterface
+                     of CaseType1|CaseType2 { ... }
+         
          vs.
-         ~~~
-         class MyClass()
-                 satisfies MyInterface & MyOtherInterface
-                 of CaseType1 | CaseType2 { ... }
-         ~~~";
+         
+             class MyClass()
+                     satisfies MyInterface & MyOtherInterface
+                     of CaseType1 | CaseType2 { ... }";
         "Boolean"; "spaceAroundSatisfiesOf"; /* = */ "true";
     },
     FormattingOption {
