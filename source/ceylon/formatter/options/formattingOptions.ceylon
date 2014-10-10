@@ -9,6 +9,9 @@ import ceylon.file {
     File,
     parsePath
 }
+import ceylon.formatter {
+    help
+}
 "Reads a file with formatting options.
  
  The file consists of lines of key=value pairs or comments, like this:
@@ -55,49 +58,19 @@ Map<String,Anything(VariableOptions)> presets = HashMap {
 
 shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = process.arguments) {
     // first of all, the special cases --help and --version, which both cause exiting
-    if (arguments.contains("--help")) {
-        print(
-            "ceylon.formatter – a Ceylon module / program to format Ceylon source code.
-             
-             USAGE
-             
-                 ceylon run ceylon.formatter source
-             
-             or, if you’re worried about it breaking your source code (which shouldn’t happen –
-             if anything bad happens, error recovery kicks in and the original file is destroyed)
-             or you just want to test it out:
-             
-                 ceylon run ceylon.formatter source --to source-formatted
-             
-             You can also format multiple folders at the same time:
-             
-                 ceylon run ceylon.formatter source --and test-source --to formatted
-             
-             which will recreate the ‘source’ and ‘test-source’ folders inside the new ‘formatted’ folder.
-             
-             OPTIONS
-             
-             --help
-                 Print this help message.
-             
-             --version
-                 Print version information. The first line is always just the module name and version
-                 in the format that ‘ceylon run’ understands (“ceylon.formatter/x.y.z”), which might be
-                 useful for scripts.
-             
-             --${option name}=${option value}
-                 Set a formatting option. See the documentation of the FormattingOptions class for a list of
-                 options. The most useful ones are:
-                 
-                 --maxLineLength
-                     The maximum line length, or “unlimited”.
-                 
-                 --indentMode
-                     The indentation mode. Syntax: “x spaces” or “y-wide tabs” or “mix x-wide tabs, y spaces”.
-                 
-                 --lineBreak
-                     “lf”, “crlf”, or “os” for the operating system’s native line breaks."
-        );
+    if (nonempty helpArguments = arguments.select((String argument) => argument.startsWith("--help"))) {
+        for (helpArgument in helpArguments) {
+            if (helpArgument.startsWith("--help=")) {
+                value helpTopic = helpArgument["--help=".size...];
+                if (exists topicHelp = help(helpTopic)) {
+                    print(topicHelp);
+                } else {
+                    print("No help available for topic ‘``helpTopic``’.");
+                }
+            } else {
+                print(help(null));
+            }
+        }
         process.exit(0);
     } else if (arguments.contains("--version")) {
         print(

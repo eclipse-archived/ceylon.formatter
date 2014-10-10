@@ -20,6 +20,7 @@ OPTIONS
 
 --help
     Print this help message.
+    (--help=options prints help for the various options.)
 
 --version
     Print version information. The first line is always just the module name and version
@@ -27,8 +28,7 @@ OPTIONS
     useful for scripts.
 
 --${option name}=${option value}
-    Set a formatting option. See the documentation of the FormattingOptions class for a list of
-    options. The most useful ones are:
+    Set a formatting option. The most useful ones are:
     
     --maxLineLength
         The maximum line length, or “unlimited”.
@@ -37,7 +37,10 @@ OPTIONS
         The indentation mode. Syntax: “x spaces” or “y-wide tabs” or “mix x-wide tabs, y spaces”.
     
     --lineBreak
-        “lf”, “crlf”, or “os” for the operating system’s native line breaks.'
+        “lf”, “crlf”, or “os” for the operating system’s native line breaks.
+    
+    For a full list of options, see the output from ‘--help=options’
+    or the documentation of the FormattingOptions class.'
 
 . $CEYLON_HOME/bin/ceylon-sh-setup
 

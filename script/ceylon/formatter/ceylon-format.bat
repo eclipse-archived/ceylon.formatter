@@ -18,6 +18,7 @@ set "LONG_USAGE=%LONG_USAGE%OPTIONS"
 set "LONG_USAGE=%LONG_USAGE%"
 set "LONG_USAGE=%LONG_USAGE%--help"
 set "LONG_USAGE=%LONG_USAGE%    Print this help message."
+set "LONG_USAGE=%LONG_USAGE%    (--help=options prints help for the various options.)"
 set "LONG_USAGE=%LONG_USAGE%"
 set "LONG_USAGE=%LONG_USAGE%--version"
 set "LONG_USAGE=%LONG_USAGE%    Print version information. The first line is always just the module name and version"
@@ -25,8 +26,7 @@ set "LONG_USAGE=%LONG_USAGE%    in the format that ‘ceylon run’ understands 
 set "LONG_USAGE=%LONG_USAGE%    useful for scripts."
 set "LONG_USAGE=%LONG_USAGE%"
 set "LONG_USAGE=%LONG_USAGE%--${option name}=${option value}"
-set "LONG_USAGE=%LONG_USAGE%    Set a formatting option. See the documentation of the FormattingOptions class for a list of"
-set "LONG_USAGE=%LONG_USAGE%    options. The most useful ones are:"
+set "LONG_USAGE=%LONG_USAGE%    Set a formatting option. The most useful ones are:"
 set "LONG_USAGE=%LONG_USAGE%    "
 set "LONG_USAGE=%LONG_USAGE%    --maxLineLength"
 set "LONG_USAGE=%LONG_USAGE%        The maximum line length, or “unlimited”."
@@ -36,6 +36,9 @@ set "LONG_USAGE=%LONG_USAGE%        The indentation mode. Syntax: “x spaces”
 set "LONG_USAGE=%LONG_USAGE%    "
 set "LONG_USAGE=%LONG_USAGE%    --lineBreak"
 set "LONG_USAGE=%LONG_USAGE%        “lf”, “crlf”, or “os” for the operating system’s native line breaks."
+set "LONG_USAGE=%LONG_USAGE%    "
+set "LONG_USAGE=%LONG_USAGE%    For a full list of options, see the output from ‘--help=options’"
+set "LONG_USAGE=%LONG_USAGE%    or the documentation of the FormattingOptions class."
 
 call %CEYLON_HOME%\bin\ceylon-sh-setup.bat %*
 
