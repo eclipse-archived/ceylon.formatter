@@ -264,6 +264,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitBaseType(BaseType that) {
+        that.typeVariance?.visit(this);
         that.identifier.visit(this);
         that.typeArgumentList?.visit(this);
     }
@@ -593,6 +594,7 @@ shared class FormattingVisitor(
             => writeBinaryOpWithSpecialSpaces(fWriter, this, that);
     
     shared actual void visitEntryType(EntryType that) {
+        that.typeVariance?.visit(this);
         that.keyType.visit(this);
         fWriter.writeToken {
             "->";
@@ -731,6 +733,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitFunctionType(FunctionType that) {
+        that.typeVariance?.visit(this);
         that.returnType.visit(this);
         value context = fWriter.writeToken {
             "(";
@@ -760,6 +763,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitGroupedType(Tree.GroupedType that) {
+        that.typeVariance?.visit(this);
         value context = fWriter.writeToken {
             that.mainToken; // "<"
             lineBreaksAfter = noLineBreak;
@@ -958,6 +962,7 @@ shared class FormattingVisitor(
             => writeMetaLiteral(fWriter, this, that, "interface");
     
     shared actual void visitIntersectionType(IntersectionType that) {
+        that.typeVariance?.visit(this);
         value types = CeylonIterable(that.staticTypes).sequence();
         "Empty union type not allowed"
         assert (nonempty types);
@@ -1011,6 +1016,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitIterableType(IterableType that) {
+        that.typeVariance?.visit(this);
         value context = fWriter.writeToken {
             that.mainToken; // "{"
             lineBreaksAfter = noLineBreak;
@@ -1209,6 +1215,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitOptionalType(OptionalType that) {
+        that.typeVariance?.visit(this);
         that.definiteType.visit(this);
         fWriter.writeToken {
             that.mainEndToken; // "?"
@@ -1374,6 +1381,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitQualifiedType(QualifiedType that) {
+        that.typeVariance?.visit(this);
         that.outerType.visit(this);
         fWriter.writeToken {
             that.mainToken else "."; // the 'else "."' seems to be necessary for 'super.Klass' types
@@ -1525,6 +1533,7 @@ shared class FormattingVisitor(
     
     shared actual void visitSequenceType(SequenceType that) {
         // String[] is a SequenceType
+        that.typeVariance?.visit(this);
         that.elementType.visit(this);
         fWriter.writeToken {
             "["; // doesn’t seem like that token is in the AST anywhere
@@ -1741,6 +1750,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitTupleType(TupleType that) {
+        that.typeVariance?.visit(this);
         value context = fWriter.writeToken {
             that.mainToken; // "["
             lineBreaksAfter = noLineBreak;
@@ -1865,6 +1875,7 @@ shared class FormattingVisitor(
             => writeModifier(fWriter, that.mainToken); // "in" or "out"
     
     shared actual void visitUnionType(UnionType that) {
+        that.typeVariance?.visit(this);
         value types = CeylonIterable(that.staticTypes).sequence();
         "Empty union type not allowed"
         assert (nonempty types);
