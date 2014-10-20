@@ -74,7 +74,7 @@ shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = pro
         process.exit(0);
     } else if (arguments.contains("--version")) {
         print(
-            "`` `module ceylon.formatter`.name ``/`` `module ceylon.formatter`.version ``
+            "`` `module`.name ``/`` `module`.version ``
              Copyright 2014 Lucas Werkmeister
              Licensed under the Apache License, Version 2.0."
         );
