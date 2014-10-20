@@ -495,3 +495,8 @@ test
 shared void testLineCommentLineBreakCollision() {
     testFile("lineCommentLineBreakCollision");
 }
+
+test
+shared void testDecLiterals() {
+    testFile("decLiterals");
+}
