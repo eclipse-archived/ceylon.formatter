@@ -79,12 +79,10 @@ void writeMetaLiteral(FormattingWriter writer, FormattingVisitor visitor, MetaLi
         writeMetaLiteralStart(writer, start);
     }
     if (is TypeLiteral that) {
-        assert (that.type exists != that.objectExpression exists); // exactly one of these should exist
         that.type?.visit(visitor);
         that.objectExpression?.visit(visitor);
     } else if (is MemberLiteral that) {
         if (that.type exists || that.objectExpression exists) {
-            assert (that.type exists != that.objectExpression exists); // only one of these should exist
             that.type?.visit(visitor);
             that.objectExpression?.visit(visitor);
             writer.writeToken {
@@ -95,13 +93,13 @@ void writeMetaLiteral(FormattingWriter writer, FormattingVisitor visitor, MetaLi
                 lineBreaksAfter = noLineBreak;
             };
         }
-        that.identifier.visit(visitor);
+        that.identifier?.visit(visitor);
         that.typeArgumentList?.visit(visitor);
     } else if (is ModuleLiteral that) {
-        that.importPath.visit(visitor);
+        that.importPath?.visit(visitor);
     } else {
         assert (is PackageLiteral that);
-        that.importPath.visit(visitor);
+        that.importPath?.visit(visitor);
     }
     writeBacktickClosing(writer, that.mainEndToken, context);
 }
@@ -114,7 +112,7 @@ void writeMetaLiteralStart(FormattingWriter writer, String start) {
         lineBreaksBefore = noLineBreak;
         indentAfter = 1;
         spaceBefore = false;
-        spaceAfter = true;
+        spaceAfter = maxDesire - 1;
     };
 }
 
