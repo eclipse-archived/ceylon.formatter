@@ -500,3 +500,8 @@ test
 shared void testDecLiterals() {
     testFile("decLiterals");
 }
+
+test
+shared void testSpreadTypes() {
+    testFile("spreadTypes");
+}
