@@ -1604,6 +1604,17 @@ shared class FormattingVisitor(
     shared actual void visitSpreadOp(SpreadOp that)
             => writeSomeMemberOp(fWriter, that.mainToken);
     
+    shared actual void visitSpreadType(SpreadType that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "*"
+            spaceAfter = false; // TODO option?
+            lineBreaksAfter = noLineBreak;
+        };
+        assert (exists context);
+        that.type.visit(this);
+        fWriter.closeContext(context);
+    }
+    
     shared actual void visitStatement(Statement that) {
         value context = fWriter.openContext();
         that.visitChildren(this);
