@@ -213,8 +213,9 @@ Boolean wantsSpecialSpaces({Term*} terms) {
 
 "Terms in string templates might sometimes require spacing to disambiguate the syntax
  even if [[wantsSpecialSpaces]] says they don’t want spaces. For more information, see
- [ceylon-compiler#959](https://github.com/ceylon/ceylon-compiler/issues/959) or
- [ceylon-compiler#686](https://github.com/ceylon/ceylon-compiler/issues/686)."
+ [#47](https://github.com/ceylon/ceylon.formatter/issues/47),
+ [ceylon-spec#959](https://github.com/ceylon/ceylon-spec/issues/959), and/or
+ [ceylon-spec#686](https://github.com/ceylon/ceylon-spec/issues/686)."
 see (`function wantsSpecialSpaces`)
 Boolean wantsSpacesInStringTemplate(Term term) {
     variable Boolean startsWithBacktick = false;
