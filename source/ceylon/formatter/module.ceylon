@@ -91,11 +91,11 @@
    ~~~"""
 by ("Lucas Werkmeister <mail@lucaswerkmeister.de>")
 license ("http://www.apache.org/licenses/LICENSE-2.0.html")
-module ceylon.formatter "1.1.0" {
+module ceylon.formatter "1.1.1" {
     shared import java.base "7";
-    shared import com.redhat.ceylon.typechecker "1.1.0";
-    shared import com.redhat.ceylon.common "1.1.0";
-    shared import ceylon.file "1.1.0";
-    import ceylon.interop.java "1.1.0";
-    import ceylon.collection "1.1.0";
+    shared import com.redhat.ceylon.typechecker "1.1.1";
+    shared import com.redhat.ceylon.common "1.1.1";
+    shared import ceylon.file "1.1.1";
+    import ceylon.interop.java "1.1.1";
+    import ceylon.collection "1.1.1";
 }
