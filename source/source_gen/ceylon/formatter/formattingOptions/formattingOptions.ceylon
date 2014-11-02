@@ -325,6 +325,20 @@
          - `switch`
          - `case`";
         "Boolean"; "spaceAfterControlStructureKeyword"; /* = */ "true";
+    },
+    FormattingOption {
+        "If true, enforce that binary operators are always surrounded by spaces.
+         
+         Otherwise, the spaces may be omitted within complex expressions.
+         The exact rules for this are too complicated to be documented here,
+         but they result in spacing like this:
+         
+             value sum = 1 + 2 + 3;
+             value hollowCubeVolume = w*h*d - iW*iH*iD; // (inner) width/height/depth
+             value allEqual = a==b && b==c && c==d;
+             value regular = start..end;
+             value shifted = start+offset .. end+offset;";
+        "Boolean"; "forceSpaceAroundBinaryOp"; /* = */ "false";
     }
 };
 
