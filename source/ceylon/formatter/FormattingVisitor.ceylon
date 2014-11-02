@@ -1678,7 +1678,7 @@ shared class FormattingVisitor(
         "String template must have at least one string literal"
         assert (nonempty literals);
         "String template must have exactly one more string literal than expressions"
-        assert (literals.size == expressions.size + 1);
+        assert (literals.size == expressions.size+1);
         variable Boolean? wantsSpace;
         if (exists expression = expressions.first) {
             wantsSpace = wantsSpacesInStringTemplate(expression.term);

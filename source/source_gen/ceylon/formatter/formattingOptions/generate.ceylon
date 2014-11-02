@@ -107,7 +107,7 @@ class Generator() satisfies Destroyable {
         writer.write(") {\n");
         for (option in formattingOptions) {
             String[] lines = [*option.documentation.split { '\n'.equals; groupSeparators = false; }];
-            if (lines.size == 0 || option.documentation == "") {
+            if (lines.size==0 || option.documentation=="") {
                 writer.write("    \n");
             } else if (lines.size == 1) {
                 writer.write("    \n    \"\"\"``option.documentation``\"\"\"\n");
@@ -116,7 +116,7 @@ class Generator() satisfies Destroyable {
                 assert (exists lastLine = lines.last);
                 writer.write("    \n    \"\"\"``firstLine``\n");
                 if (lines.size > 2) {
-                    for (String line in lines[1 .. lines.size - 2]) {
+                    for (String line in lines[1 .. lines.size-2]) {
                         writer.write("       ``line``\n");
                     }
                 }
@@ -217,7 +217,7 @@ class Generator() satisfies Destroyable {
                                      } else ");
                     }
                 } else if (type.startsWith("{") && type.endsWith("*}")) {
-                    String innerType = type[1 : type.size - 3];
+                    String innerType = type[1 : type.size-3];
                     String parseFunction;
                     if (innerType == "String") {
                         parseFunction = "s";

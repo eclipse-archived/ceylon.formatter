@@ -35,7 +35,7 @@ shared Integer maxDesire = runtime.maxIntegerValue / 2;
 "The minimum value that is safe to use as [[FormattingWriter.writeToken]]’s `space[Before|After]` argument.
  
  Using a smaller value risks inverting the intended result due to overflow."
-shared Integer minDesire = runtime.minIntegerValue / 2 + 1;
+shared Integer minDesire = runtime.minIntegerValue/2 + 1;
 
 "Parses a `Boolean` or `Integer` value into a desire in range [[minDesire]]`..`[[maxDesire]].
  
@@ -220,7 +220,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
             } else {
                 for (char in (lines.last else "")) {
                     if (char == '\t') {
-                        m_CurrentWidth = (m_CurrentWidth % tabWidth == 0)
+                        m_CurrentWidth = (m_CurrentWidth%tabWidth == 0)
                                 then m_CurrentWidth + tabWidth
                                 else ((m_CurrentWidth / tabWidth) + 1) * tabWidth;
                     } else {
@@ -415,7 +415,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
             fastForward((AntlrToken? current) {
                     if (exists current) {
                         assert (exists lineBreaks = givenLineBreaks);
-                        if (current.type == lineComment || current.type == multiComment) {
+                        if (current.type==lineComment || current.type==multiComment) {
                             return fastForwardComment(current);
                         } else if (current.type == ws) {
                             givenLineBreaks = lineBreaks + current.text.count('\n'.equals);
@@ -432,7 +432,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         Range<Integer> otherRange = other.range;
         value inc1 = currentRange.decreasing then currentRange.reversed else currentRange;
         value inc2 = otherRange.decreasing then otherRange.reversed else otherRange;
-        variable value intersect = max { inc1.first, inc2.first }..min { inc1.last, inc2.last };
+        variable value intersect = max { inc1.first, inc2.first } .. min { inc1.last, inc2.last };
         if (intersect.decreasing) {
             /*
              The intersection was empty!
@@ -443,9 +443,9 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
              just the comment’s range.
              Otherwise, it’s probably a bug.
              */
-            if (currentlyAllowedLinebreaks.source == comment && other.source == comment) {
+            if (currentlyAllowedLinebreaks.source==comment && other.source==comment) {
                 // use the union instead
-                intersect = min { inc1.first, inc2.first }..max { inc1.last, inc2.last };
+                intersect = min { inc1.first, inc2.first } .. max { inc1.last, inc2.last };
             } else if (currentlyAllowedLinebreaks.source == comment) {
                 intersect = currentRange;
             } else if (other.source == comment) {
@@ -582,9 +582,9 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         Integer nextIndentBefore;
         
         "Line break count range must be nonnegative"
-        assert (lineBreaksBefore.first >= 0 && lineBreaksBefore.last >= 0);
+        assert (lineBreaksBefore.first>=0 && lineBreaksBefore.last>=0);
         "Line break count range must be nonnegative"
-        assert (lineBreaksAfter.first >= 0 && lineBreaksAfter.last >= 0);
+        assert (lineBreaksAfter.first>=0 && lineBreaksAfter.last>=0);
         
         // desugar
         Integer spaceBeforeDesire;
@@ -621,7 +621,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         fastForward((AntlrToken? current) {
                 if (exists current) {
                     assert (exists lineBreaks = givenLineBreaks);
-                    if (current.type == lineComment || current.type == multiComment) {
+                    if (current.type==lineComment || current.type==multiComment) {
                         /*
                          we treat comments as regular tokens
                          just with the difference that their before- and afterToken range isn’t given, but an option instead
@@ -662,7 +662,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                 }
             });
         intersectAllowedLineBreaks(AllowedLineBreaks(lineBreaksBefore, package.token), false);
-        for (i in 0:lineBreakAmount(givenLineBreaks)) {
+        for (i in 0 : lineBreakAmount(givenLineBreaks)) {
             tokenQueue.add(LineBreak());
         }
         givenLineBreaks = tokens exists then 0;
@@ -785,7 +785,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                 // second case: affects token stack and queue
                 Integer? stackIndex = tokenStack.firstIndexWhere(element.context.equals);
                 if (exists stackIndex) {
-                    for (i in stackIndex .. tokenStack.size - 1) {
+                    for (i in stackIndex .. tokenStack.size-1) {
                         tokenStack.deleteLast();
                     }
                 }
@@ -796,7 +796,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
             assert (is Null startIndex);
             Integer? stackIndex = tokenStack.firstIndexWhere(element.context.equals);
             if (exists stackIndex) {
-                for (i in stackIndex .. tokenStack.size - 1) {
+                for (i in stackIndex .. tokenStack.size-1) {
                     tokenStack.deleteLast();
                 }
             }
@@ -963,7 +963,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                 } else {
                     wantsSpaceAfter = null;
                 }
-                if (exists wantsSpaceAfter, wantsSpaceAfter + currentToken.wantsSpaceBefore >= 0) {
+                if (exists wantsSpaceAfter, wantsSpaceAfter+currentToken.wantsSpaceBefore >= 0) {
                     countingWriter.write(" ");
                 }
                 if (exists firstToken, currentToken == firstToken, is ClosingToken currentToken) {
@@ -1161,7 +1161,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         }
         intersectAllowedLineBreaks(AllowedLineBreaks(before, comment), false);
         MutableList<QueueElement> ret = LinkedList<QueueElement>();
-        for (i in 0:lineBreakAmount(givenLineBreaks else 1)) {
+        for (i in 0 : lineBreakAmount(givenLineBreaks else 1)) {
             ret.add(LineBreak());
         }
         currentlyAllowedLinebreaks = AllowedLineBreaks(after, comment);

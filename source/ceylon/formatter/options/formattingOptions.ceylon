@@ -53,7 +53,7 @@ shared FormattingOptions formattingFile(
 
 Map<String,String> sugarOptions = HashMap { "-w"->"--maxLineLength", "--maxLineWidth"->"--maxLineLength" };
 Map<String,Anything(VariableOptions)> presets = HashMap {
-    "--allmanStyle"->(void(VariableOptions options) => options.braceOnOwnLine = true)
+    "--allmanStyle" -> (void(VariableOptions options) => options.braceOnOwnLine = true)
 };
 
 shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = process.arguments) {
@@ -83,7 +83,7 @@ shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = pro
     
     String[] splitArguments = concatenate(*arguments.map((String s) {
                 if (exists index = s.firstIndexWhere('='.equals)) {
-                    return [s[... index - 1], s[index + 1 ...]];
+                    return [s[... index-1], s[index+1 ...]];
                 }
                 return [s];
             }));
@@ -106,7 +106,7 @@ shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = pro
             assert (exists option = splitArguments[i]);
             String optionName = (sugarOptions[option] else option)["--".size...];
             if (option == "--") {
-                remaining.addAll(splitArguments[(i + 1)...]);
+                remaining.addAll(splitArguments[(i + 1) ...]);
                 break;
             } else if (optionName == "profile") {
                 i++; // skip profile name
@@ -169,8 +169,8 @@ VariableOptions variableFormattingFile(String filename, SparseFormattingOptions 
                 continue;
             }
             if (exists i = line.firstIndexWhere('='.equals)) {
-                String key = line[... i - 1];
-                String item = line[i + 1 ...];
+                String key = line[... i-1];
+                String item = line[i+1 ...];
                 if (exists appender = lines[key]) {
                     appender.add(item);
                 } else {
@@ -181,7 +181,7 @@ VariableOptions variableFormattingFile(String filename, SparseFormattingOptions 
                 process.writeError("Missing value for option '``line``'!");
             }
         }
-        return parseFormattingOptions(lines.map((String->MutableList<String> option) => option.key->option.item.sequence()), baseOptions);
+        return parseFormattingOptions(lines.map((String->MutableList<String> option) => option.key -> option.item.sequence()), baseOptions);
     } else {
         throw Exception("File '``filename``' not found!");
     }

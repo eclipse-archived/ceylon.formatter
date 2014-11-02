@@ -61,7 +61,7 @@ shared class Spaces(spacesPerLevel) extends IndentMode() {
     object cache satisfies Cached<String> {
         shared actual MutableMap<Integer,String> cache = HashMap<Integer,String> {
             0->"",
-            1->"".join
+            1 -> "".join
                 { for (value i in 1..spacesPerLevel) " " } // todo: check speed of " ".join("", "", ...) vs "".join(" ", " ", ...)
         };
     }
@@ -144,7 +144,7 @@ shared class Mixed(tabs, spaces) extends IndentMode() {
         Integer fullWidth = level * spaces.widthOfLevel;
         String tabPart = tabs.indent(fullWidth / tabs.width);
         String spacesPart = "".join
-            { for (value i in 1..(fullWidth % tabs.width)) " " };
+            { for (value i in 1 .. (fullWidth % tabs.width)) " " };
         String indent = tabPart + spacesPart;
         cache.put(level, indent);
         return indent;
@@ -152,12 +152,12 @@ shared class Mixed(tabs, spaces) extends IndentMode() {
     
     shared actual Boolean equals(Object that) {
         if (is Mixed that) {
-            return tabs == that.tabs && spaces == that.spaces;
+            return tabs==that.tabs && spaces==that.spaces;
         } else {
             return false;
         }
     }
-    shared actual Integer hash => 31 * tabs.hash + spaces.hash;
+    shared actual Integer hash => 31*tabs.hash + spaces.hash;
 }
 
 "The [[IndentMode]] represented by the given [[String]], or [[null]] if the string can't be parsed.
@@ -171,8 +171,8 @@ shared IndentMode? parseIndentMode(String string) {
     try {
         if (exists mixIndex = string.inclusions("mix ").first) {
             if (exists commaIndex = string.inclusions(", ").first) {
-                value first = parseIndentMode(string["mix ".size .. commaIndex - 1]);
-                value second = parseIndentMode(string[commaIndex + ", ".size ...]);
+                value first = parseIndentMode(string["mix ".size .. commaIndex-1]);
+                value second = parseIndentMode(string[commaIndex+", ".size ...]);
                 if (is Tabs tabs = first) {
                     if (is Spaces spaces = second) {
                         return Mixed(tabs, spaces);
@@ -192,14 +192,14 @@ shared IndentMode? parseIndentMode(String string) {
                 throw Exception("Mixed doesn't contain a comma");
             }
         } else if (exists spaceIndex = string.inclusions(" spaces").first) {
-            value nString = string[... spaceIndex - 1];
+            value nString = string[... spaceIndex-1];
             if (exists n = parseInteger(nString)) {
                 return Spaces(n);
             } else {
                 throw Exception("Can't read space amount '``nString``'");
             }
         } else if (exists tabsIndex = string.inclusions("-wide tabs").first) {
-            value nString = string[... tabsIndex - 1];
+            value nString = string[... tabsIndex-1];
             if (exists n = parseInteger(nString)) {
                 return Tabs(n);
             } else {
