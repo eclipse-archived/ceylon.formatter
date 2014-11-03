@@ -1,0 +1,7 @@
+void testIssue99() {
+    value sum = 1 + 2 + 3;
+    value hollowCubeVolume = w*h*d - iW*iH*iD; // (inner) width/height/depth
+    value allEqual = a==b && b==c && c==d;
+    value regular = start..end;
+    value shifted = start+offset .. end+offset;
+}

@@ -74,7 +74,7 @@ shared Path commonRoot(
     while (parts.every((Path? p) => p exists) && parts.filter((Path? p) {
                 assert (exists first = parts.first, exists p);
                 return first == p;
-            }).size == parts.size) {
+            }).size==parts.size) {
         assert (is Path firstPart = parts.first);
         root = root.childPath(firstPart);
         parts = iterators.collect(nextOrNull<Path>);
@@ -117,7 +117,7 @@ shared <String[]->String>[] parseTranslations(String[] arguments) {
         } else if (argument == "--to") {
             if (exists nextArgument) {
                 if (exists current = currentSources) {
-                    translations.add(current.sequence()->nextArgument);
+                    translations.add(current.sequence() -> nextArgument);
                     currentSources = null;
                 } else {
                     process.writeErrorLine("Missing files or directories before '--to ``nextArgument``'!");
@@ -132,7 +132,7 @@ shared <String[]->String>[] parseTranslations(String[] arguments) {
                     process.writeErrorLine("Warning: Multiple files or directories collected with '--and', but not redirected with '--to'!");
                 }
                 for (fileOrDir in current.sequence()) {
-                    translations.add([fileOrDir]->fileOrDir);
+                    translations.add([fileOrDir] -> fileOrDir);
                 }
             }
             currentSources = LinkedList { argument };
@@ -144,7 +144,7 @@ shared <String[]->String>[] parseTranslations(String[] arguments) {
             process.writeErrorLine("Warning: Multiple files or directories collected with '--and', but not redirected with '--to'!");
         }
         for (fileOrDir in current.sequence()) {
-            translations.add([fileOrDir]->fileOrDir);
+            translations.add([fileOrDir] -> fileOrDir);
         }
     }
     return translations.sequence();

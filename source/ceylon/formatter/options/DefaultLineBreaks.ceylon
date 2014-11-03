@@ -38,7 +38,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
                     }
                     currentLength += token.text.size;
                     if (exists previousToken = tokens[tokenIndex - 1],
-                        previousToken.wantsSpaceAfter + token.wantsSpaceBefore >= 0) {
+                        previousToken.wantsSpaceAfter+token.wantsSpaceBefore >= 0) {
                         currentLength++; // space between tokens
                     }
                     tokenIndex++;

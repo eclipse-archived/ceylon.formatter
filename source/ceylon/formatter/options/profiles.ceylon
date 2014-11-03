@@ -70,7 +70,7 @@ shared FormattingOptions loadProfile(profile = "default", inherit = true, baseDi
     if (config.isSectionDefined("formatter")) {
         return combinedOptions(FormattingOptions(), parseFormattingOptions {
                 for (JString key in assertNonnulls(config.getOptionNames("formatter").array))
-                    key.string->assertNonempty(config.getOptionValues("formatter.``key``").array.map((JString? s) {
+                    key.string -> assertNonempty(config.getOptionValues("formatter.``key``").array.map((JString? s) {
                                 assert (exists s);
                                 return s.string;
                             }))

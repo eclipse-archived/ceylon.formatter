@@ -275,7 +275,17 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitBinaryOperatorExpression(BinaryOperatorExpression that) {
-        that.leftTerm.visit(this);
+        Term left = that.leftTerm;
+        Term right = that.rightTerm;
+        
+        if (samePrecedence(left, that)) {
+            // prevent stuff like 1+2 + 3, pretend it’s not a child
+            left.visit(this);
+        } else {
+            // normal case – expressions like a*b + c*d
+            visitBinaryOperatorExpressionChild(left);
+        }
+        
         fWriter.writeToken {
             that.mainToken;
             spaceBefore = true;
@@ -283,7 +293,40 @@ shared class FormattingVisitor(
             indentBefore = 2;
             nextIndentBefore = 2;
         };
-        that.rightTerm.visit(this);
+        
+        if (samePrecedence(right, that)) {
+            right.visit(this);
+        } else {
+            visitBinaryOperatorExpressionChild(right);
+        }
+    }
+    
+    "Visit an expression that is a child of another binary operator expression.
+     
+     If this is a binary operator expression itself, then the spaces around the operator
+     might be omitted; see [[useSpacesAroundBinaryOp]] for details."
+    see (`function useSpacesAroundBinaryOp`)
+    void visitBinaryOperatorExpressionChild(Term that) {
+        if (is BinaryOperatorExpression that) {
+            Term left = that.leftTerm;
+            Term right = that.rightTerm;
+            visitBinaryOperatorExpressionChild(left);
+            value useSpaces = options.forceSpaceAroundBinaryOp || useSpacesAroundBinaryOp(that);
+            fWriter.writeToken {
+                that.mainToken;
+                lineBreaksBefore = useSpaces then 0..1 else noLineBreak;
+                lineBreaksAfter = useSpaces then 0..1 else noLineBreak;
+                spaceBefore = useSpaces;
+                spaceAfter = useSpaces;
+                indentBefore = 2;
+                nextIndentBefore = 2;
+            };
+            visitBinaryOperatorExpressionChild(right);
+        } else if (is Expression that, !that.mainToken exists) {
+            visitBinaryOperatorExpressionChild(that.term);
+        } else {
+            that.visit(this);
+        }
     }
     
     shared actual void visitBody(Body that) {
@@ -529,13 +572,16 @@ shared class FormattingVisitor(
         Expression? upper = that.upperBound;
         Expression? length = that.length;
         
-        variable Boolean wantsSpaces = wantsSpecialSpaces({ lower?.term, upper?.term, length?.term }.coalesced);
+        variable Boolean wantsSpaces
+                = !{ lower?.term, upper?.term, length?.term }.coalesced
+            .map(unwrapExpression)
+            .every((Term t) => t is ExpressionWithoutSpaces);
         
         if (exists lower) {
             if (exists length) {
                 "Range can’t have an upper bound when it has a length"
                 assert (is Null upper);
-                lower.visit(this);
+                visitBinaryOperatorExpressionChild(lower);
                 fWriter.writeToken {
                     ":";
                     spaceBefore = wantsSpaces;
@@ -543,11 +589,11 @@ shared class FormattingVisitor(
                     lineBreaksBefore = noLineBreak;
                     lineBreaksAfter = noLineBreak;
                 };
-                length.visit(this);
+                visitBinaryOperatorExpressionChild(length);
             } else if (exists upper) {
                 "Range can’t have a length when it has an upper bound"
                 assert (is Null length);
-                lower.visit(this);
+                visitBinaryOperatorExpressionChild(lower);
                 fWriter.writeToken {
                     "..";
                     spaceBefore = wantsSpaces;
@@ -555,9 +601,9 @@ shared class FormattingVisitor(
                     lineBreaksBefore = noLineBreak;
                     lineBreaksAfter = noLineBreak;
                 };
-                upper.visit(this);
+                visitBinaryOperatorExpressionChild(upper);
             } else {
-                lower.visit(this);
+                visitBinaryOperatorExpressionChild(lower);
                 fWriter.writeToken {
                     "...";
                     spaceBefore = wantsSpaces;
@@ -574,7 +620,7 @@ shared class FormattingVisitor(
                 spaceAfter = wantsSpaces;
                 lineBreaksAfter = noLineBreak;
             };
-            upper.visit(this);
+            visitBinaryOperatorExpressionChild(upper);
         }
     }
     
@@ -591,7 +637,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitEntryOp(EntryOp that)
-            => writeBinaryOpWithSpecialSpaces(fWriter, this, that);
+            => visitBinaryOperatorExpressionChild(that);
     
     shared actual void visitEntryType(EntryType that) {
         that.typeVariance?.visit(this);
@@ -1394,7 +1440,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitRangeOp(RangeOp that)
-            => writeBinaryOpWithSpecialSpaces(fWriter, this, that);
+            => visitBinaryOperatorExpressionChild(that);
     
     shared actual void visitResourceList(ResourceList that) {
         value context = fWriter.writeToken {
@@ -1477,7 +1523,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitSegmentOp(SegmentOp that)
-            => writeBinaryOpWithSpecialSpaces(fWriter, this, that);
+            => visitBinaryOperatorExpressionChild(that);
     
     shared actual void visitSelfExpression(SelfExpression that) {
         fWriter.writeToken {
@@ -1632,7 +1678,7 @@ shared class FormattingVisitor(
         "String template must have at least one string literal"
         assert (nonempty literals);
         "String template must have exactly one more string literal than expressions"
-        assert (literals.size == expressions.size + 1);
+        assert (literals.size == expressions.size+1);
         variable Boolean? wantsSpace;
         if (exists expression = expressions.first) {
             wantsSpace = wantsSpacesInStringTemplate(expression.term);

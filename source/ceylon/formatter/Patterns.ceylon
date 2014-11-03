@@ -184,39 +184,72 @@ void writeTypeArgumentOrParameterList(FormattingWriter writer, Visitor visitor, 
     writer.closeContext(context);
 }
 
-void writeBinaryOpWithSpecialSpaces(FormattingWriter writer, Visitor visitor, RangeOp|SegmentOp|EntryOp that) {
-    Term left = (that of BinaryOperatorExpression).leftTerm;
-    Term right = (that of BinaryOperatorExpression).rightTerm;
-    Boolean wantsSpaces = wantsSpecialSpaces({ left, right });
-    left.visit(visitor);
-    writer.writeToken {
-        that.mainToken; // "..", ":" or "->"
-        lineBreaksBefore = noLineBreak;
-        lineBreaksAfter = noLineBreak;
-        spaceBefore = wantsSpaces;
-        spaceAfter = wantsSpaces;
-    };
-    right.visit(visitor);
+alias ExpressionWithoutSpaces => BaseMemberExpression|Literal|QualifiedMemberExpression|StringTemplate;
+
+Term unwrapExpression(Term term) {
+    if (is Expression term, !term.mainToken exists) {
+        return unwrapExpression(term.term);
+    } else {
+        return term;
+    }
 }
 
-"Special spacing rules for range operators: `1..2` and `3 - 2 .. 4 - 2` are both correctly formatted.
- See issue [#35](https://github.com/lucaswerkmeister/ceylon.formatter/issues/35)."
-Boolean wantsSpecialSpaces({Term*} terms) {
-    variable Boolean wantsSpaces = false;
-    for (term in terms) {
-        if (!wantsSpaces) {
-            wantsSpaces = !(term is Atom|Primary);
+"Determines if two binary operators have the same precedence.
+ 
+ Not all precedence levels are supported;
+ this is just a helper function for [[useSpacesAroundBinaryOp]]."
+Boolean samePrecedence(Term e1, Term e2)
+        => e1 is SumOp|DifferenceOp && e2 is SumOp|DifferenceOp
+        || e1 is ProductOp|QuotientOp|RemainderOp && e2 is ProductOp|QuotientOp|RemainderOp
+        || e1 is PowerOp && e2 is PowerOp
+        || e1 is ScaleOp && e2 is ScaleOp
+        || e1 is IntersectionOp && e2 is IntersectionOp
+        || e1 is UnionOp|ComplementOp && e2 is UnionOp|ComplementOp
+        || e1 is AndOp && e2 is AndOp
+        || e1 is OrOp && e2 is OrOp;
+
+"Determines whether there should be spaces around a binary operator or not.
+ 
+ The spaces are omitted if:
+ - the expression is a child of another [[BinaryOperatorExpression]] –
+   this can’t be checked by this function and must be tested externally –, and
+ - the children are both either
+   - [[ExpressionWithoutSpaces]] (i. e., [[Literal]], [[BaseMemberExpression]] or [[QualifiedMemberExpression]]), or
+   - the same kind of [[BinaryOperatorExpression]] (same precedence),
+     and also have their spaces omitted.
+ 
+ (The last rule is necessary to avoid `1+2 + 3`.)
+ 
+ For the first rule, range and entry operators (`..`, `:`, `->`)
+ should always be treated as if they were children of another binary operator expression.
+ 
+ This results in spacing like this:
+ 
+     value sum = 1 + 2 + 3;
+     value hollowCubeVolume = w*h*d - iW*iH*iD; // (inner) width/height/depth
+     value allEqual = a==b && b==c && c==d;
+     value regular = start..end;
+     value shifted = start+offset .. end+offset;
+ 
+ See [#99](https://github.com/ceylon/ceylon.formatter/issues/99)."
+Boolean useSpacesAroundBinaryOp(BinaryOperatorExpression e)
+        => !{ e.leftTerm, e.rightTerm }.map(unwrapExpression).every {
+    function selecting(Term t) {
+        if (t is ExpressionWithoutSpaces) {
+            return true;
+        } else if (is BinaryOperatorExpression t) {
+            return samePrecedence(t, e) && !useSpacesAroundBinaryOp(t);
+        } else {
+            return false;
         }
     }
-    return wantsSpaces;
-}
+};
 
-"Terms in string templates might sometimes require spacing to disambiguate the syntax
- even if [[wantsSpecialSpaces]] says they don’t want spaces. For more information, see
+"Terms in string templates might sometimes require spacing to disambiguate the syntax.
+ For more information, see
  [#47](https://github.com/ceylon/ceylon.formatter/issues/47),
  [ceylon-spec#959](https://github.com/ceylon/ceylon-spec/issues/959), and/or
  [ceylon-spec#686](https://github.com/ceylon/ceylon-spec/issues/686)."
-see (`function wantsSpecialSpaces`)
 Boolean wantsSpacesInStringTemplate(Term term) {
     variable Boolean startsWithBacktick = false;
     object startsWithBacktickVisitor extends GoLeftVisitor() {
@@ -231,5 +264,5 @@ Boolean wantsSpacesInStringTemplate(Term term) {
         shared actual void visitValueLiteral(ValueLiteral that) => startsWithBacktick = true;
     }
     term.visit(startsWithBacktickVisitor);
-    return startsWithBacktick || wantsSpecialSpaces { term };
+    return startsWithBacktick || !term is Primary;
 }

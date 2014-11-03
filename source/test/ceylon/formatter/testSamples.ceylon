@@ -82,7 +82,7 @@ void testFile(String filename) {
             actual += "\n";
         } else if (actual.endsWith("\n\n")) {
             // remove last trailing newline
-            actual = actual[0 .. actual.size - 2];
+            actual = actual[0 .. actual.size-2];
         }
         // now test that they're equal
         assertEquals(actual, expected);

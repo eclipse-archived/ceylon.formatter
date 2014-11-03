@@ -71,7 +71,7 @@ VariableOptions variableFormattingFile_meta(String filename, SparseFormattingOpt
                 "Line does not contain an equality sign"
                 assert (exists indexOfEquals);
                 String optionName = line[...indexOfEquals];
-                String optionValue = line[indexOfEquals + 1 ...];
+                String optionValue = line[indexOfEquals+1 ...];
                 
                 Attribute<VariableOptions>? attribute = `VariableOptions`.getAttribute<VariableOptions>(optionName);
                 assert (exists attribute);
@@ -79,7 +79,7 @@ VariableOptions variableFormattingFile_meta(String filename, SparseFormattingOpt
                 String fullTypeString = attribute.type.string;
                 Integer? endOfPackageIndex = fullTypeString.inclusions("::").first;
                 assert (exists endOfPackageIndex);
-                String trimmedTypeString = fullTypeString[endOfPackageIndex + 2 ...].trim('?'.equals);
+                String trimmedTypeString = fullTypeString[endOfPackageIndex+2 ...].trim('?'.equals);
                 String parseFunctionName = "parse" + trimmedTypeString;
                 FunctionDeclaration? parseFunction =
                         `package ceylon.language`.getFunction(parseFunctionName)
