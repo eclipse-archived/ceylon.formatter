@@ -95,7 +95,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
         
         variable Integer elementIndex = 0;
         while (exists element = elements[elementIndex], element != token) {
-            if (is LineBreak element) {
+            if (is FormattingWriter.LineBreak element) {
                 return elementIndex;
             }
             elementIndex++;
@@ -106,7 +106,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
              we’ve reached the end of the tokens without finding a suitable token;
              return the index of the first LineBreak or null if there isn’t one
              */
-            return elements.firstIndexWhere((FormattingWriter.QueueElement elem) => elem is LineBreak);
+            return elements.firstIndexWhere((FormattingWriter.QueueElement elem) => elem is FormattingWriter.LineBreak);
         }
         return elementIndex;
     }
