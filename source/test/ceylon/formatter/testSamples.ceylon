@@ -505,3 +505,8 @@ test
 shared void testSpreadTypes() {
     testFile("spreadTypes");
 }
+
+test
+shared void testObjectExpression() {
+    testFile("objectExpression");
+}
