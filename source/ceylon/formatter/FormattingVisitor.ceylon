@@ -1260,6 +1260,17 @@ shared class FormattingVisitor(
         that.classBody.visit(this);
     }
     
+    shared actual void visitObjectExpression(ObjectExpression that) {
+        fWriter.writeToken {
+            that.mainToken; // "object"
+            spaceBefore = true;
+            spaceAfter = true;
+        };
+        that.extendedType?.visit(this);
+        that.satisfiedTypes?.visit(this);
+        that.classBody.visit(this);
+    }
+    
     shared actual void visitOptionalType(OptionalType that) {
         that.typeVariance?.visit(this);
         that.definiteType.visit(this);
