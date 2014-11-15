@@ -510,3 +510,8 @@ test
 shared void testObjectExpression() {
     testFile("objectExpression");
 }
+
+test
+shared void testIfExpression() {
+    testFile("ifExpression");
+}
