@@ -870,6 +870,33 @@ shared class FormattingVisitor(
         fWriter.closeContext(context);
     }
     
+    shared actual void visitIfExpression(IfExpression that) {
+        fWriter.writeToken {
+            that.mainToken; // "if"
+            lineBreaksAfter = noLineBreak;
+            spaceAfter = options.spaceAfterControlStructureKeyword;
+        };
+        that.ifClause.conditionList.visit(this);
+        if (exists thenToken = that.ifClause.mainToken) {
+            fWriter.writeToken {
+                thenToken; // "then"
+                indentBefore = 2;
+                spaceBefore = true;
+                spaceAfter = true;
+            };
+        }
+        that.ifClause.expression?.visit(this);
+        if (exists elseClause = that.elseClause) {
+            fWriter.writeToken {
+                elseClause.mainToken; // "else"
+                indentBefore = 2;
+                spaceBefore = true;
+                spaceAfter = true;
+            };
+            elseClause.expression?.visit(this);
+        }
+    }
+    
     shared actual void visitImport(Import that) {
         fWriter.writeToken {
             that.mainToken; // "import"
