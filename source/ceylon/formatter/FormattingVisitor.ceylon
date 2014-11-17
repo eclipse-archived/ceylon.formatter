@@ -633,7 +633,7 @@ shared class FormattingVisitor(
             lineBreaksBefore = options.elseOnOwnLine then 1..1 else 0..0;
             spaceAfter = true;
         };
-        that.visitChildren(this);
+        that.block.visit(this);
     }
     
     shared actual void visitEntryOp(EntryOp that)
@@ -1754,7 +1754,7 @@ shared class FormattingVisitor(
             lineBreaksBefore = 1..1;
             spaceAfter = true;
         };
-        that.visitChildren(this);
+        that.block.visit(this);
     }
     
     shared actual void visitThenOp(ThenOp that) {
