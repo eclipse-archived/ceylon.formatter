@@ -44,15 +44,13 @@ shared Integer minDesire = runtime.minIntegerValue/2 + 1;
 shared Integer desire(Boolean|Integer desire) {
     if (is Integer desire) {
         return max { minDesire, min { maxDesire, desire } };
-    } else if (is Boolean desire) { // TODO unnecessary if here
+    } else {
         if (desire) {
             return maxDesire;
         } else {
             return minDesire;
         }
     }
-    // unreachable
-    return 0;
 }
 
 shared Range<Integer> noLineBreak = 0..0;
@@ -599,13 +597,11 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         if (is AntlrToken token) {
             tokenText = token.text;
         } else {
-            assert (is String token); // the typechecker can't figure that out (yet), see ceylon-spec#74
             tokenText = token;
         }
         if (is AntlrToken tokenInStream) {
             tokenInStreamText = tokenInStream.text;
         } else {
-            assert (is String tokenInStream); // the typechecker can't figure that out (yet), see ceylon-spec#74
             tokenInStreamText = tokenInStream;
         }
         allowLineBreakBefore = lineBreaksBefore.any(0.smallerThan);
@@ -677,7 +673,8 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         Integer sourceColumn;
         see (`value Token.targetColumn`)
         Integer() targetColumn;
-        if (is AntlrToken token) {
+        switch (token)
+        case (is AntlrToken) {
             if (token.type == stringStart) {
                 /*
                  start of a string template:
@@ -719,13 +716,13 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                 sourceColumn = token.charPositionInLine;
                 targetColumn = () => countingWriter.currentWidth;
             }
-        } else {
+        }
+        case (is String) {
             sourceColumn = 0; // meaningless
             /*
              hack: for now we assume the only multi-line tokens are multi-line string literals,
              so we use the amount of leading quotes to know how much we have to skip
              */
-            assert (is String token);
             targetColumn = () => countingWriter.currentWidth + token.takeWhile('"'.equals).size;
         }
         if (exists context) {
@@ -1127,7 +1124,6 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                 if (is QueueElement element) {
                     tokenQueue.add(element);
                 } else {
-                    assert (is Stop element);
                     hadStop = true;
                     if (element.consume, exists tokens) {
                         tokens.consume();

@@ -161,7 +161,6 @@ void writeTypeArgumentOrParameterList(FormattingWriter writer, Visitor visitor, 
     if (is TypeArgumentList list) {
         params = CeylonIterable(list.types).sequence();
     } else {
-        assert (is TypeParameterList list); // TODO remove
         params = CeylonIterable(list.typeParameterDeclarations).sequence();
     }
     assert (nonempty params);

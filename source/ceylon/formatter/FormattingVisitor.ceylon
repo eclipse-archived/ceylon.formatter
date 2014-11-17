@@ -591,8 +591,6 @@ shared class FormattingVisitor(
                 };
                 visitBinaryOperatorExpressionChild(length);
             } else if (exists upper) {
-                "Range can’t have a length when it has an upper bound"
-                assert (is Null length);
                 visitBinaryOperatorExpressionChild(lower);
                 fWriter.writeToken {
                     "..";
