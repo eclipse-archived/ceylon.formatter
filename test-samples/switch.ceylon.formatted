@@ -30,3 +30,9 @@ void testSwitchWithMultipleCases() {
         // do other stuff
     }
 }
+
+void testSwitchWithNewVariable() {
+    switch (arg = process.arguments.first)
+    case (is String) { print("Hello, ``arg``!"); }
+    case (null) { print("USAGE: ceylon run `` `module`.name ``/`` `module`.version `` [NAME]"); }
+}
