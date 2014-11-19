@@ -1736,7 +1736,7 @@ shared class FormattingVisitor(
             indentAfter = 1;
             lineBreaksAfter = noLineBreak;
         };
-        that.expression.visit(this);
+        that.switched.visit(this);
         fWriter.writeToken {
             ")"; // not in the AST as well
             context;
