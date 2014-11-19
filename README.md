@@ -6,11 +6,9 @@ A source code formatter for the [Ceylon programming language](http://ceylon-lang
 Current status
 --------------
 
-I consider the formatter itself ready for release;
-a [public beta](https://groups.google.com/forum/#!topic/ceylon-users/UZDhaNcfxtc) was launched a few weeks ago.
+[Version 1.1.0](https://github.com/ceylon/ceylon.formatter/releases/tag/1.1.0) was released and is [available from Herd](https://modules.ceylon-lang.org/modules/ceylon.formatter/1.1.0).
 
-However, the formatter is written for Ceylon 1.1;
-the current release version of Ceylon is 1.0, so I have to wait until Ceylon 1.1 is released for releasing `ceylon.formatter 1.1.0`.
+Version 1.1.5 is a work in progress; it will support the new language features of Ceylon 1.1.5, and also [improve spacing around binary operators](https://github.com/ceylon/ceylon.formatter/issues/99).
 
 Building
 --------
