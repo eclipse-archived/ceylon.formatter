@@ -380,7 +380,7 @@ shared class FormattingVisitor(
             that.mainToken; // "case"
             spaceBefore = true;
             spaceAfter = options.spaceAfterControlStructureKeyword;
-            lineBreaksBefore = 1..1;
+            lineBreaksBefore = that.block exists then 1..1 else 0..1; // allow inline switch/case/else expressions
             lineBreaksAfter = noLineBreak;
         };
         value context = fWriter.writeToken {
@@ -398,7 +398,12 @@ shared class FormattingVisitor(
             spaceBefore = false; // TODO option
             lineBreaksBefore = noLineBreak;
         };
-        that.block.visit(this);
+        that.block?.visit(this);
+        if (exists expr = that.expression) {
+            value exprContext = fWriter.openContext(1);
+            expr.visit(this);
+            fWriter.closeContext(exprContext);
+        }
     }
     
     shared actual void visitCaseTypes(CaseTypes that) {
@@ -868,6 +873,33 @@ shared class FormattingVisitor(
         fWriter.closeContext(context);
     }
     
+    shared actual void visitIfExpression(IfExpression that) {
+        fWriter.writeToken {
+            that.mainToken; // "if"
+            lineBreaksAfter = noLineBreak;
+            spaceAfter = options.spaceAfterControlStructureKeyword;
+        };
+        that.ifClause.conditionList.visit(this);
+        if (exists thenToken = that.ifClause.mainToken) {
+            fWriter.writeToken {
+                thenToken; // "then"
+                indentBefore = 2;
+                spaceBefore = true;
+                spaceAfter = true;
+            };
+        }
+        that.ifClause.expression?.visit(this);
+        if (exists elseClause = that.elseClause) {
+            fWriter.writeToken {
+                elseClause.mainToken; // "else"
+                indentBefore = 2;
+                spaceBefore = true;
+                spaceAfter = true;
+            };
+            elseClause.expression?.visit(this);
+        }
+    }
+    
     shared actual void visitImport(Import that) {
         fWriter.writeToken {
             that.mainToken; // "import"
@@ -1253,6 +1285,17 @@ shared class FormattingVisitor(
             spaceAfter = true;
         };
         that.identifier.visit(this);
+        that.extendedType?.visit(this);
+        that.satisfiedTypes?.visit(this);
+        that.classBody.visit(this);
+    }
+    
+    shared actual void visitObjectExpression(ObjectExpression that) {
+        fWriter.writeToken {
+            that.mainToken; // "object"
+            spaceBefore = true;
+            spaceAfter = true;
+        };
         that.extendedType?.visit(this);
         that.satisfiedTypes?.visit(this);
         that.classBody.visit(this);
@@ -1742,17 +1785,29 @@ shared class FormattingVisitor(
             context;
             spaceBefore = false; // TODO option
             lineBreaksBefore = noLineBreak;
-            lineBreaksAfter = 1..2;
+            lineBreaksAfter = 0..2;
         };
     }
     
     shared void visitSwitchElseClause(ElseClause that) {
         fWriter.writeToken {
             that.mainToken; // "else"
-            lineBreaksBefore = 1..1;
+            lineBreaksBefore = that.block exists then 1..1 else 0..1; // allow inline switch/case/else expressions
             spaceAfter = true;
         };
-        that.block.visit(this);
+        that.block?.visit(this);
+        if (exists expr = that.expression) {
+            value exprContext = fWriter.openContext(1);
+            expr.visit(this);
+            fWriter.closeContext(exprContext);
+        }
+    }
+    
+    shared actual void visitSwitchExpression(SwitchExpression that) {
+        that.switchClause.visit(this);
+        value context = fWriter.openContext(1);
+        that.switchCaseList.visit(this);
+        fWriter.closeContext(context);
     }
     
     shared actual void visitThenOp(ThenOp that) {

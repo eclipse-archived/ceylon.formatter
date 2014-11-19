@@ -505,3 +505,18 @@ test
 shared void testSpreadTypes() {
     testFile("spreadTypes");
 }
+
+test
+shared void testObjectExpression() {
+    testFile("objectExpression");
+}
+
+test
+shared void testIfExpression() {
+    testFile("ifExpression");
+}
+
+test
+shared void testSwitchExpression() {
+    testFile("switchExpression");
+}
