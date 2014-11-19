@@ -515,3 +515,8 @@ test
 shared void testIfExpression() {
     testFile("ifExpression");
 }
+
+test
+shared void testSwitchExpression() {
+    testFile("switchExpression");
+}
