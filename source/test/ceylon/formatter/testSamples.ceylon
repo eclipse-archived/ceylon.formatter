@@ -507,6 +507,11 @@ shared void testSpreadTypes() {
 }
 
 test
+shared void testLet() {
+    testFile("let");
+}
+
+test
 shared void testObjectExpression() {
     testFile("objectExpression");
 }

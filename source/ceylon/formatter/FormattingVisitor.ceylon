@@ -1131,6 +1131,46 @@ shared class FormattingVisitor(
         };
     }
     
+    shared actual void visitLetClause(LetClause that) {
+        fWriter.writeToken {
+            that.mainToken; // "let"
+            lineBreaksAfter = noLineBreak;
+            spaceAfter = options.spaceAfterControlStructureKeyword;
+        };
+        value parenContext = fWriter.writeToken {
+            "(";
+            lineBreaksBefore = noLineBreak;
+            indentAfter = 1;
+            spaceAfter = false;
+        };
+        value variables = CeylonIterable(that.variables).sequence();
+        "Empty variable list not allowed"
+        assert (exists first = variables.first);
+        variable value innerContext = fWriter.openContext();
+        first.visit(this);
+        for (variable in variables.rest) {
+            fWriter.writeToken {
+                ",";
+                lineBreaksBefore = noLineBreak;
+                spaceBefore = false;
+                spaceAfter = true;
+                innerContext;
+            };
+            innerContext = fWriter.openContext();
+            variable.visit(this);
+        }
+        fWriter.writeToken {
+            that.mainEndToken; // ")"
+            lineBreaksBefore = noLineBreak;
+            spaceBefore = false;
+            spaceAfter = 0;
+            parenContext;
+        };
+        value context = fWriter.openContext(1);
+        that.expression.visit(this);
+        fWriter.closeContext(context);
+    }
+    
     shared actual void visitLiteral(Literal that) {
         fWriter.writeToken {
             that.mainToken;
