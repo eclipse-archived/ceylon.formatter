@@ -1160,7 +1160,7 @@ shared class FormattingVisitor(
             variable.visit(this);
         }
         fWriter.writeToken {
-            that.mainEndToken; // ")"
+            ")"; // deleted from the AST
             lineBreaksBefore = noLineBreak;
             spaceBefore = false;
             spaceAfter = 0;
