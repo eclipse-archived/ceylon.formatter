@@ -8,3 +8,6 @@ Anything noThenIfExpression =
 Anything noElseIfExpresson =
         if (true || false)
         then 1;
+void ifExpr() {
+    print(if (true) then 1 else 0);
+}

@@ -12,4 +12,5 @@ void testSwitchExpression() {
         case (2)
             c - 1
         else nothing;
+    print(switch (true) case (true) "true");
 }
