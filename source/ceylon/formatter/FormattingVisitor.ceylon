@@ -1333,7 +1333,6 @@ shared class FormattingVisitor(
     shared actual void visitObjectExpression(ObjectExpression that) {
         fWriter.writeToken {
             that.mainToken; // "object"
-            spaceBefore = true;
             spaceAfter = true;
         };
         that.extendedType?.visit(this);
@@ -1809,7 +1808,6 @@ shared class FormattingVisitor(
     shared actual void visitSwitchClause(SwitchClause that) {
         fWriter.writeToken {
             that.mainToken; // "switch"
-            spaceBefore = true;
             spaceAfter = options.spaceAfterControlStructureKeyword;
             lineBreaksAfter = noLineBreak;
         };
