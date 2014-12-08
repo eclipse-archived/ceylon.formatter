@@ -10,7 +10,7 @@ import ceylon.formatter {
 }
 
 test
-void testCommandLineFiles() {
+shared void testCommandLineFiles() {
     value testCases = {
         [{ "a/b/c", "a/c" }, "a"],
         [{ "a/b/c" }, "a/b/c"],

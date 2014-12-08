@@ -9,7 +9,7 @@ import ceylon.formatter.options {
 }
 
 test
-void testIndentMode() {
+shared void testIndentMode() {
     value spaces = Spaces(5);
     value tabs = Tabs(7);
     value mixed = Mixed(Tabs(9), Spaces(3));
