@@ -10,7 +10,6 @@ import ceylon.language.meta.model {
     Attribute,
     Type,
     UnionType,
-    IntersectionType,
     ClassOrInterface
 }
 
