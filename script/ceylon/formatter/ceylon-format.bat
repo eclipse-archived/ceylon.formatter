@@ -1,3 +1,4 @@
+@echo off
 set "USAGE=[OPTION]... ( FILE [--and FILE]... [--to FILE] )..."
 set "DESCRIPTION=format Ceylon source code"
 set "LONG_USAGE=    ceylon run ceylon.formatter source"
