@@ -2,17 +2,17 @@
 
 USAGE='[OPTION]... ( FILE [--and FILE]... [--to FILE] )...'
 DESCRIPTION='format Ceylon source code'
-LONG_USAGE='    ceylon run ceylon.formatter source
+LONG_USAGE='    ceylon format source
 
 or, if you’re worried about it breaking your source code (which shouldn’t happen –
 if anything bad happens, error recovery kicks in and the original file is destroyed)
 or you just want to test it out:
 
-    ceylon run ceylon.formatter source --to source-formatted
+    ceylon format source --to source-formatted
 
 You can also format multiple folders at the same time:
 
-    ceylon run ceylon.formatter source --and test-source --to formatted
+    ceylon format source --and test-source --to formatted
 
 which will recreate the ‘source’ and ‘test-source’ folders inside the new ‘formatted’ folder.
 
