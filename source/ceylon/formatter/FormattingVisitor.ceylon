@@ -521,6 +521,22 @@ shared class FormattingVisitor(
         };
     }
     
+    shared actual void visitConstructor(Constructor that) {
+        value context = fWriter.openContext();
+        that.annotationList.visit(this);
+        fWriter.writeToken {
+            that.mainToken; // "new"
+            spaceBefore = true;
+            spaceAfter = true;
+            lineBreaksAfter = noLineBreak;
+        };
+        that.identifier.visit(this);
+        that.parameterList?.visit(this);
+        that.delegatedConstructor?.visit(this);
+        that.block.visit(this);
+        fWriter.closeContext(context);
+    }
+    
     shared actual void visitContinue(Continue that) {
         value context = fWriter.writeToken {
             that.mainToken; // "continue"
@@ -549,6 +565,18 @@ shared class FormattingVisitor(
             spaceAfter = true;
         };
         that.rightTerm.visit(this);
+    }
+    
+    shared actual void visitDelegatedConstructor(DelegatedConstructor that) {
+        fWriter.writeToken {
+            that.mainToken; // "extends"
+            indentBefore = options.indentBeforeTypeInfo;
+            lineBreaksAfter = noLineBreak;
+            spaceBefore = true;
+            spaceAfter = true;
+        };
+        that.type.visit(this);
+        that.invocationExpression.visit(this);
     }
     
     shared actual void visitDynamic(Dynamic that) {
