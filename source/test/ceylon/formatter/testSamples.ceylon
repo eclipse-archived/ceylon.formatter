@@ -525,3 +525,8 @@ test
 shared void testSwitchExpression() {
     testFile("switchExpression");
 }
+
+test
+shared void testConstructor() {
+    testFile("constructor");
+}
