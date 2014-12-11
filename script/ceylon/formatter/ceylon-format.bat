@@ -1,45 +1,86 @@
 @echo off
+setlocal EnableDelayedExpansion
+
 set "USAGE=[OPTION]... ( FILE [--and FILE]... [--to FILE] )..."
 set "DESCRIPTION=format Ceylon source code"
-set "LONG_USAGE=    ceylon format source"
-set "LONG_USAGE=%LONG_USAGE%"
-set "LONG_USAGE=%LONG_USAGE%or, if you’re worried about it breaking your source code (which shouldn’t happen –"
-set "LONG_USAGE=%LONG_USAGE%if anything bad happens, error recovery kicks in and the original file is destroyed)"
-set "LONG_USAGE=%LONG_USAGE%or you just want to test it out:"
-set "LONG_USAGE=%LONG_USAGE%"
-set "LONG_USAGE=%LONG_USAGE%    ceylon format source --to source-formatted"
-set "LONG_USAGE=%LONG_USAGE%"
-set "LONG_USAGE=%LONG_USAGE%You can also format multiple folders at the same time:"
-set "LONG_USAGE=%LONG_USAGE%"
-set "LONG_USAGE=%LONG_USAGE%    ceylon format source --and test-source --to formatted"
-set "LONG_USAGE=%LONG_USAGE%"
-set "LONG_USAGE=%LONG_USAGE%which will recreate the ‘source’ and ‘test-source’ folders inside the new ‘formatted’ folder."
-set "LONG_USAGE=%LONG_USAGE%"
-set "LONG_USAGE=%LONG_USAGE%OPTIONS"
-set "LONG_USAGE=%LONG_USAGE%"
-set "LONG_USAGE=%LONG_USAGE%--help"
-set "LONG_USAGE=%LONG_USAGE%    Print this help message."
-set "LONG_USAGE=%LONG_USAGE%    (--help=options prints help for the various options.)"
-set "LONG_USAGE=%LONG_USAGE%"
-set "LONG_USAGE=%LONG_USAGE%--version"
-set "LONG_USAGE=%LONG_USAGE%    Print version information. The first line is always just the module name and version"
-set "LONG_USAGE=%LONG_USAGE%    in the format that ‘ceylon run’ understands (“ceylon.formatter/x.y.z”), which might be"
-set "LONG_USAGE=%LONG_USAGE%    useful for scripts."
-set "LONG_USAGE=%LONG_USAGE%"
-set "LONG_USAGE=%LONG_USAGE%--${option name}=${option value}"
-set "LONG_USAGE=%LONG_USAGE%    Set a formatting option. The most useful ones are:"
-set "LONG_USAGE=%LONG_USAGE%    "
-set "LONG_USAGE=%LONG_USAGE%    --maxLineLength"
-set "LONG_USAGE=%LONG_USAGE%        The maximum line length, or “unlimited”."
-set "LONG_USAGE=%LONG_USAGE%    "
-set "LONG_USAGE=%LONG_USAGE%    --indentMode"
-set "LONG_USAGE=%LONG_USAGE%        The indentation mode. Syntax: “x spaces” or “y-wide tabs” or “mix x-wide tabs, y spaces”."
-set "LONG_USAGE=%LONG_USAGE%    "
-set "LONG_USAGE=%LONG_USAGE%    --lineBreak"
-set "LONG_USAGE=%LONG_USAGE%        “lf”, “crlf”, or “os” for the operating system’s native line breaks."
-set "LONG_USAGE=%LONG_USAGE%    "
-set "LONG_USAGE=%LONG_USAGE%    For a full list of options, see the output from ‘--help=options’"
-set "LONG_USAGE=%LONG_USAGE%    or the documentation of the FormattingOptions class."
+set LONG_USAGE=    ceylon run ceylon.formatter source^
+
+^
+
+or, if you're worried about it breaking your source code (which shouldn't happen --^
+
+if anything bad happens, error recovery kicks in and the original file is destroyed)^
+
+or you just want to test it out:^
+
+^
+
+    ceylon run ceylon.formatter source --to source-formatted^
+
+^
+
+You can also format multiple folders at the same time:^
+
+^
+
+    ceylon run ceylon.formatter source --and test-source --to formatted^
+
+^
+
+which will recreate the 'source' and 'test-source' folders inside the new 'formatted' folder.^
+
+^
+
+OPTIONS^
+
+^
+
+--help^
+
+    Print this help message.^
+
+    (--help=options prints help for the various options.)^
+
+^
+
+--version^
+
+    Print version information. The first line is always just the module name and version^
+
+    in the format that 'ceylon run' understands ("ceylon.formatter/x.y.z"), which might be^
+
+    useful for scripts.^
+
+^
+
+--${option name}=${option value}^
+
+    Set a formatting option. The most useful ones are:^
+
+    ^
+
+    --maxLineLength^
+
+        The maximum line length, or "unlimited".^
+
+    ^
+
+    --indentMode^
+
+        The indentation mode. Syntax: "x spaces" or "y-wide tabs" or "mix x-wide tabs, y spaces".^
+
+    ^
+
+    --lineBreak^
+
+        "lf", "crlf", or "os" for the operating system's native line breaks.^
+
+    ^
+
+    For a full list of options, see the output from '--help=options'^
+
+    or the documentation of the FormattingOptions class.^
+
 
 call %CEYLON_HOME%\bin\ceylon-sh-setup.bat %*
 
