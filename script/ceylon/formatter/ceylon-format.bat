@@ -9,7 +9,7 @@ set LONG_USAGE=    ceylon run ceylon.formatter source^
 
 or, if you're worried about it breaking your source code (which shouldn't happen --^
 
-if anything bad happens, error recovery kicks in and the original file is destroyed)^
+if anything bad happens, error recovery kicks in and the original file is restored)^
 
 or you just want to test it out:^
 

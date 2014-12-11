@@ -5,7 +5,7 @@ DESCRIPTION='format Ceylon source code'
 LONG_USAGE='    ceylon format source
 
 or, if you’re worried about it breaking your source code (which shouldn’t happen –
-if anything bad happens, error recovery kicks in and the original file is destroyed)
+if anything bad happens, error recovery kicks in and the original file is restored)
 or you just want to test it out:
 
     ceylon format source --to source-formatted
