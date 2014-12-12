@@ -4,9 +4,7 @@ USAGE='[OPTION]... ( FILE [--and FILE]... [--to FILE] )...'
 DESCRIPTION='format Ceylon source code'
 LONG_USAGE='    ceylon format source
 
-or, if you’re worried about it breaking your source code (which shouldn’t happen –
-if anything bad happens, error recovery kicks in and the original file is restored)
-or you just want to test it out:
+or, if you’re worried about it breaking your source code (which shouldn’t happen – if anything bad happens, error recovery kicks in and the original file is restored) or you just want to test it out:
 
     ceylon format source --to source-formatted
 
@@ -23,9 +21,7 @@ OPTIONS
     (--help=options prints help for the various options.)
 
 --version
-    Print version information. The first line is always just the module name and version
-    in the format that ‘ceylon run’ understands (“ceylon.formatter/x.y.z”), which might be
-    useful for scripts.
+    Print version information. The first line is always just the module name and version in the format that ‘ceylon run’ understands (“ceylon.formatter/x.y.z”), which might be useful for scripts.
 
 --${option name}=${option value}
     Set a formatting option. The most useful ones are:
@@ -39,8 +35,7 @@ OPTIONS
     --lineBreak
         “lf”, “crlf”, or “os” for the operating system’s native line breaks.
     
-    For a full list of options, see the output from ‘--help=options’
-    or the documentation of the FormattingOptions class.'
+    For a full list of options, see the output from ‘--help=options’ or the documentation of the FormattingOptions class.'
 
 . $CEYLON_HOME/bin/ceylon-sh-setup
 

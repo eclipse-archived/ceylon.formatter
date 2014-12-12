@@ -8,9 +8,7 @@ set LONG_USAGE=    ceylon run ceylon.formatter source^
 ^
 
 or, if you're worried about it breaking your source code (which shouldn't happen --^
-
 if anything bad happens, error recovery kicks in and the original file is restored)^
-
 or you just want to test it out:^
 
 ^
@@ -46,9 +44,7 @@ OPTIONS^
 --version^
 
     Print version information. The first line is always just the module name and version^
-
     in the format that 'ceylon run' understands ("ceylon.formatter/x.y.z"), which might be^
-
     useful for scripts.^
 
 ^
@@ -78,7 +74,6 @@ OPTIONS^
     ^
 
     For a full list of options, see the output from '--help=options'^
-
     or the documentation of the FormattingOptions class.^
 
 
