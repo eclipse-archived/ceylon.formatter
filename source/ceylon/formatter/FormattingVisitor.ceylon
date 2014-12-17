@@ -1135,28 +1135,27 @@ shared class FormattingVisitor(
         };
     }
     
-    shared actual void visitKeyValueIterator(KeyValueIterator that) {
-        value context = fWriter.writeToken {
-            that.mainToken; // "("
-            spaceAfter = options.spaceAfterValueIteratorOpeningParenthesis;
-            lineBreaksAfter = noLineBreak;
-        };
-        that.keyVariable.visit(this);
+    shared actual void visitKeyValuePattern(KeyValuePattern that) {
+        that.key.visit(this);
+        Boolean spacesAround = { that.key, that.\ivalue }.any((pattern) {
+            if (is VariablePattern pattern) {
+                if (is ValueModifier type = pattern.variable.type) {
+                    return type.mainToken exists; // fake value modifiers have no token
+                } else {
+                    return true;
+                }
+            } else {
+                return false;
+            }
+        });
         fWriter.writeToken {
             "->"; // token is nowhere in the AST
-            spaceBefore = false;
-            spaceAfter = false;
-            lineBreaksBefore = noLineBreak;
-            lineBreaksAfter = noLineBreak;
+            spaceBefore = spacesAround;
+            spaceAfter = spacesAround;
+            lineBreaksBefore = spacesAround then 0..1 else noLineBreak;
+            lineBreaksAfter = spacesAround then 0..1 else noLineBreak;
         };
-        that.valueVariable.visit(this);
-        that.specifierExpression.visit(this);
-        fWriter.writeToken {
-            that.mainEndToken; // ")"
-            context;
-            spaceBefore = options.spaceBeforeValueIteratorClosingParenthesis;
-            lineBreaksBefore = noLineBreak;
-        };
+        that.\ivalue.visit(this);
     }
     
     shared actual void visitLetClause(LetClause that) {
@@ -1461,6 +1460,22 @@ shared class FormattingVisitor(
         };
     }
     
+    shared actual void visitPatternIterator(PatternIterator that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "("
+            spaceAfter = options.spaceAfterValueIteratorOpeningParenthesis;
+            lineBreaksAfter = noLineBreak;
+        };
+        that.pattern.visit(this);
+        that.specifierExpression.visit(this);
+        fWriter.writeToken {
+            that.mainEndToken; // ")"
+            context;
+            spaceBefore = options.spaceBeforeValueIteratorClosingParenthesis;
+            lineBreaksBefore = noLineBreak;
+        };
+    }
+    
     shared actual void visitPositionalArgumentList(PositionalArgumentList that) {
         Token? openingParen = that.mainToken;
         Token? closingParen = that.mainEndToken;
@@ -1657,13 +1672,15 @@ shared class FormattingVisitor(
     
     shared actual void visitSequencedType(SequencedType that) {
         // String* is a SequencedType
+        // the rest in the destructure pattern [first, *rest] or [first, String *rest] also has a SequencedType
+        // the * is the end token in the former case, and the start token in the latter case.
         that.type.visit(this);
         fWriter.writeToken {
-            that.mainEndToken; // "*" or "+"
+            that.mainEndToken else that.mainToken; // "*" or "+";
             lineBreaksBefore = noLineBreak;
             lineBreaksAfter = noLineBreak;
-            spaceBefore = false;
-            spaceAfter = 10;
+            spaceBefore = !that.mainEndToken exists;
+            spaceAfter = that.mainEndToken exists then 10 else false;
         };
     }
     
@@ -1925,6 +1942,32 @@ shared class FormattingVisitor(
         };
     }
     
+    shared actual void visitTuplePattern(TuplePattern that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "["
+            spaceAfter = -1000;
+            indentAfter = 1;
+        };
+        value patterns = CeylonIterable(that.patterns).sequence();
+        if (exists firstPattern = patterns.first) {
+            firstPattern.visit(this);
+            for (pattern in patterns.rest) {
+                fWriter.writeToken {
+                    ",";
+                    spaceBefore = false;
+                    spaceAfter = true;
+                    lineBreaksBefore = noLineBreak;
+                };
+                pattern.visit(this);
+            }
+        }
+        fWriter.writeToken {
+            that.mainEndToken; // "]"
+            context;
+            spaceBefore = -1000;
+        };
+    }
+    
     shared actual void visitTupleType(TupleType that) {
         that.typeVariance?.visit(this);
         value context = fWriter.writeToken {
@@ -2113,6 +2156,10 @@ shared class FormattingVisitor(
              (see #27)
              */
         }
+    }
+    
+    shared actual void visitVariablePattern(VariablePattern that) {
+        that.variable.visit(this);
     }
     
     shared actual void visitVoidModifier(VoidModifier that) {
