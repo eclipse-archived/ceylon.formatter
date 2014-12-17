@@ -530,3 +530,8 @@ test
 shared void testConstructor() {
     testFile("constructor");
 }
+
+test
+shared void testDestructure() {
+    testFile("destructure");
+}
