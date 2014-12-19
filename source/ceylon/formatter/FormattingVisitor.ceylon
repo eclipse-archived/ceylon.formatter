@@ -1227,9 +1227,7 @@ shared class FormattingVisitor(
         if (exists block = that.block) {
             block.visit(this);
         } else {
-            if (exists specifier = that.specifierExpression) {
-                specifier.visit(this);
-            }
+            that.specifierExpression?.visit(this);
             writeSemicolon(fWriter, that.mainEndToken, context);
         }
     }
@@ -1237,9 +1235,7 @@ shared class FormattingVisitor(
     shared actual void visitMethodDeclaration(MethodDeclaration that) {
         value context = fWriter.openContext();
         visitAnyMethod(that);
-        if (exists SpecifierExpression expr = that.specifierExpression) {
-            expr.visit(this);
-        }
+        that.specifierExpression?.visit(this);
         if (exists semicolon = that.mainEndToken) {
             writeSemicolon(fWriter, semicolon, context);
         } else {
@@ -1919,9 +1915,7 @@ shared class FormattingVisitor(
                     then options.spaceAfterControlStructureKeyword
                     else true;
         };
-        if (exists resources = that.resourceList) {
-            resources.visit(this);
-        }
+        that.resourceList?.visit(this);
         that.block.visit(this);
     }
     
