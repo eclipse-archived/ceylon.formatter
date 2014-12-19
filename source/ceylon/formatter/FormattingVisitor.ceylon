@@ -478,10 +478,11 @@ shared class FormattingVisitor(
     
     shared actual void visitCompilationUnit(CompilationUnit compilationUnit) {
         compilationUnit.importList.visit(this);
-        if (nonempty decs = CeylonIterable(compilationUnit.moduleDescriptors)
-                .chain(CeylonIterable(compilationUnit.packageDescriptors))
-                .chain(CeylonIterable(compilationUnit.declarations))
-                .sequence()) {
+        if (nonempty decs = concatenate(*{
+                    compilationUnit.moduleDescriptors,
+                    compilationUnit.packageDescriptors,
+                    compilationUnit.declarations
+                }.map(CeylonIterable))) {
             if (!compilationUnit.importList.imports.empty) {
                 fWriter.requireAtLeastLineBreaks(1);
             }
