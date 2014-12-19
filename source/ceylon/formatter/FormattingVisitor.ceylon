@@ -1575,8 +1575,8 @@ shared class FormattingVisitor(
                     spaceAfter = true;
                     lineBreaksBefore = noLineBreak;
                 };
+                resource.visit(this);
                 lastResource = resource;
-                lastResource.visit(this);
             }
         }
         fWriter.writeToken {
