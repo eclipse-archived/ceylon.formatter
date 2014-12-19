@@ -160,6 +160,7 @@ shared class FormattingVisitor(
         that.typeConstraintList?.visit(this);
         if (is ClassDefinition that) {
             that.classBody.visit(this);
+            fWriter.closeContext(context);
         } else if (is ClassDeclaration that) {
             that.classSpecifier?.visit(this);
             writeSemicolon(fWriter, that.mainEndToken, context);
@@ -182,6 +183,7 @@ shared class FormattingVisitor(
         that.typeConstraintList?.visit(this);
         if (is InterfaceDefinition that) {
             that.interfaceBody.visit(this);
+            fWriter.closeContext(context);
         } else if (is InterfaceDeclaration that) {
             that.typeSpecifier?.visit(this);
             writeSemicolon(fWriter, that.mainEndToken, context);
@@ -189,6 +191,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitAnyMethod(AnyMethod that) {
+        value context = fWriter.openContext();
         // override the default Walker's order
         that.annotationList.visit(this);
         that.type.visit(this);
@@ -199,6 +202,7 @@ shared class FormattingVisitor(
             list.visit(this);
         }
         that.typeConstraintList?.visit(this);
+        fWriter.closeContext(context);
     }
     
     shared actual void visitAssertion(Assertion that) {
@@ -1628,7 +1632,7 @@ shared class FormattingVisitor(
             };
             type.visit(this);
         }
-        // fWriter.closeContext(typesContext); // omitted because it will be closed by context anyway
+        fWriter.closeContext(typesContext);
         fWriter.closeContext(context);
     }
     
