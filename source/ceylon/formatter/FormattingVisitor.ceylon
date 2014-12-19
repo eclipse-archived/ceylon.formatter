@@ -613,7 +613,7 @@ shared class FormattingVisitor(
         variable Boolean wantsSpaces
                 = !{ lower?.term, upper?.term, length?.term }.coalesced
             .map(unwrapExpression)
-            .every((Term t) => t is ExpressionWithoutSpaces);
+            .every((term) => term is ExpressionWithoutSpaces);
         
         if (exists lower) {
             if (exists length) {
