@@ -1857,7 +1857,7 @@ shared class FormattingVisitor(
         };
         that.switched.visit(this);
         fWriter.writeToken {
-            ")"; // not in the AST as well
+            ")"; // not in the AST either
             context;
             spaceBefore = false; // TODO option
             lineBreaksBefore = noLineBreak;
