@@ -1211,9 +1211,8 @@ shared class FormattingVisitor(
     shared actual void visitMatchCase(MatchCase that)
             => that.visitChildren(this);
     
-    shared actual void visitMemberOp(MemberOp that) {
-        writeSomeMemberOp(fWriter, that.mainToken);
-    }
+    shared actual void visitMemberOp(MemberOp that)
+            => writeSomeMemberOp(fWriter, that.mainToken);
     
     shared actual void visitMetaLiteral(MetaLiteral that)
             => writeMetaLiteral(fWriter, this, that, null);
