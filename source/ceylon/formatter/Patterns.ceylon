@@ -17,14 +17,7 @@ import ceylon.interop.java {
 }
 
 
-/*
- TODO
- remove assertions before release; they’re probably useful for finding bugs,
- but impact performance negatively
- */
-
 FormattingWriter.FormattingContext writeBacktickOpening(FormattingWriter writer, Token backtick) {
-    assert (backtick.text == "`");
     value context = writer.writeToken {
         backtick;
         lineBreaksAfter = noLineBreak;
@@ -35,7 +28,6 @@ FormattingWriter.FormattingContext writeBacktickOpening(FormattingWriter writer,
 }
 
 void writeBacktickClosing(FormattingWriter writer, Token backtick, FormattingWriter.FormattingContext context) {
-    assert (backtick.text == "`");
     writer.writeToken {
         backtick;
         lineBreaksBefore = noLineBreak;
@@ -126,7 +118,6 @@ FormattingWriter.FormattingContext? writeModifier(FormattingWriter writer, Token
 }
 
 void writeSemicolon(FormattingWriter writer, Token semicolon, FormattingWriter.FormattingContext context) {
-    assert (semicolon.text == ";");
     writer.writeToken {
         semicolon;
         lineBreaksBefore = noLineBreak;
@@ -138,7 +129,6 @@ void writeSemicolon(FormattingWriter writer, Token semicolon, FormattingWriter.F
 }
 
 void writeSomeMemberOp(FormattingWriter writer, Token token) {
-    assert (token.text in { ".", "?.", "*." });
     writer.writeToken {
         token;
         indentBefore = 1;
