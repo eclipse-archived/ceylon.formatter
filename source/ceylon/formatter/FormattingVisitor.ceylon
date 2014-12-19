@@ -1206,9 +1206,6 @@ shared class FormattingVisitor(
             spaceAfter = 1;
             lineBreaksBefore = visitingAnnotation then 0..3 else 0..1;
         };
-        if (exists Token endToken = that.mainEndToken) {
-            throw AssertionError("Literal has end token ('``endToken``')! Investigate"); // breakpoint here
-        }
     }
     
     shared actual void visitMatchCase(MatchCase that)
