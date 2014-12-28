@@ -128,7 +128,11 @@ shared String? configProfileName()
 
 Iterable<T,Absent> assertNonnulls<T,Absent>(Iterable<T?,Absent> it)
         given Absent satisfies Null
-        => { for (t in it) t else nothing };
+        => { for (t in it) assertNonnull(t) };
+T assertNonnull<T>(T? t) {
+    assert (exists t);
+    return t;
+}
 {T+} assertNonempty<T>({T*} it) {
     assert (nonempty seq = it.sequence());
     return seq;
