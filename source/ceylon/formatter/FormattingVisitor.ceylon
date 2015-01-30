@@ -12,7 +12,9 @@ import com.redhat.ceylon.compiler.typechecker.model {
 import com.redhat.ceylon.compiler.typechecker.parser {
     CeylonLexer {
         uidentifier=\iUIDENTIFIER,
-        lidentifier=\iLIDENTIFIER
+        lidentifier=\iLIDENTIFIER,
+        aidentifier=\iAIDENTIFIER,
+        pidentifier=\iPIDENTIFIER
     }
 }
 import org.antlr.runtime {
@@ -872,7 +874,7 @@ shared class FormattingVisitor(
             assert (diff == 2);
             if (token.type == uidentifier) {
                 tokenText = "\\I" + token.text;
-            } else if (token.type == lidentifier) {
+            } else if (token.type in { lidentifier, aidentifier, pidentifier }) {
                 tokenText = "\\i" + token.text;
             } else {
                 throw Exception("Unexpected token type on identifier token!");
