@@ -6,12 +6,24 @@ A source code formatter for the [Ceylon programming language](http://ceylon-lang
 Current status
 --------------
 
-[Version 1.1.0](https://github.com/ceylon/ceylon.formatter/releases/tag/1.1.0) was released and is [available from Herd](https://modules.ceylon-lang.org/modules/ceylon.formatter/1.1.0).
+[Version 1.1.0](https://github.com/ceylon/ceylon.formatter/releases/tag/1.1.0) was released and is [available from Herd](https://modules.ceylon-lang.org/modules/ceylon.formatter/1.1.0). You can install it by running `ceylon plugin install ceylon.formatter/1.1.0`.
 
 Version 1.1.5 is a work in progress; it will support the new language features of Ceylon 1.1.5, and also [improve spacing around binary operators](https://github.com/ceylon/ceylon.formatter/issues/99).
 
 Building
 --------
+
+### With `ant`
+
+```bash
+git clone https://github.com/ceylon/ceylon.formatter
+cd ceylon.formatter
+ant install
+```
+
+The buildfile assumes that `ceylon-dist` (including the Ceylon ant files) is a sibling folder; otherwise, you might have to adjust the paths in `build.properties`.
+
+### With the IDE
 
 1. Install the Ceylon IDE, following [these instructions](http://ceylon-lang.org/documentation/1.0/ide/install/)
 2. Clone the repository locally
@@ -22,18 +34,18 @@ Building
 Usage
 -----
 
-If you have the formatter installed locally (from source):
+The formatter is part of the [Ceylon IDE](http://ceylon-lang.org/documentation/current/ide/). You can format any source file by hitting Ctrl+Shift+F, or selecting Source > Format from the menu.
+
+You can also run the formatter from the command line:
+
 ```bash
-ceylon run ceylon.formatter source # to format all Ceylon code in source
-ceylon run ceylon.formatter source --to source-formatted # if you’re afraid I might break your code – directory structure is preserved
-ceylon run ceylon.formatter source test-source # to format all Ceylon code in source and test-source
-ceylon run ceylon.formatter source --and test-source --to formatted # to format all Ceylon code in source and test-source into formatted
+ceylon format source # to format all Ceylon code in source
+ceylon format source --to source-formatted # if you’re afraid I might break your code – directory structure is preserved
+ceylon format source test-source # to format all Ceylon code in source and test-source
+ceylon format source --and test-source --to formatted # to format all Ceylon code in source and test-source into formatted
 ```
 
-If you don’t have the formatter installed, you can run the beta by adding a `--rep=https://lucaswerkmeister.github.io/ceylon.formatter/modules` option to the `ceylon run` command.
-
-(Yes, at the moment you can only run the formatter from the command line.
-IDE integration is planned, and a first version will hopefully be finished in time for the 1.1.0 release.)
+(Replace `ceylon format` with `ceylon run ceylon.formatter` if you don’t have the plugin installed.)
 
 Contact
 -------
