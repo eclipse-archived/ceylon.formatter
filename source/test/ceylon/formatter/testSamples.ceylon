@@ -37,7 +37,11 @@ import ceylon.formatter.options {
 void testFile(String filename) {
     String fullFilename = "test-samples/" + filename + ".ceylon";
     if (is File inputFile = parsePath(fullFilename).resource,
-        is File expectedFile = parsePath(fullFilename + ".formatted").resource) {
+        is File|Nil expectedResource = parsePath(fullFilename + ".formatted").resource) {
+        File expectedFile;
+        switch (expectedResource)
+        case (is File) { expectedFile = expectedResource; }
+        case (is Nil) { expectedFile = inputFile; }
         // format input file
         object output satisfies Writer {
             StringBuilder content = StringBuilder();
