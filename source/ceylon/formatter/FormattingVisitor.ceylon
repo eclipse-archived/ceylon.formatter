@@ -1141,16 +1141,16 @@ shared class FormattingVisitor(
     shared actual void visitKeyValuePattern(KeyValuePattern that) {
         that.key.visit(this);
         Boolean spacesAround = { that.key, that.\ivalue }.any((pattern) {
-            if (is VariablePattern pattern) {
-                if (is ValueModifier type = pattern.variable.type) {
-                    return type.mainToken exists; // fake value modifiers have no token
+                if (is VariablePattern pattern) {
+                    if (is ValueModifier type = pattern.variable.type) {
+                        return type.mainToken exists; // fake value modifiers have no token
+                    } else {
+                        return true;
+                    }
                 } else {
-                    return true;
+                    return false;
                 }
-            } else {
-                return false;
-            }
-        });
+            });
         fWriter.writeToken {
             "->"; // token is nowhere in the AST
             spaceBefore = spacesAround;

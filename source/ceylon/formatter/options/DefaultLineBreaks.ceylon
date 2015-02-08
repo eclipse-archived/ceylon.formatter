@@ -79,8 +79,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
              return the index of the first LineBreak or null if there isn’t one
              */
             return elements.firstIndexWhere((elem) => elem is FormattingWriter.LineBreak);
-        }
-        else {
+        } else {
             
             /*
              3. find the element index from the token index

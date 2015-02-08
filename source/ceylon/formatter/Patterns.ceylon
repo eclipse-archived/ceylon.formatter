@@ -16,7 +16,6 @@ import ceylon.interop.java {
     CeylonIterable
 }
 
-
 FormattingWriter.FormattingContext writeBacktickOpening(FormattingWriter writer, Token backtick) {
     value context = writer.writeToken {
         backtick;
