@@ -915,20 +915,24 @@ shared class FormattingVisitor(
             spaceAfter = options.spaceAfterControlStructureKeyword;
         };
         that.ifClause.conditionList.visit(this);
-        fWriter.writeToken {
+        value thenContext = fWriter.writeToken {
             that.ifClause.mainToken; // "then"
-            indentBefore = 2;
+            indentAfter = 1;
             spaceBefore = true;
             spaceAfter = true;
         };
+        assert (exists thenContext);
         that.ifClause.expression.visit(this);
-        fWriter.writeToken {
+        fWriter.closeContext(thenContext);
+        value elseContext = fWriter.writeToken {
             that.elseClause.mainToken; // "else"
-            indentBefore = 2;
+            indentAfter = 1;
             spaceBefore = true;
             spaceAfter = true;
         };
+        assert (exists elseContext);
         that.elseClause.expression.visit(this);
+        fWriter.closeContext(elseContext);
     }
     
     shared actual void visitImport(Import that) {
