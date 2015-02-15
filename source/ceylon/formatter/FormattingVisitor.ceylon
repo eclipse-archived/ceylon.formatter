@@ -28,7 +28,8 @@ import ceylon.file {
     Writer
 }
 import ceylon.interop.java {
-    CeylonIterable
+    CeylonIterable,
+    javaString
 }
 import ceylon.formatter.options {
     FormattingOptions
@@ -865,7 +866,7 @@ shared class FormattingVisitor(
     shared actual void visitIdentifier(Identifier that) {
         String tokenText;
         assert (is CommonToken token = that.mainToken); // need CommonToken’s start and stop fields
-        value diff = token.stopIndex - token.startIndex - token.text.size + 1;
+        value diff = token.stopIndex - token.startIndex - javaString(token.text).length() + 1;
         if (diff == 0) {
             // normal identifier
             tokenText = token.text;
