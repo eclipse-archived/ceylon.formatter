@@ -71,11 +71,9 @@ void writeMetaLiteral(FormattingWriter writer, FormattingVisitor visitor, MetaLi
     }
     if (is TypeLiteral that) {
         that.type?.visit(visitor);
-        that.objectExpression?.visit(visitor);
     } else if (is MemberLiteral that) {
-        if (that.type exists || that.objectExpression exists) {
+        if (that.type exists) {
             that.type?.visit(visitor);
-            that.objectExpression?.visit(visitor);
             writer.writeToken {
                 ".";
                 spaceBefore = false;
