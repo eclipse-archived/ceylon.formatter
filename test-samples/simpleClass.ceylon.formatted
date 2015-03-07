@@ -8,3 +8,5 @@ shared class SampleClass()
         print(string);
     }
 }
+
+shared class OtherClass extends package.SampleClass() {}
