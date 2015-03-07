@@ -271,6 +271,22 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitBaseType(BaseType that) {
+        if (that.packageQualified) {
+            // the C in `extends package.C()` is a BaseType with packageQualified = true
+            fWriter.writeToken {
+                that.mainToken; // "package"
+                spaceBefore = true;
+                spaceAfter = false;
+                lineBreaksAfter = noLineBreak;
+            };
+            fWriter.writeToken {
+                ".";
+                spaceBefore = false;
+                spaceAfter = false;
+                lineBreaksBefore = noLineBreak;
+                lineBreaksAfter = noLineBreak;
+            };
+        }
         that.typeVariance?.visit(this);
         that.identifier.visit(this);
         that.typeArgumentList?.visit(this);
