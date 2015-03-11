@@ -10,3 +10,4 @@ Identifiable {
         print        (string);
     }}
 
+shared class OtherClass extends package.SampleClass() {}
