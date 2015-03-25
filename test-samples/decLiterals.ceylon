@@ -7,6 +7,7 @@ void decLiterals() {
     value givenG = `given Given`;
     value nullV = `value null`;
     value identityF = `function identity`;
+    value newN = `new Constructor`;
     
     value currentM = `module`;
     value currentP = `package`;
