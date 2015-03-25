@@ -1318,6 +1318,9 @@ shared class FormattingVisitor(
         that.term.visit(this);
     }
     
+    shared actual void visitNewLiteral(NewLiteral that)
+            => writeMetaLiteral(fWriter, this, that, "new");
+    
     shared actual void visitNonempty(Nonempty that) {
         value context = fWriter.openContext();
         that.term.visit(this);
