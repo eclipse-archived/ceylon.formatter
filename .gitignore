@@ -3,6 +3,7 @@ bin
 
 # IDEs
 .settings
+/.exploded/
 
 /classes
 /modules
