@@ -73,12 +73,7 @@ shared String? help(topic) {
         StringBuilder ret = StringBuilder();
         ret.append("The following options are available:");
         for (option in `SparseFormattingOptions`
-            .getAttributes<SparseFormattingOptions,Anything,Nothing>()
-            .filter((Attribute<SparseFormattingOptions,Anything,Nothing> element) {
-                assert (exists c = element.container);
-                return c == `SparseFormattingOptions`;
-            })) {
-            
+            .getDeclaredAttributes<SparseFormattingOptions,Anything,Nothing>()) {
             value optionDec = option.declaration;
             ret.append("\n\n");
             ret.append(optionDec.name);
