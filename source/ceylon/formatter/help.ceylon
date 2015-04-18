@@ -72,8 +72,7 @@ shared String? help(topic) {
     case ("options") {
         StringBuilder ret = StringBuilder();
         ret.append("The following options are available:");
-        for (option in `SparseFormattingOptions`
-            .getDeclaredAttributes<SparseFormattingOptions,Anything,Nothing>()) {
+        for (option in `SparseFormattingOptions`.getDeclaredAttributes<SparseFormattingOptions,Anything,Nothing>()) {
             value optionDec = option.declaration;
             ret.append("\n\n");
             ret.append(optionDec.name);
