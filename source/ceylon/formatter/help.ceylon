@@ -122,11 +122,7 @@ String[] collectPartialTypes(Type<Anything> type) {
         return ["{String*} (‘abc def etc’)"];
     } else {
         assert (is ClassOrInterface<Anything> type);
-        return type.caseValues.map((Anything element) {
-                switch (element)
-                case (null) { return null; }
-                case (is Object) { return "‘``element.string``’"; }
-            }).coalesced.sequence();
+        return type.caseValues.narrow<Object>().map((e) => "‘``e.string``’").sequence();
     }
 }
 
