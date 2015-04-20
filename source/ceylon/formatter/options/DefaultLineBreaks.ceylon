@@ -10,7 +10,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
          
          This allows us to access previous and next tokens directly
          instead of having to deal with non-token elements."
-        FormattingWriter.Token[] tokens = [for (elem in elements) if (is FormattingWriter.Token elem) elem];
+        FormattingWriter.Token[] tokens = elements.narrow<FormattingWriter.Token>().sequence();
         
         /*
          1. find the best location to break a line, without respect
