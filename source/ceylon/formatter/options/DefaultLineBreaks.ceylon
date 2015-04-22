@@ -26,7 +26,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
         } else {
             while (currentLength <= maxLineLength) {
                 if (exists token = tokens[tokenIndex]) {
-                    if (token.text.split(Character.equals('\n')).longerThan(1)) {
+                    if (token.text.split('\n'.equals).longerThan(1)) {
                         // multi-line literal
                         assert (exists index = elements.firstIndexWhere(token.equals));
                         return index;
