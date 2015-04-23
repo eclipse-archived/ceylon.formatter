@@ -89,7 +89,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
             
             variable Integer elementIndex = 0;
             while (exists element = elements[elementIndex], element != tokenAtIndex) {
-                if (is FormattingWriter.LineBreak element) {
+                if (element is FormattingWriter.LineBreak) {
                     return elementIndex;
                 }
                 elementIndex++;
