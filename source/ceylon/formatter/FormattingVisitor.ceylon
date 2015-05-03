@@ -1883,7 +1883,7 @@ shared class FormattingVisitor(
         };
         that.switched.visit(this);
         fWriter.writeToken {
-            ")"; // not in the AST either
+            that.mainEndToken; // ")"
             context;
             spaceBefore = false; // TODO option
             lineBreaksBefore = noLineBreak;
