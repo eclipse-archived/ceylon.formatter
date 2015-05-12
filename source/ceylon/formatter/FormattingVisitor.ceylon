@@ -6,7 +6,7 @@ import com.redhat.ceylon.compiler.typechecker.tree {
     VisitorAdaptor,
     NaturalVisitor
 }
-import com.redhat.ceylon.compiler.typechecker.model {
+import com.redhat.ceylon.model.typechecker.model {
     ParameterListModel=ParameterList
 }
 import com.redhat.ceylon.compiler.typechecker.parser {
