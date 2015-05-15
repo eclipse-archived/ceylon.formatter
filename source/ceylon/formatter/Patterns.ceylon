@@ -150,16 +150,17 @@ void writeTypeArgumentOrParameterList(FormattingWriter writer, Visitor visitor, 
     } else {
         params = CeylonIterable(list.typeParameterDeclarations).sequence();
     }
-    assert (nonempty params);
-    params.first.visit(visitor);
-    for (param in params.rest) {
-        writer.writeToken {
-            ",";
-            spaceBefore = false;
-            spaceAfter = options.spaceAfterTypeArgOrParamListComma;
-            lineBreaksAfter = options.lineBreaksInTypeParameterList;
-        };
-        param.visit(visitor);
+    if (nonempty params) {
+        params.first.visit(visitor);
+        for (param in params.rest) {
+            writer.writeToken {
+                ",";
+                spaceBefore = false;
+                spaceAfter = options.spaceAfterTypeArgOrParamListComma;
+                lineBreaksAfter = options.lineBreaksInTypeParameterList;
+            };
+            param.visit(visitor);
+        }
     }
     writer.writeToken {
         list.mainEndToken; // ">"
