@@ -67,6 +67,7 @@
         description="Deletes the test-modules and modules directories">
         <delete dir="${out.repo}"/>
         <delete dir="${osgi.dist}"/>
+        <delete dir="${osgi.build}"/>
         <if>
           <available file="source/ceylon/formatter/options/.gitignore"/>
           <then>
