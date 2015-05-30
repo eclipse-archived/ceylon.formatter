@@ -1,3 +1,4 @@
+
 import com.redhat.ceylon.compiler.typechecker.tree {
     Tree {
         ...
@@ -2046,7 +2047,6 @@ shared class FormattingVisitor(
         };
         assert (exists context);
         that.identifier.visit(this);
-        that.parameterList?.visit(this);
         that.caseTypes?.visit(this);
         that.satisfiedTypes?.visit(this);
         that.abstractedType?.visit(this);
