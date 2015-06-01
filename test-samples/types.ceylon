@@ -21,4 +21,5 @@ void run(
     <Outer
             .Inner>
             .Type t;
+    Boolean [ 8 ] byte;
 }

@@ -8,4 +8,5 @@ void run() {
     String|String|String s7;
     String&String&String s8;
     <Outer.Inner>.Type t;
+    Boolean[8] byte;
 }
