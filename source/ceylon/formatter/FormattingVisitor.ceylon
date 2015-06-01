@@ -1732,6 +1732,7 @@ shared class FormattingVisitor(
             spaceBefore = false;
             spaceAfter = false;
         };
+        that.length?.visit(this);
         fWriter.writeToken {
             that.mainEndToken; // "]"
             lineBreaksBefore = noLineBreak;
