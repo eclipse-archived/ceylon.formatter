@@ -539,3 +539,8 @@ test
 shared void testDestructure() {
     testFile("destructure");
 }
+
+test
+shared void testHigherTypes() {
+    testFile("higherTypes");
+}
