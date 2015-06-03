@@ -2041,6 +2041,7 @@ shared class FormattingVisitor(
         };
         assert (exists context);
         that.identifier.visit(this);
+        that.typeParameterList?.visit(this);
         that.caseTypes?.visit(this);
         that.satisfiedTypes?.visit(this);
         that.abstractedType?.visit(this);
