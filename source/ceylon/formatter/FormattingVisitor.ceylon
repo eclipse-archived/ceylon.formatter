@@ -1229,6 +1229,7 @@ shared class FormattingVisitor(
         value context = fWriter.openContext();
         that.type.visit(this);
         that.identifier.visit(this);
+        that.typeParameterList?.visit(this);
         for (paramList in CeylonIterable(that.parameterLists)) {
             paramList.visit(this);
         }
