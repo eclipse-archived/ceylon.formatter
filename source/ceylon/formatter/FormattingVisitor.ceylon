@@ -790,6 +790,7 @@ shared class FormattingVisitor(
     
     shared actual void visitFunctionArgument(FunctionArgument that) {
         that.type?.visit(this);
+        that.typeParameterList?.visit(this);
         for (list in CeylonIterable(that.parameterLists)) {
             visitParameterListAnonymous(list);
         }
