@@ -8,3 +8,4 @@ value namedArgsInvocWithFunctionArgWithTypeParam = f {
         return t;
     }
 };
+value anonymousGenericFunction = <T>(T t) => t;
