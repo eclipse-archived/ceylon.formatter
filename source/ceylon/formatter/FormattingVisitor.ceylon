@@ -794,6 +794,7 @@ shared class FormattingVisitor(
         for (list in CeylonIterable(that.parameterLists)) {
             visitParameterListAnonymous(list);
         }
+        that.typeConstraintList?.visit(this);
         if (exists expr = that.expression) {
             fWriter.writeToken {
                 "=>";
