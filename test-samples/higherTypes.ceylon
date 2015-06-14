@@ -8,7 +8,7 @@ value namedArgsInvocWithFunctionArgWithTypeParam = f {
         return t;
     }
 };
-value anonymousGenericFunction = <T>(T t) => t;
+value anonymousGenericFunction = <T>(T t) given T satisfies Anything => t;
 class C() {
     parameterizedExpressionWithTypeParams<T>(T t) => t;
 }
