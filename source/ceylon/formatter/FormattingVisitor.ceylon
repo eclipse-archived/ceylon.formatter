@@ -2041,6 +2041,7 @@ shared class FormattingVisitor(
             spaceAfter = true;
             indentBefore = options.indentBeforeTypeInfo;
             indentAfter = options.indentBeforeTypeInfo;
+            lineBreaksBefore = 1..0;
         };
         assert (exists context);
         that.identifier.visit(this);
@@ -2052,10 +2053,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitTypeConstraintList(TypeConstraintList that) {
-        for (constraint in CeylonIterable(that.typeConstraints)) {
-            fWriter.requireAtLeastLineBreaks(1);
-            constraint.visit(this);
-        }
+        CeylonIterable(that.typeConstraints)*.visit(this);
     }
     
     shared actual void visitTypedDeclaration(TypedDeclaration that) {
