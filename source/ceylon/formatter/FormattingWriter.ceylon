@@ -536,7 +536,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
          
          In virtually all cases, this is the same as [[token]]; however, for identifiers, the
          `\\i`/`\\I` that is sometimes part of the code isn’t included in the token text, so
-         in this case you would pass, for example, `\\iVALUE` as [[token]] and `value` as
+         in this case you would pass, for example, `\\ivalue` as [[token]] and `value` as
          [[tokenInStream]],"
         AntlrToken|String tokenInStream;
         "If [[true]], only apply and stack the [[indentAfter]] if this token is the last of its line.
