@@ -1,11 +1,11 @@
 class Constructors /* no parameter list, no default constructor */ {
     "Constructs something"
-    shared new Cons1() {}
+    shared new cons1() {}
     /* undocumented */
-    new Cons2(String param)
-            extends super.Thing(param) {
+    new cons2(String param)
+            extends super.thing(param) {
         print(param);
     }
-    new Cons3()
-            extends Other.Thing(param) {}
+    new cons3()
+            extends Other.thing(param) {}
 }
