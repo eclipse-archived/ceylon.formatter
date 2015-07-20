@@ -39,10 +39,7 @@ import ceylon.formatter {
  2. Then, scan the file for any `include` options, and process any included files.
  3. Lastly, parse all other lines.
  
- Thus, options in the top-level file override options in included files.
- 
- For another function which does exactly the same thing in a different way,
- see [[formattingFile_meta]]."
+ Thus, options in the top-level file override options in included files."
 shared FormattingOptions formattingFile(
     "The file to read"
     String filename,
