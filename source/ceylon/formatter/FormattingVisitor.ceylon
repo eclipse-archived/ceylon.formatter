@@ -3,8 +3,7 @@ import com.redhat.ceylon.compiler.typechecker.tree {
         ...
     },
     Node,
-    VisitorAdaptor,
-    NaturalVisitor
+    VisitorAdaptor
 }
 import com.redhat.ceylon.compiler.typechecker.parser {
     CeylonLexer {
@@ -50,7 +49,7 @@ shared class FormattingVisitor(
     "The initial indentation level."
     Integer initialIndentation = 0)
         extends VisitorAdaptor()
-        satisfies NaturalVisitor & Destroyable {
+        satisfies Destroyable {
     
     FormattingWriter fWriter = FormattingWriter(tokens, writer, options);
     if (initialIndentation != 0) {
