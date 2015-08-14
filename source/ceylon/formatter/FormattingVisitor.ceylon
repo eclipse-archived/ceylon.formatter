@@ -538,7 +538,7 @@ shared class FormattingVisitor(
             spaceAfter = true;
             lineBreaksAfter = noLineBreak;
         };
-        that.identifier.visit(this);
+        that.identifier?.visit(this);
         that.parameterList?.visit(this);
         that.delegatedConstructor?.visit(this);
         that.block.visit(this);

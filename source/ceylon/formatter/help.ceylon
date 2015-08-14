@@ -125,7 +125,3 @@ String[] collectPartialTypes(Type<Anything> type) {
         return type.caseValues.narrow<Object>().map((e) => "‘``e.string``’").sequence();
     }
 }
-
-shared void tmp() {
-    print(help("options"));
-}
