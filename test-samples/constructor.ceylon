@@ -8,4 +8,5 @@ class Constructors /* no parameter list, no default constructor */ {
     }
     new cons3()
             extends Other.thing(param) {}
+    new () {} // default constructor
 }
