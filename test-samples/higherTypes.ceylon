@@ -12,3 +12,5 @@ value anonymousGenericFunction = <T>(T t) given T satisfies Anything => t;
 class C() {
     parameterizedExpressionWithTypeParams<T>(T t) => t;
 }
+<T> => T(T) id = identity;
+<T> given T satisfies Identifiable => T(T) id² = identity;
