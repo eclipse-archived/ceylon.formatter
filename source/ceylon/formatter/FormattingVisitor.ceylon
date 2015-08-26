@@ -2055,6 +2055,19 @@ shared class FormattingVisitor(
         CeylonIterable(that.typeConstraints)*.visit(this);
     }
     
+    shared actual void visitTypeConstructor(TypeConstructor that) {
+        that.typeParameterList.visit(this);
+        that.typeConstraintList?.visit(this);
+        fWriter.writeToken {
+            "=>"; // not in the AST
+            spaceBefore = true;
+            spaceAfter = true;
+            lineBreaksBefore = 0..1;
+            lineBreaksAfter = noLineBreak;
+        };
+        that.type.visit(this);
+    }
+    
     shared actual void visitTypedDeclaration(TypedDeclaration that) {
         that.annotationList?.visit(this);
         that.type.visit(this);
