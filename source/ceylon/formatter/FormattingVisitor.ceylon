@@ -702,9 +702,16 @@ shared class FormattingVisitor(
         };
     }
     
-    shared actual void visitExistsOrNonemptyCondition(ExistsOrNonemptyCondition that) {
+    shared actual void visitExistsCondition(ExistsCondition that) {
+        if (that.not) {
+            fWriter.writeToken {
+                that.mainToken; // "!"
+                spaceAfter = false;
+                lineBreaksAfter = noLineBreak;
+            };
+        }
         fWriter.writeToken {
-            that.mainToken; // "exists" or "nonempty"
+            "exists";
             spaceAfter = true;
             lineBreaksAfter = noLineBreak;
         };
@@ -1317,6 +1324,22 @@ shared class FormattingVisitor(
             spaceBefore = true;
             lineBreaksBefore = noLineBreak;
         };
+    }
+    
+    shared actual void visitNonemptyCondition(NonemptyCondition that) {
+        if (that.not) {
+            fWriter.writeToken {
+                that.mainToken; // "!"
+                spaceAfter = false;
+                lineBreaksAfter = noLineBreak;
+            };
+        }
+        fWriter.writeToken {
+            "nonempty";
+            spaceAfter = true;
+            lineBreaksAfter = noLineBreak;
+        };
+        that.visitChildren(this);
     }
     
     shared actual void visitNotOp(NotOp that) {
