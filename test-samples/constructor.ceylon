@@ -1,4 +1,5 @@
-class Constructors /* no parameter list, no default constructor */ {
+class Constructors /* no parameter list, no default constructor */
+        extends SuperClass /* no argument list */ {
     "Constructs something"
     shared new cons1() {}
     /* undocumented */
