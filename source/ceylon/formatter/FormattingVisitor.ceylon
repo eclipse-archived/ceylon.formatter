@@ -761,7 +761,7 @@ shared class FormattingVisitor(
             spaceAfter = true;
         };
         that.type.visit(this);
-        that.invocationExpression.visit(this);
+        that.invocationExpression?.visit(this);
     }
     
     shared actual void visitFinallyClause(FinallyClause that) {
