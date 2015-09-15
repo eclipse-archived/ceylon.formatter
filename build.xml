@@ -149,7 +149,9 @@
         
     </target>
 
-    <target name="publish" depends="compile,scripts"
+    <target name="publish" depends="publish-internal">
+    </target>
+    <target name="publish-internal" depends="compile,scripts"
             description="Copies the Formatter modules to the user's repository">
         <copy todir="${ceylon.repo.dir}" overwrite="true">
             <fileset dir="${out.repo}">
