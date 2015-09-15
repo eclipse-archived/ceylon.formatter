@@ -3,7 +3,7 @@
     <property file="build.properties" />
     <property name="ceylon.verbosity" value="false"/>
     <property name="ceylon.executable" value="${dist.bin.dir}/ceylon"/>
-    <property name="out.repo" location="modules"/>
+    <property name="out.repo" location="${basedir}/modules"/>
     
     <property name="osgi" location="${basedir}/osgi" />
     <property name="osgi.p2" location="${osgi}/p2" />
@@ -195,13 +195,15 @@
     </target>
 
     <target name="scripts">
-        <ceylon-plugin mode="pack">
+        <ceylon-plugin mode="pack"
+            out="${out.repo}">
             <moduleset refid="modules.source"/>
         </ceylon-plugin>
     </target>
 
     <target name="install" depends="publish">
-        <ceylon-plugin mode="install" force="true">
+        <ceylon-plugin mode="install" force="true"
+            out="${out.repo}">
             <moduleset refid="modules.source"/>
         </ceylon-plugin>
     </target>
@@ -264,7 +266,7 @@
             categoryPrefix="ceylon.sdk"
             categories="${osgi.p2}/category.xml">
             <moduleset refid="modules.source"/>
-	    <rep url="modules"/>
+            <rep url="${basedir}/modules"/>
         </ceylon-p2>
 <!--
         <exec dir="${basedir}" executable="eclipse" failonerror="true">
