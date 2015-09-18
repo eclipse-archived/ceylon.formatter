@@ -1,4 +1,4 @@
-<project name="Ceylon Formatter" basedir="." default="test">
+<project name="Ceylon Formatter" default="test">
 
     <property file="build.properties" />
     <property name="ceylon.verbosity" value="false"/>
