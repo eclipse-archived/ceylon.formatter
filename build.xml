@@ -31,37 +31,39 @@
         <pathelement location="${ceylon.ant.lib}"/>
     </path>
     
-    <typedef resource="com/redhat/ceylon/ant/antlib.xml" classpathref="ant-tasks"/>
+    <target name="ceylondefs">
+        <typedef resource="com/redhat/ceylon/ant/antlib.xml" classpathref="ant-tasks"/>
     
-    <reposet id="reposet.run.source-gen">
-        <repo url="${out.repo}"/>
-    </reposet>
+        <reposet id="reposet.run.source-gen">
+            <repo url="${out.repo}"/>
+        </reposet>
 
-    <reposet id="reposet.compile.source">
-        <reposet refid="reposet.run.source-gen"/>
-        <repo url="${out.repo}"/>
-    </reposet>
+        <reposet id="reposet.compile.source">
+            <reposet refid="reposet.run.source-gen"/>
+            <repo url="${out.repo}"/>
+        </reposet>
 
-    <reposet id="reposet.compile.test">
-        <repo url="${out.repo}"/>
-    </reposet>
+        <reposet id="reposet.compile.test">
+            <repo url="${out.repo}"/>
+        </reposet>
     
-    <reposet id="reposet.run.test">
-        <reposet refid="reposet.compile.test"/>
-        <repo url="${out.repo}"/>
-    </reposet>
+        <reposet id="reposet.run.test">
+            <reposet refid="reposet.compile.test"/>
+            <repo url="${out.repo}"/>
+        </reposet>
     
-    <moduleset id="modules.source-gen">
-        <module name="source_gen.ceylon.formatter"/>
-    </moduleset>
+        <moduleset id="modules.source-gen">
+            <module name="source_gen.ceylon.formatter"/>
+        </moduleset>
     
-    <moduleset id="modules.source">
-        <module name="ceylon.formatter"/>
-    </moduleset>
+        <moduleset id="modules.source">
+            <module name="ceylon.formatter"/>
+        </moduleset>
     
-    <moduleset id="modules.test">
-        <module name="test.ceylon.formatter"/>
-    </moduleset>
+        <moduleset id="modules.test">
+            <module name="test.ceylon.formatter"/>
+        </moduleset>
+    </target>
     
     <target name="clean"
         description="Deletes the test-modules and modules directories">
@@ -77,7 +79,7 @@
         </if>
     </target>
     
-    <target name="compile-source-gen">
+    <target name="compile-source-gen" depends="ceylondefs">
         <ceylon-compile executable="${ceylon.executable}"
             src="source"
             out="${out.repo}"
@@ -94,7 +96,7 @@
         </ceylon-run>
     </target>
 
-    <target name="compile-source"
+    <target name="compile-source" depends="compile-source-gen"
             description="Compiles the Ceylon Formatter modules without re-generating sources">
         <ceylon-compile executable="${ceylon.executable}"
             verbose="${ceylon.verbosity}"
@@ -114,7 +116,7 @@
     
     <property name="test-sources" refid="test-sources-path"/>
     
-    <target name="compile-test"
+    <target name="compile-test" depends="compile-source-gen"
         description="Compiles the test module" >
         <ceylon-compile executable="${ceylon.executable}"
             src="${test-sources}"
@@ -134,7 +136,7 @@
         </ceylon-test>
     </target>
 
-    <target name="doc" 
+    <target name="doc"  depends="compile-source-gen"
             description="Documents the Formatter module">
         
         <ceylon-doc executable="${ceylon.executable}"
@@ -160,7 +162,7 @@
         </copy>
     </target>
 
-    <target name="publish-herd">
+    <target name="publish-herd" depends="compile-source-gen">
     <fail message="Please specify a target Herd upload repo url with -Dherd.repo=..." unless="herd.repo"/>
     <fail message="Please specify a target Herd user name with -Dherd.user=..." unless="herd.user"/>
     <fail message="Please specify a target Herd password with -Dherd.pass=..." unless="herd.pass"/>
@@ -246,7 +248,7 @@
     </target>
 
     <!-- Rule to setup a plugins directory with required bundles -->
-    <target name="osgi-p2-quick" depends="osgi-quick">
+    <target name="osgi-p2-quick" depends="osgi-quick,ceylondefs">
         <makeurl property="destinationRepository" file="${osgi.dist}"/>
         <makeurl property="categoryDefinition" file="${osgi.p2}/category.xml"/>
         <mkdir dir="${osgi.build}"/>
