@@ -25,7 +25,7 @@ import ceylon.file {
     Path,
     parsePath,
     Directory,
-    ExistingResource,
+    Resource,
     File,
     Nil,
     Visitor
@@ -153,27 +153,27 @@ shared <String[]->String>[] parseTranslations(String[] arguments) {
 "Process a single source from a translation, that is:
  
  - recurse the file tree from [[source]]
- - for each file found, open a CharStream to read from it and a Writer to write to the correct file in [[targetDirectory]]
- - the target path is [[targetDirectory]] + (source path - [[root]])"
-[CharStream, Writer(), Anything(Throwable)][] translateSingleSource(String source, Path root, Directory targetDirectory) {
+ - for each file found, open a CharStream to read from it and a Writer to write to the correct file in [[target]]
+ - the target path is [[target]] + (source path - [[root]])"
+[CharStream, Writer(), Anything(Throwable)][] translateSingleSource(String source, Path root, Resource target) {
     value ret = LinkedList<[CharStream, Writer(), Anything(Throwable)]>();
     object visitor extends Visitor() {
         shared actual void file(File file) {
             if (file.name.endsWith(".ceylon")) {
                 value path = file.path;
                 value uprootedPath = path.relativePath(root);
-                value rerootedPath = targetDirectory.path.childPath(uprootedPath);
-                value target = rerootedPath.resource.linkedResource;
+                value rerootedPath = target.path.childPath(uprootedPath);
+                value targetResource = rerootedPath.resource.linkedResource;
                 File targetFile;
-                switch (target)
+                switch (targetResource)
                 case (is File) {
-                    targetFile = target;
+                    targetFile = targetResource;
                 }
                 case (is Nil) {
-                    targetFile = target.createFile { includingParentDirectories = true; };
+                    targetFile = targetResource.createFile { includingParentDirectories = true; };
                 }
                 case (is Directory) {
-                    process.writeErrorLine("Can’t format file '``source``' to target directory '``target.path``'!");
+                    process.writeErrorLine("Can’t format file '``source``' to target directory '``targetResource.path``'!");
                     return;
                 }
                 value stream = ANTLRFileStream(file.path.string);
@@ -197,14 +197,14 @@ shared <String[]->String>[] parseTranslations(String[] arguments) {
     return ret.sequence();
 }
 
-"Translate one or more sources to a target directory."
+"Translate one or more sources to a target."
 see (`function parseTranslations`)
-[CharStream, Writer(), Anything(Throwable)][] translate([String+] sources, Directory targetDirectory) {
+[CharStream, Writer(), Anything(Throwable)][] translate([String+] sources, Resource target) {
     value ret = LinkedList<[CharStream, Writer(), Anything(Throwable)]>();
     value root = commonRoot(sources.collect(parsePath));
     if (sources.size == 1) {
         // source/foo/bar → target/foo/bar
-        ret.addAll(translateSingleSource(sources.first, root, targetDirectory));
+        ret.addAll(translateSingleSource(sources.first, root, target));
     } else {
         // source1/foo/bar → target/source1/foo/bar, source2/baz → target/source2/baz
         for (source in sources) {
@@ -212,18 +212,15 @@ see (`function parseTranslations`)
             Path targetPath;
             switch (resource)
             case (is Directory|Nil) {
-                targetPath = targetDirectory.path.childPath(source);
+                targetPath = target.path.childPath(source);
             }
             case (is File) {
-                targetPath = targetDirectory.path.childPath(resource.directory.path);
+                targetPath = target.path.childPath(resource.directory.path);
             }
             value targetResource = targetPath.resource.linkedResource;
             switch (targetResource)
-            case (is Directory) {
+            case (is Directory|Nil) {
                 ret.addAll(translateSingleSource(source, root, targetResource));
-            }
-            case (is Nil) {
-                ret.addAll(translateSingleSource(source, root, targetResource.createDirectory { includingParentDirectories = true; }));
             }
             case (is File) {
                 process.writeErrorLine("Can’t format source '``source``' to target file '``targetPath``'!");
@@ -262,14 +259,13 @@ see (`function parseTranslations`)
                 ret.addAll(translate(sources, targetResource));
             }
             case (is Nil) {
-                if (is File sourceFile = parsePath(sources.first).resource.linkedResource, sources.size == 1) {
+                if (sources.size == 1, is File sourceFile = parsePath(sources.first).resource.linkedResource) {
                     // single file to single file
                     value stream = ANTLRFileStream(sources.first);
                     value targetFile = targetResource.createFile { includingParentDirectories = true; };
                     ret.add([stream, () => targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
-                } else if (parsePath(sources.first).resource is ExistingResource) {
-                    Directory targetDirectory = targetResource.createDirectory { includingParentDirectories = true; };
-                    ret.addAll(translate(sources, targetDirectory));
+                } else {
+                    ret.addAll(translate(sources, targetResource));
                 }
             }
         }
