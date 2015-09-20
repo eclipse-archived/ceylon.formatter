@@ -199,36 +199,9 @@ shared <String[]->String>[] parseTranslations(String[] arguments) {
 
 "Translate one or more sources to a target."
 see (`function parseTranslations`)
-[CharStream, Writer(), Anything(Throwable)][] translate([String+] sources, Resource target) {
-    value ret = LinkedList<[CharStream, Writer(), Anything(Throwable)]>();
-    value root = commonRoot(sources.collect(parsePath));
-    if (sources.size == 1) {
-        // source/foo/bar → target/foo/bar
-        ret.addAll(translateSingleSource(sources.first, root, target));
-    } else {
-        // source1/foo/bar → target/source1/foo/bar, source2/baz → target/source2/baz
-        for (source in sources) {
-            value resource = parsePath(source).resource.linkedResource;
-            Path targetPath;
-            switch (resource)
-            case (is Directory|Nil) {
-                targetPath = target.path.childPath(source);
-            }
-            case (is File) {
-                targetPath = target.path.childPath(resource.directory.path);
-            }
-            value targetResource = targetPath.resource.linkedResource;
-            switch (targetResource)
-            case (is Directory|Nil) {
-                ret.addAll(translateSingleSource(source, root, targetResource));
-            }
-            case (is File) {
-                process.writeErrorLine("Can’t format source '``source``' to target file '``targetPath``'!");
-            }
-        }
-    }
-    return ret.sequence();
-}
+[CharStream, Writer(), Anything(Throwable)][] translate([String+] sources, Resource target)
+        => let (root = commonRoot(sources.collect(parsePath)))
+    concatenate(for (source in sources) translateSingleSource(source, root, target));
 
 "Parses a list of paths from the command line.
  Returns a sequence of tuples of source [[CharStream]], target [[Writer]] and onError callback."
