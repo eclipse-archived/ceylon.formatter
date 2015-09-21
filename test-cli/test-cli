@@ -1,0 +1,21 @@
+#!/bin/bash
+failed=0
+total=0
+for dir in *; do
+    ! [[ -d "$dir" ]] && continue
+    cd "$dir"
+    ceylon run --rep=../../modules ceylon.formatter $(<args)
+    if diff <(tree result-expected | sed '1s/expected/actual/') <(tree result-actual); then
+        # clean up, unless it’s a symlink
+        ! [[ -L result-actual ]] && rm -r result-actual
+    else
+        # don’t clean up, we might want to investigate that
+        # but record the failure
+        ((failed++))
+    fi
+    ((total++))
+    cd ..
+done
+((failed == 0)) && tput setaf 2 || tput setaf 1
+echo "$total total, $((total-failed)) success, $failed failed$(tput sgr0)"
+exit $failed

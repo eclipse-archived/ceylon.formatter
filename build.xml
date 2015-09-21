@@ -128,13 +128,21 @@
         </ceylon-compile>
     </target>
 
-    <target name="test" depends="compile,compile-test"
+    <target name="test-formatter" depends="compile,compile-test"
         description="Runs the compiled test module">
         <ceylon-test>
             <reposet refid="reposet.run.test"/>
             <moduleset refid="modules.test"/>
         </ceylon-test>
     </target>
+
+    <target name="test-cli" depends="compile"
+        description="Tests the formatter's CLI">
+        <exec dir="test-cli" executable="./test-cli"/>
+    </target>
+
+    <target name="test" depends="test-formatter,test-cli"
+        description="Runs all tests"/>
 
     <target name="doc"  depends="compile-source-gen"
             description="Documents the Formatter module">
