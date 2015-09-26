@@ -172,6 +172,7 @@ void writeTypeArgumentOrParameterList(FormattingWriter writer, Visitor visitor, 
 }
 
 alias ExpressionWithoutSpaces => BaseMemberExpression|Literal|QualifiedMemberExpression|StringTemplate;
+alias ExpressionWithSpaces => InOp|IsOp|OfOp|Exists|Nonempty|ThenOp|DefaultOp;
 
 Term unwrapExpression(Term term) {
     if (is Expression term, !term.mainToken exists) {
@@ -207,6 +208,10 @@ Boolean samePrecedence(Term e1, Term e2)
  
  (The last rule is necessary to avoid `1+2 + 3`.)
  
+ However, to avoid syntax errors, spaces are always forced if the expression is an [[ExpressionWithSpaces]] –
+ otherwise, the combination of these operators with adjacent identifiers
+ could result in them not being lexed as operators.
+ 
  For the first rule, range and entry operators (`..`, `:`, `->`)
  should always be treated as if they were children of another binary operator expression.
  
@@ -230,7 +235,7 @@ Boolean useSpacesAroundBinaryOp(BinaryOperatorExpression e)
             return false;
         }
     }
-};
+} || e is ExpressionWithSpaces;
 
 "Terms in string templates might sometimes require spacing to disambiguate the syntax.
  For more information, see
