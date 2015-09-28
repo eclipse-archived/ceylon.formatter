@@ -26,17 +26,31 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
         } else {
             while (currentLength <= maxLineLength) {
                 if (exists token = tokens[tokenIndex]) {
-                    if (token.text.split('\n'.equals).longerThan(1)) {
+                    value lines = token.text.lines.sequence();
+                    if (nonempty lines, lines.size > 1) {
                         // multi-line literal
-                        assert (exists index = elements.firstIndexWhere(token.equals));
-                        return index;
+                        currentLength += lines.first.size;
+                        if (exists previousToken = tokens[tokenIndex - 1],
+                            previousToken.wantsSpaceAfter+token.wantsSpaceBefore >= 0) {
+                            currentLength++; // space between tokens
+                        }
+                        tokenIndex++;
+                        if (currentLength <= maxLineLength) {
+                            /*
+                             we’ve reached the end of the line (mandated by the multi-line token)
+                             without exceeding the maxLineLength;
+                             return the index of the first LineBreak or null if there isn’t one
+                             */
+                            return elements.firstIndexWhere((elem) => elem is FormattingWriter.LineBreak);
+                        }
+                    } else {
+                        currentLength += token.text.size;
+                        if (exists previousToken = tokens[tokenIndex - 1],
+                            previousToken.wantsSpaceAfter+token.wantsSpaceBefore >= 0) {
+                            currentLength++; // space between tokens
+                        }
+                        tokenIndex++;
                     }
-                    currentLength += token.text.size;
-                    if (exists previousToken = tokens[tokenIndex - 1],
-                        previousToken.wantsSpaceAfter+token.wantsSpaceBefore >= 0) {
-                        currentLength++; // space between tokens
-                    }
-                    tokenIndex++;
                 } else {
                     /*
                      we’ve reached the end of the tokens without exceeding the maxLineLength;
