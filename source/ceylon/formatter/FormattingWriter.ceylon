@@ -881,7 +881,15 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
            closed in `3.`, and write the others [[with context|writeWithContext]]
      6. If the last element isn’t multi-line: write a line break
      
-     (Note that there may not appear any line breaks before token `i`.)"
+     (Note that there may not appear any line breaks before token `i`.)
+     
+     (Note: I *think* the special case in step 5 is necessary
+     because otherwise the lines from the multi-line token would be misaligned,
+     since they wouldn’t be based on the indentation of the first line.
+     However, I’m writing this note two years after the rest of this method,
+     so this is just an educated guess after looking at the code;
+     I don’t actually *remember* the reason.
+     So if something needs to change here, don’t trust this note too much.)"
     void writeLine(Integer i) {
         QueueElement? firstToken = tokenQueue[0..i].find((QueueElement elem) => elem is Token);
         QueueElement? lastToken = tokenQueue[0..i].findLast((QueueElement elem) => elem is Token);
