@@ -875,7 +875,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
      3. If the first token is a [[ClosingToken]], [[close|closeContext]] its context
      4. [[Write indentation|writeIndentation]]
      5. Write the elements:
-         * If the last element contains more than one line: [[write]] all tokens directy,
+         * If the last token contains more than one line: [[write]] all tokens directy,
            then [[handle|handleContext]] their contexts
          * otherwise write only the first token directly, since its context was already
            closed in `3.`, and write the others [[with context|writeWithContext]]
@@ -924,13 +924,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
          otherwise it writes tokens [[with context|writeWithContext]] and opens/closes
          [[EmptyOpenings|EmptyOpening]]/[[-Closings|EmptyClosing]]."
         Anything(QueueElement) elementHandler;
-        Boolean hasMultiLineToken;
         if (is Token lastToken, lastToken.text.contains('\n')) {
-            hasMultiLineToken = true;
-        } else {
-            hasMultiLineToken = false;
-        }
-        if (hasMultiLineToken) {
             elementHandler = function(QueueElement elem) {
                 if (is Token t = elem) {
                     write(t);
@@ -988,11 +982,10 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
             tokenStack.add(lastToken.context);
         }
         
-        if (hasMultiLineToken) {
+        if (is Token lastElement, lastElement.text.contains('\n')) {
             // don’t write a line break
             // but store wantsSpaceAfter information
-            assert (is Token lastToken);
-            multiLineWantsSpaceAfter = lastToken.wantsSpaceAfter;
+            multiLineWantsSpaceAfter = lastElement.wantsSpaceAfter;
         } else {
             countingWriter.writeLine();
         }
