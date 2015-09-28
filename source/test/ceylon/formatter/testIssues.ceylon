@@ -154,3 +154,8 @@ test
 shared void test106() {
     testIssue(106);
 }
+
+test
+shared void test115() {
+    testIssue(115);
+}
