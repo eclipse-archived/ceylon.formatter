@@ -31,7 +31,8 @@
         <pathelement location="${ceylon.ant.lib}"/>
     </path>
     
-    <target name="ceylondefs">
+    <target name="ceylondefs" unless="ceylondefined">
+        <property name="ceylondefined" value="true" />
         <typedef resource="com/redhat/ceylon/ant/antlib.xml" classpathref="ant-tasks"/>
     
         <reposet id="reposet.run.source-gen">
