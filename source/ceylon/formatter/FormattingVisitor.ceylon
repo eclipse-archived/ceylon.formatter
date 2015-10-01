@@ -487,7 +487,7 @@ shared class FormattingVisitor(
                     compilationUnit.declarations
                 }.map(CeylonIterable))) {
             if (!compilationUnit.importList.imports.empty) {
-                fWriter.requireAtLeastLineBreaks(1);
+                fWriter.requireAtLeastLineBreaks(2);
             }
             decs.first.visit(this);
             for (dec in decs.rest) {
