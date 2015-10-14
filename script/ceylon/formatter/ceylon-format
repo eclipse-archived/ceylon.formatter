@@ -39,4 +39,4 @@ OPTIONS
 
 . $CEYLON_HOME/bin/ceylon-sh-setup
 
-$CEYLON run ceylon.formatter/1.1.1 "$@"
+$CEYLON run ceylon.formatter/1.2.0 "$@"

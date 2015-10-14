@@ -82,4 +82,4 @@ call %CEYLON_HOME%\bin\ceylon-sh-setup.bat %*
 if "%errorlevel%" == "1" (
     exit /b 0
 )
-%CEYLON% run ceylon.formatter/1.1.1 "%*"
+%CEYLON% run ceylon.formatter/1.2.0 "%*"
