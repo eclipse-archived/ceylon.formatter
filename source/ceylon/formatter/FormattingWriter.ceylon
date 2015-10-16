@@ -826,17 +826,30 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
             return false;
         }
         Integer? index;
+        Boolean addLineBreak;
         if (is Integer length = options.maxLineLength) {
-            variable Integer offset = options.indentMode.indent(
-                tokenStack.fold(0)((partial, elem) => partial + elem.postIndent)
-            ).size;
-            if (is Token firstToken = tokenQueue.find((QueueElement elem) => elem is Token), firstToken.preIndent != 0) {
-                offset += firstToken.preIndent;
+            Integer offset;
+            if (countingWriter.currentWidth > 0) {
+                // part of a multi-line token is already in the current line;
+                // signal this to the line break strategy by passing a positive argument
+                offset = countingWriter.currentWidth;
+            } else {
+                // the offset is just indentation: stacked postIndents plus potential preIndent;
+                // signal this to the line break strategy by passing a negative argument
+                variable Integer o = options.indentMode.indent(
+                    tokenStack.fold(0)((partial, elem) => partial + elem.postIndent)
+                ).size;
+                if (is Token firstToken = tokenQueue.find((QueueElement elem) => elem is Token), firstToken.preIndent != 0) {
+                    o += firstToken.preIndent;
+                }
+                offset = -o;
             }
-            index = options.lineBreakStrategy.lineBreakLocation(
+            value [i, lb] = options.lineBreakStrategy.lineBreakLocation(
                 tokenQueue.sequence(),
                 offset,
                 length);
+            index = i;
+            addLineBreak = lb;
         } else {
             index = tokenQueue.firstIndexWhere(function(QueueElement element) {
                     if (is LineBreak element) {
@@ -846,14 +859,11 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                     }
                     return false;
                 });
+            addLineBreak = false;
         }
         if (exists index) {
-            if (!is LineBreak t = tokenQueue[index]) {
-                if (is Token element = t, element.text.contains('\n')) {
-                    // do *not* insert a LineBreak
-                } else {
-                    tokenQueue.insert(index, LineBreak());
-                }
+            if (addLineBreak) {
+                tokenQueue.insert(index, LineBreak());
             }
             writeLine(index);
             return true;

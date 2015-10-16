@@ -5,7 +5,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
     
     string => "default";
     
-    shared actual Integer? lineBreakLocation(FormattingWriter.QueueElement[] elements, Integer offset, Integer maxLineLength) {
+    shared actual [Integer?, Boolean] lineBreakLocation(FormattingWriter.QueueElement[] elements, Integer offset, Integer maxLineLength) {
         "Only the [[FormattingWriter.Token]] elements from [[elements]].
          
          This allows us to access previous and next tokens directly
@@ -17,51 +17,54 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
             to existing line breaks and allowSpace{Before,After} settings
          */
         
+        /*
+         If offset is negative, we always do at least one iteration of the loop.
+         This avoids an infinite loop of “we’re already above the line length due to indentation” →
+         “break line before first token” → goto 1.
+         */
         variable Integer currentLength = offset;
         "The index of the token in [[tokens]] whose index in [[elements]]
          we’re going to return."
         variable Integer tokenIndex = 0;
-        if (currentLength > maxLineLength) {
-            tokenIndex = 1;
-        } else {
-            while (currentLength <= maxLineLength) {
-                if (exists token = tokens[tokenIndex]) {
-                    value lines = token.text.lines.sequence();
-                    if (nonempty lines, lines.size > 1) {
-                        // multi-line literal
-                        currentLength += lines.first.size;
-                        if (exists previousToken = tokens[tokenIndex - 1],
-                            previousToken.wantsSpaceAfter+token.wantsSpaceBefore >= 0) {
-                            currentLength++; // space between tokens
-                        }
-                        tokenIndex++;
-                        if (currentLength <= maxLineLength) {
-                            /*
-                             we’ve reached the end of the line (mandated by the multi-line token)
-                             without exceeding the maxLineLength;
-                             return the index of the first LineBreak or null if there isn’t one
-                             */
-                            return elements.firstIndexWhere((elem) => elem is FormattingWriter.LineBreak);
-                        }
-                    } else {
-                        currentLength += token.text.size;
-                        if (exists previousToken = tokens[tokenIndex - 1],
-                            previousToken.wantsSpaceAfter+token.wantsSpaceBefore >= 0) {
-                            currentLength++; // space between tokens
-                        }
-                        tokenIndex++;
+        while (currentLength <= maxLineLength) {
+            currentLength = currentLength.magnitude;
+            if (exists token = tokens[tokenIndex]) {
+                value lines = token.text.lines.sequence();
+                if (nonempty lines, lines.size > 1) {
+                    // multi-line literal
+                    currentLength += lines.first.size;
+                    if (exists previousToken = tokens[tokenIndex - 1],
+                        previousToken.wantsSpaceAfter+token.wantsSpaceBefore >= 0) {
+                        currentLength++; // space between tokens
+                    }
+                    tokenIndex++;
+                    if (currentLength <= maxLineLength) {
+                        /*
+                         we’ve reached the end of the line (mandated by the multi-line token)
+                         without exceeding the maxLineLength;
+                         return the minimum of the index of the first LineBreak and the index of this token
+                         */
+                        assert (exists elementIndex = elements.firstIndexWhere(token.equals));
+                        return [min { elementIndex, elements.firstIndexWhere((elem) => elem is FormattingWriter.LineBreak) else runtime.maxIntegerValue }, false];
                     }
                 } else {
-                    /*
-                     we’ve reached the end of the tokens without exceeding the maxLineLength;
-                     return the index of the first LineBreak or null if there isn’t one
-                     */
-                    return elements.firstIndexWhere((elem) => elem is FormattingWriter.LineBreak);
+                    currentLength += token.text.size;
+                    if (exists previousToken = tokens[tokenIndex - 1],
+                        previousToken.wantsSpaceAfter+token.wantsSpaceBefore >= 0) {
+                        currentLength++; // space between tokens
+                    }
+                    tokenIndex++;
                 }
+            } else {
+                /*
+                 we’ve reached the end of the tokens without exceeding the maxLineLength;
+                 return the index of the first LineBreak or null if there isn’t one
+                 */
+                return [elements.firstIndexWhere((elem) => elem is FormattingWriter.LineBreak), false];
             }
-            if (tokenIndex > 1) {
-                tokenIndex--; // we incremented it one time too much in the loop
-            }
+        }
+        if (tokenIndex > 1) {
+            tokenIndex--; // we incremented it one time too much in the loop
         }
         
         /*
@@ -77,7 +80,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
             !(previousToken.allowLineBreakAfter && token.allowLineBreakBefore)) {
             tokenIndex--;
         }
-        if (tokenIndex <= 0) {
+        if (tokenIndex < 0 || offset <= 0 && tokenIndex == 0) {
             // search in the other direction
             tokenIndex = origTokenIndex;
             while (exists token = tokens[tokenIndex], exists nextToken = tokens[tokenIndex + 1],
@@ -92,7 +95,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
              we’ve reached the end of the tokens without finding a suitable token;
              return the index of the first LineBreak or null if there isn’t one
              */
-            return elements.firstIndexWhere((elem) => elem is FormattingWriter.LineBreak);
+            return [elements.firstIndexWhere((elem) => elem is FormattingWriter.LineBreak), false];
         } else {
             
             /*
@@ -104,7 +107,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
             variable Integer elementIndex = 0;
             while (exists element = elements[elementIndex], element != tokenAtIndex) {
                 if (element is FormattingWriter.LineBreak) {
-                    return elementIndex;
+                    return [elementIndex, false];
                 }
                 elementIndex++;
             }
@@ -114,9 +117,9 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
                  we’ve reached the end of the tokens without finding a suitable token;
                  return the index of the first LineBreak or null if there isn’t one
                  */
-                return elements.firstIndexWhere((elem) => elem is FormattingWriter.LineBreak);
+                return [elements.firstIndexWhere((elem) => elem is FormattingWriter.LineBreak), false];
             }
-            return elementIndex;
+            return [elementIndex, true];
         }
     }
 }
