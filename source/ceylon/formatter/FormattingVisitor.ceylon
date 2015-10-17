@@ -691,6 +691,26 @@ shared class FormattingVisitor(
         that.valueType.visit(this);
     }
     
+    shared actual void visitEnumerated(Enumerated that) {
+        value context = fWriter.openContext();
+        that.annotationList.visit(this);
+        fWriter.writeToken {
+            that.mainToken; // "new"
+            spaceBefore = true;
+            spaceAfter = true;
+            lineBreaksAfter = noLineBreak;
+        };
+        that.identifier?.visit(this); // optional in the grammar
+        that.delegatedConstructor?.visit(this);
+        if (exists block = that.block) {
+            that.block.visit(this);
+            fWriter.closeContext(context);
+        } else {
+            // parser allows semicolon instead (with displayRecognitionError)
+            writeSemicolon(fWriter, that.mainEndToken, context);
+        }
+    }
+    
     shared actual void visitExists(Exists that) {
         value context = fWriter.openContext();
         that.term.visit(this);
