@@ -10,4 +10,11 @@ class Constructors /* no parameter list, no default constructor */
     new cons3()
             extends Other.thing(param) {}
     new () {} // default constructor
+    
+    "A value constructor."
+    shared new valueCons1 {}
+    /* undocumented */
+    new valueCons2 {
+        shared actual String string => "valueCons2";
+    }
 }
