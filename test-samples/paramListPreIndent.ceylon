@@ -1,4 +1,4 @@
-shared class IdentityMap<Key,Item>
+shared class IdentityMap<Key, Item>
         (hashtable = HashTable(), entries = {})
         satisfies {<Key->Item>*} &
                 Collection<Key->Item> &
