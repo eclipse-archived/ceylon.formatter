@@ -145,10 +145,13 @@ void writeTypeArgumentOrParameterList(FormattingWriter writer, Visitor visitor, 
         spaceAfter = false;
     };
     [Type|TypeParameterDeclaration*] params;
+    Boolean spaceAfterComma;
     if (is TypeArgumentList list) {
         params = CeylonIterable(list.types).sequence();
+        spaceAfterComma = options.spaceAfterTypeArgListComma;
     } else {
         params = CeylonIterable(list.typeParameterDeclarations).sequence();
+        spaceAfterComma = options.spaceAfterTypeParamListComma;
     }
     if (nonempty params) {
         params.first.visit(visitor);
@@ -156,7 +159,7 @@ void writeTypeArgumentOrParameterList(FormattingWriter writer, Visitor visitor, 
             writer.writeToken {
                 ",";
                 spaceBefore = false;
-                spaceAfter = options.spaceAfterTypeArgOrParamListComma;
+                spaceAfter = spaceAfterComma;
                 lineBreaksAfter = options.lineBreaksInTypeParameterList;
             };
             param.visit(visitor);

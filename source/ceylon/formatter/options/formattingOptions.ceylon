@@ -199,12 +199,35 @@ VariableOptions parseFormattingOptions({<String->{String*}>*} entries, SparseFor
         assert (exists optionValue = entry.item.last);
         try {
             parseFormattingOption(optionName, optionValue, options);
-        } catch (Exception e) {
+        } catch (ParseOptionException e) {
             process.writeErrorLine(e.message);
+        } catch (UnknownOptionException e) {
+            try {
+                parseLegacyFormattingOption(optionName, optionValue, options);
+            } catch (ParseOptionException|UnknownOptionException e2) {
+                process.writeErrorLine(e2.message);
+            }
         }
     }
     
     return options;
+}
+
+throws (`class ParseOptionException`, "If the option can’t be parsed")
+throws (`class UnknownOptionException`, "If the option is unknown")
+void parseLegacyFormattingOption(String optionName, String optionValue, VariableOptions options) {
+    switch (optionName)
+    case ("spaceAfterTypeArgOrParamListComma") {
+        if (exists option = parseBoolean(optionValue)) {
+            options.spaceAfterTypeParamListComma = option;
+            options.spaceAfterTypeArgListComma = option;
+        } else {
+            throw ParseOptionException("spaceAfterTypeArgOrParamListComma", optionValue);
+        }
+    }
+    else {
+        throw UnknownOptionException(optionName);
+    }
 }
 
 shared Range<Integer>? parseIntegerRange(String string) {
