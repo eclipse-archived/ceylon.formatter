@@ -210,10 +210,22 @@
         "Boolean"; "failFast"; /* = */ "true";
     },
     FormattingOption {
-        """Decide whether there should be a space after the comma in a type argument or parameter list.
+        """Decide whether there should be a space after commas in a type argument list.
            
            For example: `Map<Key,Value>` vs `Map<Key, Value>`""";
-        "Boolean"; "spaceAfterTypeArgOrParamListComma"; /* = */ "false";
+        "Boolean"; "spaceAfterTypeArgListComma"; /* = */ "false";
+    },
+    FormattingOption {
+        """Decide whether there should be a space after commas in a type parameter list.
+           
+           For example: `Map<out Key=Object,out Item=Anything>` vs `Map<out Key=Object, out Item=Anything>`""";
+        "Boolean"; "spaceAfterTypeParamListComma"; /* = */ "true";
+    },
+    FormattingOption {
+        """Decide whether there should be a space around equals signs in a type parameter list.
+           
+           For example: `Map<out Key=Object, out Item=Anything>` vs `Map<out Key = Object, out Item = Anything>`""";
+        "Boolean"; "spaceAroundTypeParamListEqualsSign"; /* = */ "false";
     },
     FormattingOption {
         """By how many levels `extends`, `satisfies`, `of`, `given`, and `abstracts` should be indented.

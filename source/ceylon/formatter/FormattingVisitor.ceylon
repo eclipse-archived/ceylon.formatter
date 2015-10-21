@@ -63,6 +63,11 @@ shared class FormattingVisitor(
            print("<-- no space");"""
     variable Boolean visitingAnnotation = false;
     
+    """Type specifiers in default type arguments may optionally be spaced,
+       according to [[FormattingOptions.spaceAroundTypeParamListEqualsSign]];
+       other type specifiers (class aliases etc.) are always spaced."""
+    variable Boolean visitingDefaultTypeArgument = false;
+    
     // initialize TokenStream
     if (exists tokens) { tokens.la(1); }
     
@@ -2132,7 +2137,9 @@ shared class FormattingVisitor(
     shared actual void visitTypeParameterDeclaration(TypeParameterDeclaration that) {
         that.typeVariance?.visit(this);
         that.identifier.visit(this);
+        visitingDefaultTypeArgument = true;
         that.typeSpecifier?.visit(this);
+        visitingDefaultTypeArgument = false;
     }
     
     shared actual void visitTypeParameterList(TypeParameterList that) {
@@ -2147,10 +2154,12 @@ shared class FormattingVisitor(
          used for aliasy things (class =>, interface =>, alias =>)
          and for default type arguments
          */
+        Boolean spaces = visitingDefaultTypeArgument then options.spaceAroundTypeParamListEqualsSign else true;
+        visitingDefaultTypeArgument = false;
         fWriter.writeToken {
             that.mainToken; // "=>" or "="
-            spaceBefore = true;
-            spaceAfter = true;
+            spaceBefore = spaces;
+            spaceAfter = spaces;
             indentBefore = 2;
             indentAfter = 1;
             lineBreaksBefore = that.mainToken.text == "=>" then 0..1 else noLineBreak;
