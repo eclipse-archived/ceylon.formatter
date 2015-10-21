@@ -544,3 +544,13 @@ test
 shared void testHigherTypes() {
     testFile("higherTypes");
 }
+
+test
+shared void testTypeArgumentsWithSpaces() {
+    testFile("typeArgumentsWithSpaces");
+}
+
+test
+shared void testTypeParametersWithFlippedSpaces() {
+    testFile("typeParametersWithFlippedSpaces");
+}
