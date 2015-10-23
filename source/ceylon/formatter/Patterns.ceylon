@@ -160,6 +160,7 @@ void writeTypeArgumentOrParameterList(FormattingWriter writer, Visitor visitor, 
                 ",";
                 spaceBefore = false;
                 spaceAfter = spaceAfterComma;
+                lineBreaksBefore = noLineBreak;
                 lineBreaksAfter = options.lineBreaksInTypeParameterList;
             };
             param.visit(visitor);
