@@ -2163,6 +2163,7 @@ shared class FormattingVisitor(
             indentBefore = 2;
             indentAfter = 1;
             lineBreaksBefore = that.mainToken.text == "=>" then 0..1 else noLineBreak;
+            lineBreaksAfter = spaces then 0..1 else noLineBreak;
         };
         that.type.visit(this);
     }
