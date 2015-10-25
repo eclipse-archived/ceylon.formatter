@@ -2156,7 +2156,7 @@ shared class FormattingVisitor(
          */
         Boolean spaces = visitingDefaultTypeArgument then options.spaceAroundTypeParamListEqualsSign else true;
         visitingDefaultTypeArgument = false;
-        fWriter.writeToken {
+        value context = fWriter.writeToken {
             that.mainToken; // "=>" or "="
             spaceBefore = spaces;
             spaceAfter = spaces;
@@ -2166,6 +2166,8 @@ shared class FormattingVisitor(
             lineBreaksAfter = spaces then 0..1 else noLineBreak;
         };
         that.type.visit(this);
+        assert (exists context);
+        fWriter.closeContext(context);
     }
     
     shared actual void visitTypeVariance(TypeVariance that)
