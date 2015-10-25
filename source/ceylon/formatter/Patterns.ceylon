@@ -136,8 +136,7 @@ void writeSomeMemberOp(FormattingWriter writer, Token token) {
 }
 
 void writeTypeArgumentOrParameterList(FormattingWriter writer, Visitor visitor, TypeArgumentList|TypeParameterList list, FormattingOptions options) {
-    value context = writer.openContext();
-    writer.writeToken {
+    value context = writer.writeToken {
         list.mainToken; // "<"
         indentAfter = 1;
         lineBreaksAfter = noLineBreak;
@@ -172,7 +171,6 @@ void writeTypeArgumentOrParameterList(FormattingWriter writer, Visitor visitor, 
         lineBreaksBefore = noLineBreak;
         spaceBefore = false;
     };
-    writer.closeContext(context);
 }
 
 alias ExpressionWithoutSpaces => BaseMemberExpression|Literal|QualifiedMemberExpression|StringTemplate;

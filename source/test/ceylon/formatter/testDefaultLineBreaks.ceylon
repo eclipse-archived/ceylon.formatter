@@ -36,10 +36,10 @@ shared void testDefaultLineBreaks() {
     assertEquals {
         expected = [1, true];
         actual = defaultLineBreaks.lineBreakLocation([
-                w.Token("breakHere", false, 1, maxDesire, maxDesire),
+                w.Token("breakHere", false, true, 1, maxDesire, maxDesire),
                 *{
                     for (i in 1..10)
-                        w.Token("noBreakHere``i``", true, null, maxDesire, maxDesire)
+                        w.Token("noBreakHere``i``", true, false, 0, maxDesire, maxDesire)
                 }], 0, 20);
     };
     
@@ -47,13 +47,13 @@ shared void testDefaultLineBreaks() {
         expected = [null, false];
         actual = defaultLineBreaks.lineBreakLocation([
                 for (i in 1..10)
-                    w.Token("noBreakHere``i``", false, null, maxDesire, maxDesire)
+                    w.Token("noBreakHere``i``", false, false, 0, maxDesire, maxDesire)
             ], 0, 20);
     };
     
     MutableList<FormattingWriter.QueueElement> s = LinkedList<FormattingWriter.QueueElement>();
     for (i in 1..10) {
-        s.add(w.Token("noBreakHere``i``", false, null, maxDesire, maxDesire));
+        s.add(w.Token("noBreakHere``i``", false, false, 0, maxDesire, maxDesire));
     }
     s.add(w.LineBreak());
     assertEquals {

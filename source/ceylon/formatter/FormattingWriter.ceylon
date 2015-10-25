@@ -259,11 +259,12 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         shared actual FormattingContext context;
     }
     
-    shared class Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth, preIndent = 0) {
+    shared class Token(text, allowLineBreakBefore, allowLineBreakAfter, postIndent, wantsSpaceBefore, wantsSpaceAfter, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth, preIndent = 0) {
         
         shared default String text;
         shared default Boolean allowLineBreakBefore;
-        shared default Integer? postIndent;
+        shared default Boolean allowLineBreakAfter;
+        shared default Integer postIndent;
         shared default Integer wantsSpaceBefore;
         shared default Integer wantsSpaceAfter;
         """The column to which subsequent lines of a multi-line token are aligned in the source.
@@ -306,16 +307,16 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
          and the only affects this line."
         shared default Integer preIndent;
         
-        shared Boolean allowLineBreakAfter => postIndent exists;
         shared actual String string => text;
     }
-    class OpeningToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth, preIndent = 0, indentAfterOnlyWhenLineBreak = false)
-            extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, sourceColumn, targetColumn, preIndent)
+    class OpeningToken(text, allowLineBreakBefore, allowLineBreakAfter, postIndent, wantsSpaceBefore, wantsSpaceAfter, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth, preIndent = 0, indentAfterOnlyWhenLineBreak = false)
+            extends Token(text, allowLineBreakBefore, allowLineBreakAfter, postIndent, wantsSpaceBefore, wantsSpaceAfter, sourceColumn, targetColumn, preIndent)
             satisfies OpeningElement {
         
         shared actual String text;
         shared actual Boolean allowLineBreakBefore;
-        shared actual Integer? postIndent;
+        shared actual Boolean allowLineBreakAfter;
+        shared actual Integer postIndent;
         shared actual Integer wantsSpaceBefore;
         shared actual Integer wantsSpaceAfter;
         shared actual Integer sourceColumn;
@@ -325,16 +326,17 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
          see documentation of corresponding [[writeToken]] parameter."
         shared default Boolean indentAfterOnlyWhenLineBreak;
         shared actual object context satisfies FormattingContext {
-            postIndent = outer.postIndent else 0;
+            postIndent = outer.postIndent;
         }
     }
-    class ClosingToken(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, context, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth, preIndent = 0)
-            extends Token(text, allowLineBreakBefore, postIndent, wantsSpaceBefore, wantsSpaceAfter, sourceColumn, targetColumn, preIndent)
+    class ClosingToken(text, allowLineBreakBefore, allowLineBreakAfter, postIndent, wantsSpaceBefore, wantsSpaceAfter, context, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth, preIndent = 0)
+            extends Token(text, allowLineBreakBefore, allowLineBreakAfter, postIndent, wantsSpaceBefore, wantsSpaceAfter, sourceColumn, targetColumn, preIndent)
             satisfies ClosingElement {
         
         shared actual String text;
         shared actual Boolean allowLineBreakBefore;
-        shared actual Integer? postIndent;
+        shared actual Boolean allowLineBreakAfter;
+        shared actual Integer postIndent;
         shared actual Integer wantsSpaceBefore;
         shared actual Integer wantsSpaceAfter;
         shared actual FormattingContext context;
@@ -590,8 +592,9 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         String tokenText;
         String tokenInStreamText;
         Boolean allowLineBreakBefore;
+        Boolean allowLineBreakAfter;
         Integer preIndent;
-        Integer? postIndent;
+        Integer postIndent;
         spaceBeforeDesire = desire(spaceBefore);
         spaceAfterDesire = desire(spaceAfter);
         if (is AntlrToken token) {
@@ -605,8 +608,9 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
             tokenInStreamText = tokenInStream;
         }
         allowLineBreakBefore = lineBreaksBefore.any(0.smallerThan);
-        preIndent = allowLineBreakBefore then indentBefore + this.nextIndentBefore else 0;
-        postIndent = lineBreaksAfter.any(0.smallerThan) then indentAfter;
+        allowLineBreakAfter = lineBreaksAfter.any(0.smallerThan);
+        preIndent = indentBefore + this.nextIndentBefore;
+        postIndent = indentAfter;
         
         this.nextIndentBefore = nextIndentBefore;
         
@@ -647,6 +651,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                             return { OpeningToken {
                                     current.text;
                                     allowLineBreakBefore = true;
+                                    allowLineBreakAfter = true;
                                     postIndent = 0;
                                     wantsSpaceBefore = 0;
                                     wantsSpaceAfter = 0;
@@ -728,10 +733,10 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         if (exists context) {
             "indentAfter doesn’t apply when closing a context"
             assert (!indentAfterOnlyWhenLineBreak);
-            t = ClosingToken(tokenText, allowLineBreakBefore, postIndent, spaceBeforeDesire, spaceAfterDesire, context, sourceColumn, targetColumn, preIndent);
+            t = ClosingToken(tokenText, allowLineBreakBefore, allowLineBreakAfter, postIndent, spaceBeforeDesire, spaceAfterDesire, context, sourceColumn, targetColumn, preIndent);
             ret = null;
         } else {
-            t = OpeningToken(tokenText, allowLineBreakBefore, postIndent, spaceBeforeDesire, spaceAfterDesire, sourceColumn, targetColumn, preIndent, indentAfterOnlyWhenLineBreak);
+            t = OpeningToken(tokenText, allowLineBreakBefore, allowLineBreakAfter, postIndent, spaceBeforeDesire, spaceAfterDesire, sourceColumn, targetColumn, preIndent, indentAfterOnlyWhenLineBreak);
             assert (is OpeningToken t); // ...yeah
             ret = t.context;
         }
@@ -808,7 +813,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                         if (is Empty elem) {
                             return null;
                         } else if (is Token elem) {
-                            return Token(elem.text, elem.allowLineBreakBefore, elem.postIndent, elem.wantsSpaceBefore, elem.wantsSpaceAfter);
+                            return Token(elem.text, elem.allowLineBreakBefore, elem.allowLineBreakAfter, elem.postIndent, elem.wantsSpaceBefore, elem.wantsSpaceAfter);
                         }
                     }
                     return elem;
@@ -1177,6 +1182,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         value token = OpeningToken {
             text = current.text.trimTrailing('\n'.equals).trimTrailing('\r'.equals);
             allowLineBreakBefore = true;
+            allowLineBreakAfter = true;
             postIndent = 0;
             wantsSpaceBefore = maxDesire - 1;
             wantsSpaceAfter = maxDesire - 1;
