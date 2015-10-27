@@ -43,10 +43,10 @@ void testSwitchWithElseIf() {
     else if (process.arguments.first?.equals("foo") else false) {
         if (1 == 0) {
             print("wat");
-        }
-        else {
+        } else {
             print("first argument is foo");
         }
-    } else if (process.arguments.first?.equals("bar") else false) { print("first argument is bar"); }
+    }
+    else if (process.arguments.first?.equals("bar") else false) { print("first argument is bar"); }
     else { print("first argument is neither foo nor bar"); }
 }
