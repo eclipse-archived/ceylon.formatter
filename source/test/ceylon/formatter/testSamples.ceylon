@@ -554,3 +554,28 @@ test
 shared void testTypeParametersWithFlippedSpaces() {
     testFile("typeParametersWithFlippedSpaces");
 }
+
+test
+shared void testOperatorSpaces0() {
+    testFile("operatorSpaces0");
+}
+
+test
+shared void testOperatorSpaces1() {
+    testFile("operatorSpaces1");
+}
+
+test
+shared void testOperatorSpaces2() {
+    testFile("operatorSpaces2");
+}
+
+test
+shared void testOperatorSpaces3() {
+    testFile("operatorSpaces3");
+}
+
+test
+shared void testOperatorSpaces4() {
+    testFile("operatorSpaces4");
+}
