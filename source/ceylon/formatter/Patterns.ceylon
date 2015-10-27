@@ -198,11 +198,19 @@ Boolean samePrecedence(Term e1, Term e2)
         || e1 is AndOp && e2 is AndOp
         || e1 is OrOp && e2 is OrOp;
 
+Integer operatorLevel(BinaryOperatorExpression e)
+        => switch (e)
+    case (is SumOp|DifferenceOp|ProductOp|QuotientOp|RemainderOp|PowerOp|ScaleOp|IntersectionOp|UnionOp|ComplementOp|RangeOp|SegmentOp|EntryOp) 1
+    case (is CompareOp|SmallerOp|SmallAsOp|LargerOp|LargeAsOp|InOp|EqualOp|NotEqualOp|IdenticalOp) 2
+    case (is AndOp|OrOp) 3
+    else 4;
+
 "Determines whether there should be spaces around a binary operator or not.
  
  The spaces are omitted if:
  - the expression is a child of another [[BinaryOperatorExpression]] –
    this can’t be checked by this function and must be tested externally –, and
+ - the expression operator’s [[level|operatorLevel]] is at most [[maxLevel]], and
  - the children are both either
    - [[ExpressionWithoutSpaces]] (i. e., [[Literal]], [[BaseMemberExpression]] or [[QualifiedMemberExpression]]), or
    - the same kind of [[BinaryOperatorExpression]] (same precedence),
@@ -226,18 +234,20 @@ Boolean samePrecedence(Term e1, Term e2)
      value shifted = start+offset .. end+offset;
  
  See [#99](https://github.com/ceylon/ceylon.formatter/issues/99)."
-Boolean useSpacesAroundBinaryOp(BinaryOperatorExpression e)
-        => !{ e.leftTerm, e.rightTerm }.map(unwrapExpression).every {
+Boolean useSpacesAroundBinaryOp(BinaryOperatorExpression e, Integer maxLevel)
+        => operatorLevel(e) > maxLevel
+        || e is ExpressionWithSpaces
+        || !{ e.leftTerm, e.rightTerm }.map(unwrapExpression).every {
     function selecting(Term t) {
         if (t is ExpressionWithoutSpaces) {
             return true;
         } else if (is BinaryOperatorExpression t) {
-            return samePrecedence(t, e) && !useSpacesAroundBinaryOp(t);
+            return samePrecedence(t, e) && !useSpacesAroundBinaryOp(t, maxLevel);
         } else {
             return false;
         }
     }
-} || e is ExpressionWithSpaces;
+};
 
 "Terms in string templates might sometimes require spacing to disambiguate the syntax.
  For more information, see

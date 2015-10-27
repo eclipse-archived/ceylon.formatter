@@ -339,18 +339,34 @@
         "Boolean"; "spaceAfterControlStructureKeyword"; /* = */ "true";
     },
     FormattingOption {
-        "If true, enforce that binary operators are always surrounded by spaces.
+        "The maximum operator layer for which spaces are optional.
          
-         Otherwise, the spaces may be omitted within complex expressions.
-         The exact rules for this are too complicated to be documented here,
-         but they result in spacing like this:
+         If the spaces around an operator are optional,
+         then the formatter omits them when the operator is nested within other operators,
+         for instance:
+         
+             value hollowCubeVolume = w*h*d - iW*iH*iD; // (inner) width/height/depth
+         
+         The operator layers are listed in the Ceylon Language Specification, table 6.1;
+         a brief summary is:
+         
+         1. arithmetic, invocation, and access operators
+         2. comparison and type test operators
+         3. logical operators
+         4. conditional and assignment operators
+         
+         Spaces are optional around all operators of level up to the value of this option.
+         The default value is `3`, resulting in code like this:
          
              value sum = 1 + 2 + 3;
              value hollowCubeVolume = w*h*d - iW*iH*iD; // (inner) width/height/depth
              value allEqual = a==b && b==c && c==d;
              value regular = start..end;
-             value shifted = start+offset .. end+offset;";
-        "Boolean"; "forceSpaceAroundBinaryOp"; /* = */ "false";
+             value shifted = start+offset .. end+offset;
+         
+         If you don’t like the look of `a==b`, consider setting this option to a lower level, like `1`.
+         You can also turn it off completely, enforcing spaces around all operators, with the value `0`.";
+        "Integer"; "spaceOptionalAroundOperatorLevel"; /* = */ "3";
     }
 };
 

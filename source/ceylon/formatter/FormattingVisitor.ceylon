@@ -327,7 +327,7 @@ shared class FormattingVisitor(
             Term left = that.leftTerm;
             Term right = that.rightTerm;
             visitBinaryOperatorExpressionChild(left);
-            value useSpaces = options.forceSpaceAroundBinaryOp || useSpacesAroundBinaryOp(that);
+            value useSpaces = useSpacesAroundBinaryOp(that, options.spaceOptionalAroundOperatorLevel);
             fWriter.writeToken {
                 that.mainToken;
                 lineBreaksBefore = useSpaces then 0..1 else noLineBreak;

@@ -225,6 +225,13 @@ void parseLegacyFormattingOption(String optionName, String optionValue, Variable
             throw ParseOptionException("spaceAfterTypeArgOrParamListComma", optionValue);
         }
     }
+    case ("forceSpaceAroundBinaryOp") {
+        if (exists option = parseBoolean(optionValue)) {
+            options.spaceOptionalAroundOperatorLevel = option then 0 else 3;
+        } else {
+            throw ParseOptionException("forceSpaceAroundBinaryOp", optionValue);
+        }
+    }
     else {
         throw UnknownOptionException(optionName);
     }
