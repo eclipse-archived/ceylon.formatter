@@ -250,8 +250,8 @@ see (`function parseTranslations`)
 }
 
 "Run the module `ceylon.formatter`."
-shared void run() {
-    variable [FormattingOptions, String[]] options = commandLineOptions();
+shared void run(String[] arguments = process.arguments) {
+    variable [FormattingOptions, String[]] options = commandLineOptions(arguments);
     variable Boolean measureTime = false;
     value fileArgs = options[1].select((String s) {
             if (s == "--measureTime") {
