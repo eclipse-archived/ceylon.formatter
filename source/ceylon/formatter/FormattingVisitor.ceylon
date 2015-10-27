@@ -68,6 +68,10 @@ shared class FormattingVisitor(
        other type specifiers (class aliases etc.) are always spaced."""
     variable Boolean visitingDefaultTypeArgument = false;
     
+    """Switch `else`s always get put on their own line,
+       not on the same line as the preceding `}` as for `if` `else`s."""
+    variable Boolean visitingSwitchElse = false;
+    
     // initialize TokenStream
     if (exists tokens) { tokens.la(1); }
     
@@ -343,6 +347,7 @@ shared class FormattingVisitor(
     
     shared actual void visitBody(Body that) {
         value statements = CeylonIterable(that.statements).sequence();
+        value vse_bak = visitingSwitchElse;
         FormattingWriter.FormattingContext? context;
         if (exists token = that.mainToken) {
             context = fWriter.writeToken {
@@ -353,6 +358,7 @@ shared class FormattingVisitor(
                 spaceBefore = 10;
                 spaceAfter = statements nonempty;
             };
+            visitingSwitchElse = false;
         } else {
             context = null;
         }
@@ -375,6 +381,7 @@ shared class FormattingVisitor(
                 context;
             };
         }
+        visitingSwitchElse = vse_bak;
     }
     
     shared actual void visitBreak(Break that) {
@@ -668,16 +675,26 @@ shared class FormattingVisitor(
         }
     }
     
-    "Do not use this for `switch` `else` clauses – use [[visitSwitchElseClause]] for that instead.
-     
-     (Reason: [[FormattingOptions.elseOnOwnLine]] shouldn’t be used for these else clauses.)"
     shared actual void visitElseClause(ElseClause that) {
         fWriter.writeToken {
             that.mainToken; // "else"
-            lineBreaksBefore = options.elseOnOwnLine then 1..1 else 0..0;
+            value lineBreaksBefore {
+                if (that.expression exists) {
+                    return 0..1; // allow inline switch/case/else expressions
+                } else if (options.elseOnOwnLine || visitingSwitchElse) {
+                    return 1..1;
+                } else {
+                    return 0..0;
+                }
+            }
             spaceAfter = true;
         };
-        that.block.visit(this);
+        that.block?.visit(this);
+        if (exists expr = that.expression) {
+            value exprContext = fWriter.openContext(1);
+            expr.visit(this);
+            fWriter.closeContext(exprContext);
+        }
     }
     
     shared actual void visitEntryOp(EntryOp that)
@@ -1910,7 +1927,10 @@ shared class FormattingVisitor(
             visitCaseClause(caseClause);
         }
         if (exists elseClause = that.elseClause) {
-            visitSwitchElseClause(elseClause);
+            value vse_bak = visitingSwitchElse;
+            visitingSwitchElse = true;
+            elseClause.visit(this);
+            visitingSwitchElse = vse_bak;
         }
     }
     
@@ -1934,20 +1954,6 @@ shared class FormattingVisitor(
             lineBreaksBefore = noLineBreak;
             lineBreaksAfter = 0..2;
         };
-    }
-    
-    shared void visitSwitchElseClause(ElseClause that) {
-        fWriter.writeToken {
-            that.mainToken; // "else"
-            lineBreaksBefore = that.block exists then 1..1 else 0..1; // allow inline switch/case/else expressions
-            spaceAfter = true;
-        };
-        that.block?.visit(this);
-        if (exists expr = that.expression) {
-            value exprContext = fWriter.openContext(1);
-            expr.visit(this);
-            fWriter.closeContext(exprContext);
-        }
     }
     
     shared actual void visitSwitchExpression(SwitchExpression that) {
