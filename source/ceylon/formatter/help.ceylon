@@ -7,7 +7,6 @@ import ceylon.language.meta {
     annotations
 }
 import ceylon.language.meta.model {
-    Attribute,
     Type,
     UnionType,
     ClassOrInterface
