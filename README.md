@@ -6,9 +6,7 @@ A source code formatter for the [Ceylon programming language](http://ceylon-lang
 Current status
 --------------
 
-[Version 1.1.0](https://github.com/ceylon/ceylon.formatter/releases/tag/1.1.0) was released and is [available from Herd](https://modules.ceylon-lang.org/modules/ceylon.formatter/1.1.0). You can install it by running `ceylon plugin install ceylon.formatter/1.1.0`.
-
-Version 1.1.5 is a work in progress; it will support the new language features of Ceylon 1.1.5, and also [improve spacing around binary operators](https://github.com/ceylon/ceylon.formatter/issues/99).
+Version 1.2.0 is about to be released.
 
 Building
 --------
