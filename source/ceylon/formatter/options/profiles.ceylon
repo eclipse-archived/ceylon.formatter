@@ -126,7 +126,7 @@ see (`function loadProfile`)
 shared String? configProfileName()
         => CeylonConfig.get("formattool.profile");
 
-Iterable<T,Absent> assertNonnulls<T,Absent>(Iterable<T?,Absent> it)
+Iterable<T,Absent> assertNonnulls<T, Absent>(Iterable<T?,Absent> it)
         given Absent satisfies Null
         => { for (t in it) assertNonnull(t) };
 T assertNonnull<T>(T? t) {

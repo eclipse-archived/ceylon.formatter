@@ -1,6 +1,7 @@
 import ceylon.formatter {
     FormattingWriter
 }
+
 class DefaultLineBreaks() extends LineBreakStrategy() {
     
     string => "default";
@@ -80,7 +81,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
             !(previousToken.allowLineBreakAfter && token.allowLineBreakBefore)) {
             tokenIndex--;
         }
-        if (tokenIndex < 0 || offset <= 0 && tokenIndex == 0) {
+        if (tokenIndex<0 || offset<=0 && tokenIndex==0) {
             // search in the other direction
             tokenIndex = origTokenIndex;
             while (exists token = tokens[tokenIndex], exists nextToken = tokens[tokenIndex + 1],

@@ -12,6 +12,7 @@ import ceylon.file {
 import ceylon.formatter {
     help
 }
+
 "Reads a file with formatting options.
  
  The file consists of lines of key=value pairs or comments, like this:
