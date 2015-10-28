@@ -29,7 +29,7 @@ The buildfile assumes that `ceylon-dist` (including the Ceylon ant files) is a s
 2. Clone the repository locally
 3. In Eclipse, go to File -> Import... -> Existing Projects into Workspace, then choose the location of the `ceylon.formatter` repository and import the `ceylon.formatter` project
 4. Run `source_gen.ceylon.formatter.run()` from the `source-gen` source folder  (ignore the warning that the project has build errors, that’s exactly what this is going to fix)
-5. Right-click the `ceylon.formatter` module and choose Run As -> Ceylon Test to test if everything works
+5. Right-click the `test.ceylon.formatter` module and choose Run As -> Ceylon Test to test if everything works
 
 Usage
 -----
