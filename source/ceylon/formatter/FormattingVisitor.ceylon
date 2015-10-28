@@ -2,6 +2,9 @@ import com.redhat.ceylon.compiler.typechecker.tree {
     Tree {
         ...
     },
+    CustomTree {
+        GuardedVariable
+    },
     Node,
     VisitorAdaptor
 }
@@ -2225,6 +2228,11 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitVariable(Variable that) {
+        if (that is GuardedVariable) {
+            // the compiler inserts GuardedVariable nodes after blocks that definitely return, see ceylon/ceylon-spec#891.
+            // these aren’t present in the source code of course, so we should skip them.
+            return;
+        }
         that.annotationList?.visit(this);
         that.type.visit(this);
         that.identifier.visit(this);
