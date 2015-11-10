@@ -124,7 +124,7 @@ shared class FormattingVisitor(
             if (is BaseMemberExpression bme = that.primary,
                 exists text = bme.identifier.text,
                 text in inlineAnnotations) {
-                // no line break for these annotations
+                fWriter.requireAtMostLineBreaks(0);
             } else {
                 fWriter.requireAtLeastLineBreaks(1);
             }
