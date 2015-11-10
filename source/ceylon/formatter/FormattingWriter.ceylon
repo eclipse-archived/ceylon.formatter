@@ -66,10 +66,11 @@ object stopAndDontConsume extends Stop() { consume = false; }
 
 see (`value AllowedLineBreaks.source`)
 abstract class AllowedLineBreaksSource(shared actual String string)
-        of token | comment | requireAtLeast {}
+        of token | comment | requireAtLeast | requireAtMost {}
 object token extends AllowedLineBreaksSource("token") {}
 object comment extends AllowedLineBreaksSource("comment") {}
 object requireAtLeast extends AllowedLineBreaksSource("requireAtLeast") {}
+object requireAtMost extends AllowedLineBreaksSource("requireAtMost") {}
 
 class AllowedLineBreaks(range, source) {
     "The range of allowed line breaks."
@@ -457,7 +458,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                 = AllowedLineBreaks {
             range = currentRange.decreasing then intersect.last..intersect.first else intersect;
             value source {
-                if (other.source == requireAtLeast) {
+                if (other.source == requireAtLeast || other.source == requireAtMost) {
                     return currentlyAllowedLinebreaks.source;
                 } else {
                     return other.source;
@@ -475,6 +476,16 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
          will be applied between the latest token and the comments."
         Boolean fastForwardFirst = true)
             => intersectAllowedLineBreaks(AllowedLineBreaks(limit..runtime.maxIntegerValue, requireAtLeast), fastForwardFirst);
+    
+    "Require at most [[limit]] line breaks between the latest token and the next one to be [[written|writeToken]]."
+    shared void requireAtMostLineBreaks(
+        Integer limit,
+        "If [[true]], [[FormattingWriter.fastForward]] the token stream before intersecting the line breaks.
+         This makes a difference if there are comments between the latest and the next token; with fast-forwarding,
+         the intersection will be applied between the comments and the next token, while without it, the intersection
+         will be applied between the latest token and the comments."
+        Boolean fastForwardFirst = true)
+            => intersectAllowedLineBreaks(AllowedLineBreaks(runtime.minIntegerValue..limit, requireAtMost), fastForwardFirst);
     
     "Based on [[currently allowed line breaks|currentlyAllowedLinebreaks]]
      and the [[given amount of line breaks|givenLineBreaks]],
