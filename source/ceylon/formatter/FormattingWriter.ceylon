@@ -465,7 +465,8 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
             }
         };
     }
-    "Require at leasts [[limit]] line breaks between the latest token and the next one to be [[written|writeToken]]."
+    
+    "Require at least [[limit]] line breaks between the latest token and the next one to be [[written|writeToken]]."
     shared void requireAtLeastLineBreaks(
         Integer limit,
         "If [[true]], [[FormattingWriter.fastForward]] the token stream before intersecting the line breaks.
