@@ -266,7 +266,7 @@
         <mkdir dir="${osgi.build}"/>
         <touch file="${osgi.build}/bundles.info"/>
         <makeurl property="bundlesInfoUrl" file="${osgi.build}/bundles.info"/>
-        <loadfile srcfile="${basedir}/../ceylon-dist/osgi/p2/bundlesToStart" property="bundlesToStart">
+        <loadfile srcfile="${basedir}/../ceylon/dist/osgi/p2/bundlesToStart" property="bundlesToStart">
           <filterchain>
               <striplinebreaks/>
           </filterchain>
