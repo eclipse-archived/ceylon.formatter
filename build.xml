@@ -81,29 +81,33 @@
     </target>
     
     <target name="compile-source-gen" depends="ceylondefs">
-        <ceylon-compile executable="${ceylon.executable}"
+        <ceylon-compile
             src="source"
             out="${out.repo}"
             verbose="${ceylon.verbosity}"
             encoding="UTF-8"
-            pack200="true">
+            pack200="true"
+            fork="true">
             <moduleset refid="modules.source-gen"/>
         </ceylon-compile>
     </target>
 
     <target name="generate-source" depends="compile-source-gen">
-        <ceylon-run module="source_gen.ceylon.formatter">
+        <ceylon-run
+            module="source_gen.ceylon.formatter"
+            fork="true">
             <reposet refid="reposet.run.source-gen"/> 
         </ceylon-run>
     </target>
 
     <target name="compile-source" depends="compile-source-gen"
             description="Compiles the Ceylon Formatter modules without re-generating sources">
-        <ceylon-compile executable="${ceylon.executable}"
+        <ceylon-compile
             verbose="${ceylon.verbosity}"
             encoding="UTF-8"
             pack200="true"
-            out="${out.repo}">
+            out="${out.repo}"
+            fork="true">
             <moduleset refid="modules.source"/>
         </ceylon-compile>
     </target>
@@ -119,11 +123,12 @@
     
     <target name="compile-test" depends="compile-source-gen"
         description="Compiles the test module" >
-        <ceylon-compile executable="${ceylon.executable}"
+        <ceylon-compile
             src="${test-sources}"
             out="${out.repo}"
             verbose="${ceylon.verbosity}"
-            encoding="UTF-8">
+            encoding="UTF-8"
+            fork="true">
             <reposet refid="reposet.compile.test"/> 
             <moduleset refid="modules.test"/>
         </ceylon-compile>
@@ -131,7 +136,8 @@
 
     <target name="test-formatter" depends="compile,compile-test"
         description="Runs the compiled test module">
-        <ceylon-test>
+        <ceylon-test
+            fork="true">
             <reposet refid="reposet.run.test"/>
             <moduleset refid="modules.test"/>
         </ceylon-test>
@@ -148,10 +154,11 @@
     <target name="doc"  depends="compile-source-gen"
             description="Documents the Formatter module">
         
-        <ceylon-doc executable="${ceylon.executable}"
+        <ceylon-doc
             includesourcecode="true"
             nomtimecheck="true"
-            encoding="UTF-8">
+            encoding="UTF-8"
+            fork="true">
             <moduleset refid="modules.source"/>
             <linkset>
                 <link pattern="ceylon" url="http://modules.ceylon-lang.org/repo/1/"/>
@@ -176,22 +183,24 @@
     <fail message="Please specify a target Herd user name with -Dherd.user=..." unless="herd.user"/>
     <fail message="Please specify a target Herd password with -Dherd.pass=..." unless="herd.pass"/>
         
-        <ceylon-compile executable="${ceylon.executable}"
+        <ceylon-compile
             verbose="${ceylon.verbosity}"
-        out="${herd.repo}"
-        user="${herd.user}"
-        pass="${herd.pass}"
-            encoding="UTF-8">
+            out="${herd.repo}"
+            user="${herd.user}"
+            pass="${herd.pass}"
+            encoding="UTF-8"
+            fork="true">
             <moduleset refid="modules.source"/>
         </ceylon-compile>
         
-        <ceylon-doc executable="${ceylon.executable}"
+        <ceylon-doc
             includesourcecode="true"
             nomtimecheck="true"
-        out="${herd.repo}"
-        user="${herd.user}"
-        pass="${herd.pass}"
-            encoding="UTF-8">
+            out="${herd.repo}"
+            user="${herd.user}"
+            pass="${herd.pass}"
+            encoding="UTF-8"
+            fork="true">
             <moduleset refid="modules.source"/>
             <rep url="https://modules.ceylon-lang.org/repo/1/"/>
             <linkset>
@@ -202,7 +211,8 @@
         <ceylon-plugin mode="pack"
             out="${herd.repo}"
             user="${herd.user}"
-            pass="${herd.pass}">
+            pass="${herd.pass}"
+            fork="true">
             <moduleset refid="modules.source"/>
         </ceylon-plugin>
 
@@ -210,14 +220,17 @@
 
     <target name="scripts">
         <ceylon-plugin mode="pack"
-            out="${out.repo}">
+            out="${out.repo}"
+            fork="true">
             <moduleset refid="modules.source"/>
         </ceylon-plugin>
     </target>
 
     <target name="install" depends="publish">
-        <ceylon-plugin mode="install" force="true"
-            out="${out.repo}">
+        <ceylon-plugin
+            mode="install" force="true"
+            out="${out.repo}"
+            fork="true">
             <moduleset refid="modules.source"/>
         </ceylon-plugin>
     </target>
@@ -271,14 +284,15 @@
               <striplinebreaks/>
           </filterchain>
         </loadfile>
-        <ceylon-p2 executable="${ceylon.executable}"
+        <ceylon-p2
             offline="true"
             verbose="${ceylon.verbosity}"
             nodefaultrepositories="true"
             out="${osgi.dist}"
             repositoryName="Ceylon SDK Bundles"
             categoryPrefix="ceylon.sdk"
-            categories="${osgi.p2}/category.xml">
+            categories="${osgi.p2}/category.xml"
+            fork="true">
             <moduleset refid="modules.source"/>
             <rep url="${basedir}/modules"/>
         </ceylon-p2>
@@ -350,7 +364,9 @@
     
     <target name="format" depends="compile"
             description="formats the formatter with itself">
-        <ceylon-run module="ceylon.formatter">
+        <ceylon-run
+            module="ceylon.formatter"
+            fork="true">
             <reposet refid="reposet.compile.source"/>
             <arg value="source"/>
         </ceylon-run>
