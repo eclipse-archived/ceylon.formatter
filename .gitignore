@@ -7,8 +7,6 @@ bin
 
 /classes
 /modules
-/src-gen-modules
-/test-modules
 
 # backup files
 *~
