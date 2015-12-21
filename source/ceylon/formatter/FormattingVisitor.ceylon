@@ -1768,18 +1768,35 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitSequenceEnumeration(SequenceEnumeration that) {
+        /*
+         * In correct Ceylon, a SequenceEnumeration (iterable expression)
+         * can only contain a SequencedArgument:
+         * 
+         *     { a, b, c }
+         *       /*****/   // a single sequenced argument
+         * 
+         * However, to better handle the somewhat common mistake
+         * 
+         *     String f() => { a(); b(); return "c"; }
+         * 
+         * (erroneous `=>` before function block),
+         * the parser also supports statements in there,
+         * and so does ceylon.formatter.
+         */
+        value empty = !that.sequencedArgument exists && that.statements.empty;
         value context = fWriter.writeToken {
             that.mainToken; // "{"
-            spaceAfter = that.sequencedArgument exists
+            spaceAfter = !empty
                     then options.spaceAfterSequenceEnumerationOpeningBrace
                     else false;
             indentAfter = 1;
         };
+        CeylonIterable(that.statements)*.visit(this); // usually empty
         that.sequencedArgument?.visit(this);
         fWriter.writeToken {
             that.mainEndToken; // "}"
             context;
-            spaceBefore = that.sequencedArgument exists
+            spaceBefore = !empty
                     then options.spaceBeforeSequenceEnumerationClosingBrace
                     else false;
         };
