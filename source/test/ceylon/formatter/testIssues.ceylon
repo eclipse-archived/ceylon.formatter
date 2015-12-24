@@ -31,16 +31,6 @@ shared void test36() {
 }
 
 test
-shared void test37Stack() {
-    testIssue(37, "stack");
-}
-
-test
-shared void test37AddIndentBefore() {
-    testIssue(37, "addIndentBefore");
-}
-
-test
 shared void test39() {
     testIssue(39);
 }

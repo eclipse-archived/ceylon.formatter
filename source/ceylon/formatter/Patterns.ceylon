@@ -42,8 +42,9 @@ FormattingWriter.FormattingContext writeSpecifierMainToken(FormattingWriter writ
         context = writer.writeToken {
             token;
             indentBefore = 2; // TODO option
-            indentAfter = 1; // see #37
-            stackIndentAfter = ifApplied; // see #37
+            indentAfter = 1;
+            stackIndentBefore = ifApplied;
+            stackIndentAfter = ifApplied;
             spaceBefore = true;
             spaceAfter = true;
         };
@@ -52,8 +53,9 @@ FormattingWriter.FormattingContext writeSpecifierMainToken(FormattingWriter writ
         context = writer.writeToken {
             token;
             indentBefore = 2; // TODO option
-            indentAfter = 2; // see #37
-            stackIndentAfter = never; // see #37
+            indentAfter = 2;
+            stackIndentBefore = ifApplied;
+            stackIndentAfter = never;
             spaceBefore = true;
             spaceAfter = true;
         };

@@ -267,9 +267,9 @@
            
                Html html
                        => Html {
-                   head = ...;
-                   body = ...;
-               }
+                           head = ...;
+                           body = ...;
+                       }
            
            (line break *before* `=>`) and
            
