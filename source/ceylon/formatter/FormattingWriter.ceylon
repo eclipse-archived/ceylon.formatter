@@ -85,6 +85,17 @@ class AllowedLineBreaks(range, source) {
     string => "``range``, from ``source``";
 }
 
+"A condition that dictates when a token’s indentation stacks."
+shared abstract class StackCondition() of never | ifApplied | always {}
+"Indicates that an indentation should never be stacked."
+shared object never extends StackCondition() { string => "never"; }
+"Indicates that an indentation should always be stacked."
+shared object always extends StackCondition() { string => "always"; }
+"Indicates that an indentation should be stacked if and only if it was applied, that is:
+ - for the indentation before a token: if that token is the first of its line;
+ - for the indentation after a token: if that token is the last of its line."
+shared object ifApplied extends StackCondition() { string => "ifApplied"; }
+
 "Writes tokens to an underlying [[writer]], respecting certain formatting settings and a maximum line width.
  
  The [[FormattingWriter]] manages the following aspects:
@@ -98,30 +109,57 @@ class AllowedLineBreaks(range, source) {
  # Indentation
  
  Two indentation levels are associated with each token: one before the token, and one after it.
- Warning: they are not symmetrical!
+ Each token also introduces a *context* which tracks these indentation levels if they *stack*.
+ In this case, their indentation is applied to all subsequent lines until the context is *closed*.
  
- **The `indentAfter` of a token** introduces a *context* (instance of [[FormattingContext]]) that is
- pushed onto a *context stack* when the token is written. The indentation of each line is the
- sum of all indentation currently on the context stack. When a context is closed, the context
- and all contexts on top of it are removed from the context stack.
+ By default, the indentation before the token [[never]] stacks,
+ and the indentation after the token [[always]] does.
+ However, either indentation may also stack in the other case,
+ or [[only if it is actually applied|ifApplied]], that is,
+ only if that token is the first/last of its line.
+ 
+ When the token is written, its context (instance of [[FormattingContext]])
+ is pushed onto a *context stack*.
+ The indentation of each line is then the sum of all indentation currently on the stack,
+ plus the indentation before the current token and after the last token (if they’re not already on the stack).
+ When a context is closed, the context and all contexts on top of it are removed from the context stack.
  
  A context can be closed in two ways:
- 1. By associating it with a token. For example, you would say that a closing brace `}` closes the
-    context of the corresponding opening brace `{`: The block has ended, and subsequent lines should
-    no longer be indented as if they were still part of the block. Tokens that close another token’s
-    context do not open a context of their own.
+ 1. By associating it with a token.
+    For example, you would say that a closing brace `}` closes the context of the corresponding opening brace `{`:
+    The block has ended, and subsequent lines should no longer be indented as if they were still part of the block.
+    Tokens that close another token’s context may not introduce indentation themselves,
+    since they don’t get a context of their own.
  2. By calling [[closeContext]].
  
- You can also obtain a context not associated with any token by calling [[openContext]]. This is
- mostly useful if you have a closing token with no designated opening token: for example, a statement’s
- closing semicolon `;` should close some context, but there is no corresponding token which opens
- that context.
+ You can also obtain a context not associated with any token by calling [[openContext]],
+ which introduces some undirectional indentation that always stacks.
+ This is mostly useful if you have a closing token with no designated opening token:
+ for example, a statement’s closing semicolon `;` should close some context,
+ but there is no corresponding token which opens that context.
  
- **The `indentBefore` of a token** does *not* introduce any context. It is only applied when a line
- line break has occured immediately before this line, i. e. if it is the first token of its line.
- For example, the member operator `.` typically has an `indentBefore` of `1`: A “call chain”
- `foo.bar.baz` should, if spread across several lines, be indented, but that indentation should not
- stack across multiple member operators.
+ Examples:
+ 
+ - An opening brace `{` has an `indentAfter` of 1, which always stacks.
+   The resulting context is closed by the associated closing brace `}`.
+ - A member operator `.` has an `indentBefore` of 1, which never stacks.
+   If it stacked, you would get this:
+   ~~~
+   value someValue = something
+       .foo(thing)
+           .bar(otherThing)
+               .baz(whyIsThisSoIndented);
+   ~~~
+ - A refinement operator `=>` has an `indentBefore` of 2, which stacks only if it is applied.
+   Thus, you get both of the following results:
+   ~~~
+   Integer i => function(
+       longArgument // only indented by one level, from the (
+   );
+   Integer f(String param1, String param2)
+           => let (thing = param1.length, thing2 = param2.uppercased)
+               thing + thing2.string; // indented from both => and let
+   ~~~
  
  # Line Breaking
  
@@ -241,7 +279,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
     }
     
     shared interface FormattingContext {
-        shared formal Integer postIndent;
+        shared formal Integer indent;
     }
     
     interface Element of OpeningElement | ClosingElement {
@@ -251,23 +289,26 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
     interface ClosingElement satisfies Element {}
     
     shared abstract class Empty() of EmptyOpening | EmptyClosing {}
-    class EmptyOpening(Integer postIndent = 0) extends Empty() satisfies OpeningElement {
+    class EmptyOpening(Integer indent = 0) extends Empty() satisfies OpeningElement {
         shared actual object context satisfies FormattingContext {
-            postIndent = outer.postIndent;
+            indent = outer.indent;
         }
     }
     class EmptyClosing(context) extends Empty() satisfies ClosingElement {
         shared actual FormattingContext context;
     }
     
-    shared class Token(text, allowLineBreakBefore, allowLineBreakAfter, postIndent, wantsSpaceBefore, wantsSpaceAfter, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth, preIndent = 0) {
+    shared abstract class Token() of OpeningToken | ClosingToken | InvariantToken {
         
-        shared default String text;
-        shared default Boolean allowLineBreakBefore;
-        shared default Boolean allowLineBreakAfter;
-        shared default Integer postIndent;
-        shared default Integer wantsSpaceBefore;
-        shared default Integer wantsSpaceAfter;
+        shared formal String text;
+        shared formal Boolean allowLineBreakBefore;
+        shared formal Boolean allowLineBreakAfter;
+        shared formal Integer indentBefore;
+        shared formal Integer indentAfter;
+        shared formal StackCondition stackIndentBefore;
+        shared formal StackCondition stackIndentAfter;
+        shared formal Integer wantsSpaceBefore;
+        shared formal Integer wantsSpaceAfter;
         """The column to which subsequent lines of a multi-line token are aligned in the source.
            
            Consider the string literal in the following example:
@@ -296,54 +337,109 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
            Later parts of the template are still aligned to the first part."""
         see (`value targetColumn`)
         see (`value AntlrToken.charPositionInLine`)
-        shared default Integer sourceColumn;
+        shared formal Integer sourceColumn;
         """The column to which subsequent lines of a multi-line token should be aligned in the target.
            For an explanation of `source`- and `targetColumn`, see the [[sourceColumn]] documentation.
            
            (This needs to be lazily evaluated because it depends on [[countingWriter.currentWidth]]]."""
         see (`value sourceColumn`)
-        shared default Integer() targetColumn;
-        "The amount of levels to indent before this token.
-         This is only effective if this is the first token in its line,
-         and the only affects this line."
-        shared default Integer preIndent;
+        shared formal Integer() targetColumn;
         
         shared actual String string => text;
     }
-    class OpeningToken(text, allowLineBreakBefore, allowLineBreakAfter, postIndent, wantsSpaceBefore, wantsSpaceAfter, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth, preIndent = 0, indentAfterOnlyWhenLineBreak = false)
-            extends Token(text, allowLineBreakBefore, allowLineBreakAfter, postIndent, wantsSpaceBefore, wantsSpaceAfter, sourceColumn, targetColumn, preIndent)
+    class OpeningToken(text, allowLineBreakBefore, allowLineBreakAfter, indentBefore, indentAfter, stackIndentBefore, stackIndentAfter, wantsSpaceBefore, wantsSpaceAfter, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth)
+            extends Token()
             satisfies OpeningElement {
         
         shared actual String text;
         shared actual Boolean allowLineBreakBefore;
         shared actual Boolean allowLineBreakAfter;
-        shared actual Integer postIndent;
+        shared actual Integer indentBefore;
+        shared actual Integer indentAfter;
+        shared actual StackCondition stackIndentBefore;
+        shared actual StackCondition stackIndentAfter;
         shared actual Integer wantsSpaceBefore;
         shared actual Integer wantsSpaceAfter;
         shared actual Integer sourceColumn;
         shared actual Integer() targetColumn;
-        shared actual Integer preIndent;
-        "Apply [[postIndent]] only if token is last of its line;
-         see documentation of corresponding [[writeToken]] parameter."
-        shared default Boolean indentAfterOnlyWhenLineBreak;
+        
+        "The context of this token.
+         Because the indentation ([[indentBefore]], [[indentAfter]])
+         stacks depending on conditions ([[stackIndentBefore]], [[stackIndentAfter]]),
+         the context’s [[indent]] isn’t known in advance;
+         rather, the context must be initialized to specify
+         if it’s the [[first|initBefore]] and/or [[last|initAfter]] token of its line,
+         from which the [[indent]] can then be determined.."
         shared actual object context satisfies FormattingContext {
-            postIndent = outer.postIndent;
+            variable Integer initedIndentBefore = -1;
+            variable Integer initedIndentAfter = -1;
+            shared actual Integer indent {
+                assert (initedIndentBefore >= 0, initedIndentAfter >= 0);
+                return initedIndentBefore + initedIndentAfter;
+            }
+            "Initialize the indentation before this token,
+             based on whether this is the first token of its line or not.
+             Calling this method multiple times has no effect;
+             the first initialization is kept."
+            shared void initBefore(Boolean firstOfLine) {
+                if (initedIndentBefore == -1) {
+                    if (stackIndentBefore == always ||
+                        stackIndentBefore == ifApplied && firstOfLine) {
+                        initedIndentBefore = indentBefore;
+                    } else {
+                        initedIndentBefore = 0;
+                    }
+                }
+            }
+            "Initialize the indentation after this token,
+             based on whether this is the last token of its line or not.
+             Calling this method multiple times overrides previous calls;
+             the last initialization is used."
+            shared void initAfter(Boolean lastOfLine) {
+                if (stackIndentAfter == always ||
+                    stackIndentAfter == ifApplied && lastOfLine) {
+                    initedIndentAfter = indentAfter;
+                } else {
+                    initedIndentAfter = 0;
+                }
+            }
         }
     }
-    class ClosingToken(text, allowLineBreakBefore, allowLineBreakAfter, postIndent, wantsSpaceBefore, wantsSpaceAfter, context, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth, preIndent = 0)
-            extends Token(text, allowLineBreakBefore, allowLineBreakAfter, postIndent, wantsSpaceBefore, wantsSpaceAfter, sourceColumn, targetColumn, preIndent)
+    class ClosingToken(text, allowLineBreakBefore, allowLineBreakAfter, wantsSpaceBefore, wantsSpaceAfter, context, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth)
+            extends Token()
             satisfies ClosingElement {
         
         shared actual String text;
         shared actual Boolean allowLineBreakBefore;
         shared actual Boolean allowLineBreakAfter;
-        shared actual Integer postIndent;
         shared actual Integer wantsSpaceBefore;
         shared actual Integer wantsSpaceAfter;
         shared actual FormattingContext context;
         shared actual Integer sourceColumn;
         shared actual Integer() targetColumn;
-        shared actual Integer preIndent;
+        
+        // disable indentation for closing tokens
+        shared actual Integer indentBefore => 0;
+        shared actual Integer indentAfter => 0;
+        shared actual StackCondition stackIndentBefore => never;
+        shared actual StackCondition stackIndentAfter => never;
+    }
+    class InvariantToken(text, allowLineBreakBefore, allowLineBreakAfter, wantsSpaceBefore, wantsSpaceAfter, sourceColumn, targetColumn)
+            extends Token() {
+        
+        shared actual String text;
+        shared actual Boolean allowLineBreakBefore;
+        shared actual Boolean allowLineBreakAfter;
+        shared actual Integer wantsSpaceBefore;
+        shared actual Integer wantsSpaceAfter;
+        shared actual Integer sourceColumn;
+        shared actual Integer() targetColumn;
+        
+        // disable indentation for invariant tokens
+        shared actual Integer indentBefore => 0;
+        shared actual Integer indentAfter => 0;
+        shared actual StackCondition stackIndentBefore => never;
+        shared actual StackCondition stackIndentAfter => never;
     }
     
     shared class LineBreak() {}
@@ -360,9 +456,6 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
     
     "Must not allow no line breaks after a line comment, breaks syntax"
     assert (min(options.lineBreaksAfterLineComment) > 0);
-    
-    "See documentation of the equally named parameter of [[writeToken]]"
-    variable Integer nextIndentBefore = 0;
     
     class ColumnStackEntry(sourceColumn) {
         shared Integer sourceColumn;
@@ -397,6 +490,13 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         }
         return false;
     }
+    
+    "Indentation that does not stack, but needs to be persisted between two lines:
+     The indentation after a token that becomes the last of its line, if it doesn’t stack,
+     isn’t stored on the indentation stack,
+     but still needs to be persisted until the next line is written,
+     and is for that purpose stored in this variable."
+    variable Integer ephemeralIndentation = 0;
     
     variable AllowedLineBreaks currentlyAllowedLinebreaks = AllowedLineBreaks(0..0, requireAtLeast);
     
@@ -512,13 +612,13 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         context = null,
         indentBefore = 0,
         indentAfter = 0,
+        stackIndentBefore = never,
+        stackIndentAfter = always,
         lineBreaksBefore = 0..2,
         lineBreaksAfter = 0..1,
         spaceBefore = 0,
         spaceAfter = 0,
-        tokenInStream = token,
-        indentAfterOnlyWhenLineBreak = false,
-        nextIndentBefore = 0) {
+        tokenInStream = token) {
         
         // parameters
         "The token."
@@ -526,11 +626,16 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         "The context that this token closes. If this value isn’t `null`, then this token will not
          itself open a new context, and the method will therefore return `null`."
         FormattingContext? context;
-        "The indentation that should be applied to a line if this token is the first of its line."
+        "The indentation before this token."
         Integer indentBefore;
-        "The indentation that should be applied to all subsequent lines until the token’s context
-         is closed."
+        "The indentation after this token."
         Integer indentAfter;
+        "The condition under which to stack the indentation before this token.
+         By default, the indentation before a token [[never]] stacks."
+        StackCondition stackIndentBefore;
+        "The condition under which to stack the indentation after this token.
+         By default, the indentation after a token [[always]] stacks."
+        StackCondition stackIndentAfter;
         "The amount of line breaks that is allowed before this token."
         see (`value noLineBreak`)
         Range<Integer> lineBreaksBefore;
@@ -553,45 +658,6 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
          in this case you would pass, for example, `\\ivalue` as [[token]] and `value` as
          [[tokenInStream]],"
         AntlrToken|String tokenInStream;
-        "If [[true]], only apply and stack the [[indentAfter]] if this token is the last of its line.
-         
-         You normally don’t want this; one use case is the main token of a specifier expression:
-         ~~~
-         Html html =>
-             Html {
-                 head = ...;
-                 body = ...;
-             };
-         ~~~
-         Here, the `Html` constructor and named arguments should be indented; however, in
-         ~~~
-         Html html
-                 => Html {
-             head = ...;
-             body = ...;
-         }
-         ~~~
-         and
-         ~~~
-         Html html => Html {
-             head = ...;
-             body = ...;
-         }
-         ~~~
-         there shouldn’t be any additional indentation (other than the indentation introduced by
-         the named arguments’ `{`)."
-        Boolean indentAfterOnlyWhenLineBreak;
-        "This is added to the next token’s [[indentBefore]]. Only currently known use case:
-         ~~~
-         Html html =>
-                 Html {
-             head = ...;
-             body = ...;
-         }
-         ~~~
-         As you can see, the `Html` token has an `indentBefore` of `2` – but logically, that comes
-         from the `=>` token."
-        Integer nextIndentBefore;
         
         "Line break count range must be nonnegative"
         assert (lineBreaksBefore.first>=0 && lineBreaksBefore.last>=0);
@@ -605,8 +671,6 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         String tokenInStreamText;
         Boolean allowLineBreakBefore;
         Boolean allowLineBreakAfter;
-        Integer preIndent;
-        Integer postIndent;
         spaceBeforeDesire = desire(spaceBefore);
         spaceAfterDesire = desire(spaceAfter);
         if (is AntlrToken token) {
@@ -621,10 +685,6 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         }
         allowLineBreakBefore = lineBreaksBefore.any(0.smallerThan);
         allowLineBreakAfter = lineBreaksAfter.any(0.smallerThan);
-        preIndent = indentBefore + this.nextIndentBefore;
-        postIndent = indentAfter;
-        
-        this.nextIndentBefore = nextIndentBefore;
         
         /*
          handle the part before this token:
@@ -664,7 +724,10 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                                     current.text;
                                     allowLineBreakBefore = true;
                                     allowLineBreakAfter = true;
-                                    postIndent = 0;
+                                    indentBefore = 0;
+                                    indentAfter = 0;
+                                    stackIndentBefore = never;
+                                    stackIndentAfter = never;
                                     wantsSpaceBefore = 0;
                                     wantsSpaceAfter = 0;
                                 } };
@@ -743,12 +806,15 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
             targetColumn = () => countingWriter.currentWidth + token.takeWhile('"'.equals).size;
         }
         if (exists context) {
-            "indentAfter doesn’t apply when closing a context"
-            assert (!indentAfterOnlyWhenLineBreak);
-            t = ClosingToken(tokenText, allowLineBreakBefore, allowLineBreakAfter, postIndent, spaceBeforeDesire, spaceAfterDesire, context, sourceColumn, targetColumn, preIndent);
+            "Token that closes context cannot open its own context and therefore must not introduce indentation"
+            assert (indentBefore == 0 && indentAfter == 0);
+            // Note: We *could* allow indentation that doesn’t stack. Does anyone need that?
+            // (Alternatively, we could allow closing and opening a context simultaneously, but that’s a more major change.)
+            
+            t = ClosingToken(tokenText, allowLineBreakBefore, allowLineBreakAfter, spaceBeforeDesire, spaceAfterDesire, context, sourceColumn, targetColumn);
             ret = null;
         } else {
-            t = OpeningToken(tokenText, allowLineBreakBefore, allowLineBreakAfter, postIndent, spaceBeforeDesire, spaceAfterDesire, sourceColumn, targetColumn, preIndent, indentAfterOnlyWhenLineBreak);
+            t = OpeningToken(tokenText, allowLineBreakBefore, allowLineBreakAfter, indentBefore, indentAfter, stackIndentBefore, stackIndentAfter, spaceBeforeDesire, spaceAfterDesire, sourceColumn, targetColumn);
             assert (is OpeningToken t); // ...yeah
             ret = t.context;
         }
@@ -778,7 +844,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
      * If the associated context is still on the queue: Go through the [[tokenQueue]] and between
        the opening element and the closing element (including both), do for each element:
          1. If it’s an [[Empty]], remove it;
-         2. If it’s a (subclass of) [[Token]], replace it with a [[Token]].
+         2. If it’s a (subclass of) [[Token]], replace it with an [[InvariantToken]].
      * If the associated context isn’t on the queue:
          1. Pop the context and its successors from the [[tokenStack]]
          2. Go through the `tokenQueue` from the beginning until `element` and do the same as above."
@@ -825,7 +891,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                         if (is Empty elem) {
                             return null;
                         } else if (is Token elem) {
-                            return Token(elem.text, elem.allowLineBreakBefore, elem.allowLineBreakAfter, elem.postIndent, elem.wantsSpaceBefore, elem.wantsSpaceAfter);
+                            return InvariantToken(elem.text, elem.allowLineBreakBefore, elem.allowLineBreakAfter, elem.wantsSpaceBefore, elem.wantsSpaceAfter, elem.sourceColumn, elem.targetColumn);
                         }
                     }
                     return elem;
@@ -851,14 +917,15 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                 // signal this to the line break strategy by passing a positive argument
                 offset = countingWriter.currentWidth;
             } else {
-                // the offset is just indentation: stacked postIndents plus potential preIndent;
+                // the offset is just indentation: stacked indents plus potential indentBefore plus ephemeral indent;
                 // signal this to the line break strategy by passing a negative argument
                 variable Integer o = options.indentMode.indent(
-                    tokenStack.fold(0)((partial, elem) => partial + elem.postIndent)
+                    tokenStack.fold(0)((partial, elem) => partial + elem.indent)
                 ).size;
-                if (is Token firstToken = tokenQueue.find((QueueElement elem) => elem is Token), firstToken.preIndent != 0) {
-                    o += firstToken.preIndent;
+                if (is Token firstToken = tokenQueue.find((QueueElement elem) => elem is Token)) {
+                    o += firstToken.indentBefore;
                 }
+                o += ephemeralIndentation;
                 offset = -o;
             }
             value [i, lb] = options.lineBreakStrategy.lineBreakLocation(
@@ -896,17 +963,20 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
     
     "Write `i + 1` tokens from the queue, followed by a line break.
      
-     1. Take elements `0..i` from the queue (making the formerly `i + 1`<sup>th</sup> token
-        the new first token)
-     2. Determine the first token in that range
-     3. If the first token is a [[ClosingToken]], [[close|closeContext]] its context
-     4. [[Write indentation|writeIndentation]]
+     1. Take elements `0..i` from the queue
+        (making the formerly `i + 1`<sup>th</sup> token the new first token).
+     2. Determine the first token in that range.
+     3. If the first token is a [[ClosingToken]], [[close|closeContext]] its context.
+        This way, a token that closes a context (e. g. a closing brace)
+        gets the same indentation situation as the token that opened it (the opening brace),
+        aligning with that instead of the content between the two tokens.
+     4. [[Write indentation|writeIndentation]].
      5. Write the elements:
          * If the last token contains more than one line: [[write]] all tokens directy,
-           then [[handle|handleContext]] their contexts
+           then [[handle|handleContext]] their contexts afterwards;
          * otherwise write only the first token directly, since its context was already
-           closed in `3.`, and write the others [[with context|writeWithContext]]
-     6. If the last element isn’t multi-line: write a line break
+           closed in `3.`, and write the others [[with context|writeWithContext]].
+     6. If the last element isn’t multi-line: write a line break.
      
      (Note that there may not appear any line breaks before token `i`.)
      
@@ -924,32 +994,37 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         "Tried to write too much into a line – not enough tokens!"
         assert (exists lastElement);
         
-        if (is ClosingToken firstToken) {
+        switch (firstToken)
+        case (is ClosingToken) {
             /*
-             this context needs to be closed *before* we write indentation
-             because closing it may reduce the indentation level
+             This context needs to be closed *before* we write indentation
+             because closing it may reduce the indentation level.
              */
             closeContext0(firstToken);
         }
-        FormattingContext? tmpIndent;
-        if (is Token firstToken, firstToken.preIndent != 0) {
-            object _tmpIndent satisfies FormattingContext { // TODO somehow avoid _tmpIndent
-                postIndent = firstToken.preIndent;
-            }
-            tmpIndent = _tmpIndent;
-            tokenStack.add(_tmpIndent);
-        } else {
-            tmpIndent = null;
+        case (is OpeningToken) {
+            // initialize context
+            firstToken.context.initBefore { firstOfLine = true; };
+            // we’ll also need to write the indentation before this token,
+            // since it’s not on the context stack yet,
+            // but that has to happen after writeIndentation() below,
+            // otherwise writeIndentation() refuses to do anything
+        }
+        else {
+            // no indentation, nothing to do
         }
         
         if (firstToken exists || options.indentBlankLines) {
             writeIndentation();
         }
         
-        if (exists tmpIndent) {
-            value deleted = tokenStack.deleteLast();
-            assert (exists deleted, deleted == tmpIndent);
+        if (is OpeningToken firstToken) {
+            // explicitly write indentation for just this line – context is pushed on stack below
+            countingWriter.write(options.indentMode.indent(firstToken.indentBefore));
         }
+         
+        countingWriter.write(options.indentMode.indent(ephemeralIndentation));
+        ephemeralIndentation = 0;
         
         variable Token? previousToken = null;
         "The elements we have to handle later in case we’re writing a multi-line token"
@@ -999,6 +1074,13 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                     elementHandler(currentToken);
                 }
                 previousToken = currentToken;
+                if (is OpeningToken currentToken) {
+                    // initialize context – we’re in the middle of the line
+                    // (in the cases where that’s not true,
+                    // the explicit earlier/later call wins, so it’s no problem)
+                    currentToken.context.initBefore { firstOfLine = false; };
+                    currentToken.context.initAfter { lastOfLine = false; };
+                }
             } else if (is EmptyOpening|EmptyClosing removing) {
                 elementHandler(removing);
             }
@@ -1012,9 +1094,13 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         for (token in elementsToHandle.sequence()) {
             handleContext(token);
         }
-        if (is OpeningToken lastToken, lastToken.indentAfterOnlyWhenLineBreak) {
-            // the token’s indentAfter was skipped by writeWithContext, open the context “manually”
-            tokenStack.add(lastToken.context);
+        if (is OpeningToken lastToken) {
+            // initialize context
+            lastToken.context.initAfter { lastOfLine = true; };
+            if (lastToken.stackIndentAfter == never) {
+                // save indentation so that it’s written for just the next line
+                ephemeralIndentation = lastToken.indentAfter;
+            }
         }
         
         if (is Token lastElement, lastElement.text.contains('\n')) {
@@ -1026,7 +1112,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         }
     }
     
-    "Write indentation – the sum of all `postIndent`s on the [[tokenStack]].
+    "Write indentation – the sum of all `indent`s on the [[tokenStack]].
      
      Unless we’re not at the start of a line, which happens after writing a multi-line token
      (e. g. multi-line string literals)."
@@ -1034,7 +1120,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         if (countingWriter.currentWidth > 0) {
             return;
         }
-        Integer indentLevel = tokenStack.fold(0)((partial, elem) => partial + elem.postIndent);
+        Integer indentLevel = tokenStack.fold(0)((partial, elem) => partial + elem.indent);
         countingWriter.write(options.indentMode.indent(indentLevel));
     }
     
@@ -1117,11 +1203,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
      if it’s a [[ClosingElement]], [[close|closeContext0]] its context."
     void handleContext(QueueElement element) {
         if (is OpeningElement element) {
-            if (is OpeningToken element, element.indentAfterOnlyWhenLineBreak) {
-                // skip
-            } else {
-                tokenStack.add(element.context);
-            }
+            tokenStack.add(element.context);
         } else if (is ClosingElement element) {
             closeContext0(element);
         }
@@ -1195,7 +1277,10 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
             text = current.text.trimTrailing('\n'.equals).trimTrailing('\r'.equals);
             allowLineBreakBefore = true;
             allowLineBreakAfter = true;
-            postIndent = 0;
+            indentBefore = 0;
+            indentAfter = 0;
+            stackIndentBefore = never;
+            stackIndentAfter = never;
             wantsSpaceBefore = maxDesire - 1;
             wantsSpaceAfter = maxDesire - 1;
             sourceColumn =
