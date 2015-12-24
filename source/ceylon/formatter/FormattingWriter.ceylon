@@ -347,7 +347,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         
         shared actual String string => text;
     }
-    shared class OpeningToken(text, allowLineBreakBefore, allowLineBreakAfter, indentBefore, indentAfter, stackIndentBefore, stackIndentAfter, wantsSpaceBefore, wantsSpaceAfter, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth)
+    shared class OpeningToken(text, allowLineBreakBefore, allowLineBreakAfter, indentBefore, indentAfter, stackIndentBefore, stackIndentAfter, wantsSpaceBefore, wantsSpaceAfter, sourceColumn, targetColumn)
             extends Token()
             satisfies OpeningElement {
         
@@ -405,7 +405,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
             }
         }
     }
-    shared class ClosingToken(text, allowLineBreakBefore, allowLineBreakAfter, wantsSpaceBefore, wantsSpaceAfter, context, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth)
+    shared class ClosingToken(text, allowLineBreakBefore, allowLineBreakAfter, wantsSpaceBefore, wantsSpaceAfter, context, sourceColumn, targetColumn)
             extends Token()
             satisfies ClosingElement {
         
@@ -730,6 +730,8 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                                     stackIndentAfter = never;
                                     wantsSpaceBefore = 0;
                                     wantsSpaceAfter = 0;
+                                    sourceColumn = 0;
+                                    targetColumn = () => countingWriter.currentWidth;
                                 } };
                         }
                     }
@@ -1296,6 +1298,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
              */
                     then 0
                     else current.charPositionInLine;
+            targetColumn = () => countingWriter.currentWidth;
         };
         ret.add(token);
         return ret.sequence();
