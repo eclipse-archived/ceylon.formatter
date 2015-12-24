@@ -282,11 +282,11 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         shared formal Integer indent;
     }
     
-    interface Element of OpeningElement | ClosingElement {
+    shared interface Element of OpeningElement | ClosingElement {
         shared formal FormattingContext context;
     }
-    interface OpeningElement satisfies Element {}
-    interface ClosingElement satisfies Element {}
+    shared interface OpeningElement satisfies Element {}
+    shared interface ClosingElement satisfies Element {}
     
     shared abstract class Empty() of EmptyOpening | EmptyClosing {}
     class EmptyOpening(Integer indent = 0) extends Empty() satisfies OpeningElement {
@@ -347,7 +347,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         
         shared actual String string => text;
     }
-    class OpeningToken(text, allowLineBreakBefore, allowLineBreakAfter, indentBefore, indentAfter, stackIndentBefore, stackIndentAfter, wantsSpaceBefore, wantsSpaceAfter, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth)
+    shared class OpeningToken(text, allowLineBreakBefore, allowLineBreakAfter, indentBefore, indentAfter, stackIndentBefore, stackIndentAfter, wantsSpaceBefore, wantsSpaceAfter, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth)
             extends Token()
             satisfies OpeningElement {
         
@@ -405,7 +405,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
             }
         }
     }
-    class ClosingToken(text, allowLineBreakBefore, allowLineBreakAfter, wantsSpaceBefore, wantsSpaceAfter, context, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth)
+    shared class ClosingToken(text, allowLineBreakBefore, allowLineBreakAfter, wantsSpaceBefore, wantsSpaceAfter, context, sourceColumn = 0, targetColumn = () => countingWriter.currentWidth)
             extends Token()
             satisfies ClosingElement {
         
@@ -424,7 +424,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         shared actual StackCondition stackIndentBefore => never;
         shared actual StackCondition stackIndentAfter => never;
     }
-    class InvariantToken(text, allowLineBreakBefore, allowLineBreakAfter, wantsSpaceBefore, wantsSpaceAfter, sourceColumn, targetColumn)
+    shared class InvariantToken(text, allowLineBreakBefore, allowLineBreakAfter, wantsSpaceBefore, wantsSpaceAfter, sourceColumn, targetColumn)
             extends Token() {
         
         shared actual String text;
