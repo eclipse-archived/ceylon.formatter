@@ -36,10 +36,7 @@ void writeBacktickClosing(FormattingWriter writer, Token backtick, FormattingWri
 }
 
 FormattingWriter.FormattingContext writeSpecifierMainToken(FormattingWriter writer, Token|String token, FormattingOptions options) {
-    FormattingWriter.FormattingContext? context;
-    switch (options.indentationAfterSpecifierExpressionStart)
-    case (stack) {
-        context = writer.writeToken {
+    assert (exists context = writer.writeToken {
             token;
             indentBefore = 2; // TODO option
             indentAfter = 1;
@@ -47,20 +44,7 @@ FormattingWriter.FormattingContext writeSpecifierMainToken(FormattingWriter writ
             stackIndentAfter = ifApplied;
             spaceBefore = true;
             spaceAfter = true;
-        };
-    }
-    case (addIndentBefore) {
-        context = writer.writeToken {
-            token;
-            indentBefore = 2; // TODO option
-            indentAfter = 2;
-            stackIndentBefore = ifApplied;
-            stackIndentAfter = never;
-            spaceBefore = true;
-            spaceAfter = true;
-        };
-    }
-    assert (exists context);
+        });
     return context;
 }
 
