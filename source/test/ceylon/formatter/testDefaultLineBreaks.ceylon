@@ -14,50 +14,101 @@ import ceylon.formatter.options {
 import ceylon.file {
     Writer
 }
-import ceylon.collection {
-    MutableList,
-    LinkedList
+
+class StringBuilderWriter(StringBuilder sb) satisfies Writer {
+    void fail() { assert (false); }
+    close() => noop();
+    flush() => noop();
+    write(String string) => sb.append(string);
+    writeLine(String string) => fail();
+    writeBytes({Byte*} bytes) => fail();
 }
 
 test
-shared void testDefaultLineBreaks() {
-    object writer satisfies Writer {
-        shared actual void close() {}
-        shared actual void flush() {}
-        shared actual void write(String string) {}
-        shared actual void writeLine(String line) {}
-        shared actual void writeBytes({Byte*} bytes) {}
-    }
-    FormattingWriter w = FormattingWriter(null, writer, FormattingOptions());
-    
+shared void testDefaultLineBreaksNearStart() {
     LineBreakStrategy? defaultLineBreaks = parseLineBreakStrategy("default");
     assert (exists defaultLineBreaks);
+    StringBuilder sb = StringBuilder();
+    FormattingWriter w = FormattingWriter(null, StringBuilderWriter(sb), FormattingOptions { lineBreakStrategy = defaultLineBreaks; maxLineLength = 20; });
     
-    assertEquals {
-        expected = [1, true];
-        actual = defaultLineBreaks.lineBreakLocation([
-                w.Token("breakHere", false, true, 1, maxDesire, maxDesire),
-                *{
-                    for (i in 1..10)
-                        w.Token("noBreakHere``i``", true, false, 0, maxDesire, maxDesire)
-                }], 0, 20);
+    w.writeToken {
+        "breakHere";
+        lineBreaksBefore = 0..0;
+        lineBreaksAfter = 0..1;
+        indentBefore = 0;
+        indentAfter = 0;
+        spaceBefore = maxDesire;
+        spaceAfter = maxDesire;
     };
-    
-    assertEquals {
-        expected = [null, false];
-        actual = defaultLineBreaks.lineBreakLocation([
-                for (i in 1..10)
-                    w.Token("noBreakHere``i``", false, false, 0, maxDesire, maxDesire)
-            ], 0, 20);
-    };
-    
-    MutableList<FormattingWriter.QueueElement> s = LinkedList<FormattingWriter.QueueElement>();
-    for (i in 1..10) {
-        s.add(w.Token("noBreakHere``i``", false, false, 0, maxDesire, maxDesire));
+    for (i in 1:10) {
+        w.writeToken {
+            "noBreakHere``i``";
+            lineBreaksBefore = 0..(i==1 then 1 else 0);
+            lineBreaksAfter = 0..1;
+            indentBefore = 0;
+            indentAfter = 0;
+            spaceBefore = maxDesire;
+            spaceAfter = maxDesire;
+        };
     }
-    s.add(w.LineBreak());
+    w.destroy(null);
     assertEquals {
-        expected = [10, false];
-        actual = defaultLineBreaks.lineBreakLocation(s.sequence(), 0, 20);
+        expected = "breakHere
+                    noBreakHere1 noBreakHere2 noBreakHere3 noBreakHere4 noBreakHere5 noBreakHere6 noBreakHere7 noBreakHere8 noBreakHere9 noBreakHere10
+                    ";
+        actual = sb.string;
+    };
+}
+
+test
+shared void testDefaultLineBreaksNoBreaks() {
+    LineBreakStrategy? defaultLineBreaks = parseLineBreakStrategy("default");
+    assert (exists defaultLineBreaks);
+    StringBuilder sb = StringBuilder();
+    FormattingWriter w = FormattingWriter(null, StringBuilderWriter(sb), FormattingOptions { lineBreakStrategy = defaultLineBreaks; maxLineLength = 20; });
+    
+    for (i in 1:10) {
+        w.writeToken {
+            "noBreakHere``i``";
+            lineBreaksBefore = 0..0;
+            lineBreaksAfter = 0..1;
+            indentBefore = 0;
+            indentAfter = 0;
+            spaceBefore = maxDesire;
+            spaceAfter = maxDesire;
+        };
+    }
+    w.destroy(null);
+    assertEquals {
+        expected = "noBreakHere1 noBreakHere2 noBreakHere3 noBreakHere4 noBreakHere5 noBreakHere6 noBreakHere7 noBreakHere8 noBreakHere9 noBreakHere10
+                    ";
+        actual = sb.string;
+    };
+}
+
+test
+shared void testDefaultLineBreaksExplicitAtEnd() {
+    LineBreakStrategy? defaultLineBreaks = parseLineBreakStrategy("default");
+    assert (exists defaultLineBreaks);
+    StringBuilder sb = StringBuilder();
+    FormattingWriter w = FormattingWriter(null, StringBuilderWriter(sb), FormattingOptions { lineBreakStrategy = defaultLineBreaks; maxLineLength = 20; });
+    
+    for (i in 1:10) {
+        w.writeToken {
+            "noBreakHere``i``";
+            lineBreaksBefore = 0..0;
+            lineBreaksAfter = 0..1;
+            indentBefore = 0;
+            indentAfter = 0;
+            spaceBefore = maxDesire;
+            spaceAfter = maxDesire;
+        };
+    }
+    w.requireAtLeastLineBreaks(1);
+    w.destroy(null);
+    assertEquals {
+        expected = "noBreakHere1 noBreakHere2 noBreakHere3 noBreakHere4 noBreakHere5 noBreakHere6 noBreakHere7 noBreakHere8 noBreakHere9 noBreakHere10
+                    ";
+        actual = sb.string;
     };
 }

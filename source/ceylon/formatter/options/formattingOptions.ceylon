@@ -233,6 +233,19 @@ void parseLegacyFormattingOption(String optionName, String optionValue, Variable
             throw ParseOptionException("forceSpaceAroundBinaryOp", optionValue);
         }
     }
+    case ("indentationAfterSpecifierExpressionStart") {
+        // introduced by #37, obsoleted by #105
+        switch (optionValue)
+        case ("stack") {
+            // current behavior, do nothing
+        }
+        case ("addIndentBefore") {
+            // no longer supported; TODO: warning?
+        }
+        else {
+            throw ParseOptionException("indentationAfterSpecifierExpressionStart", optionValue);
+        }
+    }
     else {
         throw UnknownOptionException(optionName);
     }

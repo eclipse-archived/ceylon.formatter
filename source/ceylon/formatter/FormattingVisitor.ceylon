@@ -310,7 +310,9 @@ shared class FormattingVisitor(
             spaceBefore = true;
             spaceAfter = true;
             indentBefore = 2;
-            nextIndentBefore = 2;
+            stackIndentBefore = never;
+            indentAfter = 2;
+            stackIndentAfter = never;
         };
         
         if (samePrecedence(right, that)) {
@@ -338,7 +340,9 @@ shared class FormattingVisitor(
                 spaceBefore = useSpaces;
                 spaceAfter = useSpaces;
                 indentBefore = 2;
-                nextIndentBefore = 2;
+                stackIndentBefore = never;
+                indentAfter = 2;
+                stackIndentAfter = never;
             };
             visitBinaryOperatorExpressionChild(right);
         } else if (is Expression that, !that.mainToken exists) {
@@ -1680,7 +1684,7 @@ shared class FormattingVisitor(
         value context = fWriter.writeToken {
             that.mainToken; // "return"
             indentAfter = 1;
-            indentAfterOnlyWhenLineBreak = true;
+            stackIndentAfter = ifApplied;
             spaceAfter = that.expression exists;
             lineBreaksAfter = that.expression exists then 0..1 else 0..0;
         };
@@ -2071,12 +2075,11 @@ shared class FormattingVisitor(
                 fWriter.writeToken {
                     ",";
                     lineBreaksBefore = noLineBreak;
-                    indentAfter = 1;
                     spaceBefore = false;
                     spaceAfter = true;
                     innerContext;
                 };
-                innerContext = fWriter.openContext();
+                innerContext = fWriter.openContext(1);
                 element.visit(this);
             }
         }
