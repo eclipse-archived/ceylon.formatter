@@ -335,6 +335,5 @@
 {Enum+} enums = {
     Enum("Unlimited"),
     Enum("All"),
-    Enum("IndentationAfterSpecifierExpressionStart", { "stack", "addIndentBefore" }),
     Enum { "LineBreak"; { "os", "lf", "crlf" }; generate = false; }
 };

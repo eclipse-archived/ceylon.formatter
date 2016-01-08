@@ -8,9 +8,7 @@ import com.redhat.ceylon.compiler.typechecker.tree {
     Visitor
 }
 import ceylon.formatter.options {
-    FormattingOptions,
-    stack,
-    addIndentBefore
+    FormattingOptions
 }
 import ceylon.interop.java {
     CeylonIterable
