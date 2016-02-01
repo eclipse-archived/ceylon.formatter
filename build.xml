@@ -161,7 +161,7 @@
             fork="true">
             <moduleset refid="modules.source"/>
             <linkset>
-                <link pattern="ceylon" url="http://modules.ceylon-lang.org/repo/1/"/>
+                <link pattern="ceylon" url="https://modules.ceylon-lang.org/repo/1/"/>
             </linkset>
         </ceylon-doc>
         
@@ -204,7 +204,7 @@
             <moduleset refid="modules.source"/>
             <rep url="https://modules.ceylon-lang.org/repo/1/"/>
             <linkset>
-                <link pattern="ceylon" url="http://modules.ceylon-lang.org/repo/1/"/>
+                <link pattern="ceylon" url="https://modules.ceylon-lang.org/repo/1/"/>
             </linkset>
         </ceylon-doc>
         
