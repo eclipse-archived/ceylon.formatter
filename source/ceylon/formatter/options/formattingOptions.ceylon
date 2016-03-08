@@ -73,7 +73,7 @@ shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = pro
     } else if (arguments.contains("--version")) {
         print(
             "`` `module`.name ``/`` `module`.version ``
-             Copyright 2014-2015 Lucas Werkmeister and ceylon.formatter contributors
+             Copyright 2014-2016 Lucas Werkmeister and ceylon.formatter contributors
              Licensed under the Apache License, Version 2.0."
         );
         process.exit(0);
