@@ -14,13 +14,13 @@
     
     <taskdef resource="net/sf/antcontrib/antcontrib.properties">
         <classpath>
-            <pathelement location="${ceylon.root.dir}/lib/ant-contrib-1.0b3.jar"/>
+            <pathelement location="${ceylon.libs.dir}/ant-contrib-1.0b3.jar"/>
         </classpath>
     </taskdef>
 
     <taskdef resource="taskdef.properties">
         <classpath>
-            <pathelement path="${ceylon.root.dir}/lib/org.osgi.impl.bundle.repoindex.ant-2.1.2.jar" />
+            <pathelement path="${ceylon.libs.dir}/org.osgi.impl.bundle.repoindex.ant-2.1.2.jar" />
         </classpath>
     </taskdef>
 
@@ -29,7 +29,7 @@
     <property name="ceylon.repo.dir" location="${user.home}/.ceylon/repo" />
     
     <path id="ant-tasks">
-        <pathelement location="${ceylon.ant.lib}"/>
+        <pathelement location="${dist.libs.dir}/ceylon-ant.jar"/>
     </path>
     
     <target name="ceylondefs" unless="ceylondefined">
