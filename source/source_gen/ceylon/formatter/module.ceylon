@@ -2,7 +2,7 @@
 by ("Lucas Werkmeister <mail@lucaswerkmeister.de>")
 license ("https://www.apache.org/licenses/LICENSE-2.0.html")
 native ("jvm")
-module source_gen.ceylon.formatter "1.2.2" {
-    import ceylon.file "1.2.2";
+module source_gen.ceylon.formatter "1.2.3" {
+    import ceylon.file "1.2.3";
     import java.base "7";
 }
