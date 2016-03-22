@@ -96,7 +96,7 @@ module ceylon.formatter "1.2.3" {
     shared import java.base "7";
     shared import com.redhat.ceylon.typechecker "1.2.3.SNAPSHOT";
     shared import com.redhat.ceylon.common "1.2.3.SNAPSHOT";
-    shared import ceylon.file "1.2.3";
-    import ceylon.interop.java "1.2.3";
-    import ceylon.collection "1.2.3";
+    shared import ceylon.file "1.2.3.SNAPSHOT";
+    import ceylon.interop.java "1.2.3.SNAPSHOT";
+    import ceylon.collection "1.2.3.SNAPSHOT";
 }
