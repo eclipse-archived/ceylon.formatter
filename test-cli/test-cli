@@ -4,7 +4,7 @@ total=0
 for dir in *; do
     ! [[ -d "$dir" ]] && continue
     cd "$dir"
-    ceylon run --rep=../../modules ceylon.formatter/1.2.3 $(<args)
+    ceylon run --rep=../../modules ceylon.formatter/1.2.3.SNAPSHOT $(<args)
     if diff <(tree result-expected | sed '1s/expected/actual/') <(tree result-actual); then
         # clean up, unless it’s a symlink
         ! [[ -L result-actual ]] && rm -r result-actual

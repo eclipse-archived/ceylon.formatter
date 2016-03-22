@@ -1,6 +1,6 @@
 native ("jvm")
-module test.ceylon.formatter "1.2.3" {
-    import ceylon.formatter "1.2.3";
-    shared import ceylon.test "1.2.3";
-    import ceylon.collection "1.2.3";
+module test.ceylon.formatter "1.2.3.SNAPSHOT" {
+    import ceylon.formatter "1.2.3.SNAPSHOT";
+    shared import ceylon.test "1.2.3.SNAPSHOT";
+    import ceylon.collection "1.2.3.SNAPSHOT";
 }

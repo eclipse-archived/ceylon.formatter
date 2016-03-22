@@ -92,7 +92,7 @@
 by ("Lucas Werkmeister <mail@lucaswerkmeister.de>")
 license ("https://www.apache.org/licenses/LICENSE-2.0.html")
 native ("jvm")
-module ceylon.formatter "1.2.3" {
+module ceylon.formatter "1.2.3.SNAPSHOT" {
     shared import java.base "7";
     shared import com.redhat.ceylon.typechecker "1.2.3.SNAPSHOT";
     shared import com.redhat.ceylon.common "1.2.3.SNAPSHOT";
