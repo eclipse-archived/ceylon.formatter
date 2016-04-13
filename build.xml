@@ -36,7 +36,12 @@
         <property name="ceylondefined" value="true" />
         <typedef resource="com/redhat/ceylon/ant/antlib.xml" classpathref="ant-tasks"/>
     
+        <reposet id="ceylon.repo">
+            <repo url="${ceylon.repo.dir}"/>
+        </reposet>
+
         <reposet id="reposet.run.source-gen">
+            <reposet refid="ceylon.repo"/>
             <repo url="${out.repo}"/>
         </reposet>
 
@@ -46,6 +51,7 @@
         </reposet>
 
         <reposet id="reposet.compile.test">
+            <reposet refid="ceylon.repo"/>
             <repo url="${out.repo}"/>
         </reposet>
     
@@ -89,6 +95,7 @@
             encoding="UTF-8"
             pack200="true"
             fork="true">
+            <reposet refid="ceylon.repo"/>
             <moduleset refid="modules.source-gen"/>
         </ceylon-compile>
     </target>
@@ -109,6 +116,7 @@
             pack200="true"
             out="${out.repo}"
             fork="true">
+            <reposet refid="ceylon.repo"/>
             <moduleset refid="modules.source"/>
         </ceylon-compile>
     </target>
