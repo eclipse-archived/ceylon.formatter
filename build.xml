@@ -108,7 +108,7 @@
         </ceylon-run>
     </target>
 
-    <target name="compile-source" depends="compile-source-gen"
+    <target name="compile-source" depends="ceylondefs"
             description="Compiles the Ceylon Formatter modules without re-generating sources">
         <ceylon-compile
             verbose="${ceylon.verbosity}"
@@ -130,7 +130,7 @@
     
     <property name="test-sources" refid="test-sources-path"/>
     
-    <target name="compile-test" depends="compile-source-gen"
+    <target name="compile-test" depends="ceylondefs"
         description="Compiles the test module" >
         <ceylon-compile
             src="${test-sources}"
@@ -160,7 +160,7 @@
     <target name="test" depends="test-formatter,test-cli"
         description="Runs all tests"/>
 
-    <target name="doc"  depends="compile-source-gen"
+    <target name="doc"  depends="ceylondefs"
             description="Documents the Formatter module">
         
         <ceylon-doc
@@ -187,7 +187,7 @@
         </copy>
     </target>
 
-    <target name="publish-herd" depends="compile-source-gen">
+    <target name="publish-herd" depends="ceylondefs">
     <fail message="Please specify a target Herd upload repo url with -Dherd.repo=..." unless="herd.repo"/>
     <fail message="Please specify a target Herd user name with -Dherd.user=..." unless="herd.user"/>
     <fail message="Please specify a target Herd password with -Dherd.pass=..." unless="herd.pass"/>
