@@ -227,7 +227,7 @@
 
     </target>
 
-    <target name="scripts">
+    <target name="scripts" depends="ceylondefs">
         <ceylon-plugin mode="pack"
             out="${out.repo}"
             fork="true">
