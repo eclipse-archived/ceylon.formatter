@@ -143,7 +143,7 @@
         </ceylon-compile>
     </target>
 
-    <target name="test-formatter" depends="compile,compile-test"
+    <target name="test-formatter-quick" depends="ceylondefs"
         description="Runs the compiled test module">
         <ceylon-test
             fork="true">
@@ -152,10 +152,16 @@
         </ceylon-test>
     </target>
 
-    <target name="test-cli" depends="compile"
+    <target name="test-formatter" depends="compile,compile-test,test-formatter-quick"
+        description="Compiles and runs the test module"/>
+
+    <target name="test-cli-quick"
         description="Tests the formatter's CLI">
         <exec dir="test-cli" executable="./test-cli"/>
     </target>
+
+    <target name="test-cli" depends="compile,test-cli-quick"
+        description="Compiles the formatter and tests the CLI"/>
 
     <target name="test" depends="test-formatter,test-cli"
         description="Runs all tests"/>
@@ -176,10 +182,10 @@
         
     </target>
 
-    <target name="publish" depends="publish-internal">
-    </target>
-    <target name="publish-internal" depends="compile,scripts"
-            description="Copies the Formatter modules to the user's repository">
+    <target name="publish" depends="compile,scripts,publish-quick"
+        description="Copies the formatter modules to the user's repository"/>
+    <target name="publish-quick"
+        description="Compiles and copies the formatter modules to the user's repository">
         <copy todir="${ceylon.repo.dir}" overwrite="true">
             <fileset dir="${out.repo}">
                 <include name="ceylon/formatter/**"/>
