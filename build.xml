@@ -157,7 +157,9 @@
 
     <target name="test-cli-quick"
         description="Tests the formatter's CLI">
-        <exec dir="test-cli" executable="./test-cli"/>
+        <exec dir="test-cli" executable="./test-cli">
+            <arg value="${ceylon.repo.dir}"/>
+        </exec>
     </target>
 
     <target name="test-cli" depends="compile,test-cli-quick"
