@@ -2,7 +2,7 @@
 
     <property file="build.properties" />
     <property name="ceylon.verbosity" value="false"/>
-    <property name="ceylon.executable" value="${dist.bin.dir}/ceylon"/>
+    <property name="ceylon.executable" location="${dist.bin.dir}/ceylon"/>
     <property name="out.repo" location="${basedir}/modules"/>
     
     <property name="osgi" location="${basedir}/osgi" />
@@ -158,6 +158,7 @@
     <target name="test-cli-quick"
         description="Tests the formatter's CLI">
         <exec dir="test-cli" executable="./test-cli" failonerror="true">
+            <arg value="${ceylon.executable}"/>
             <arg value="${ceylon.repo.dir}"/>
         </exec>
     </target>

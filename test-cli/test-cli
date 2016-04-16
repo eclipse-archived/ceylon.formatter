@@ -1,10 +1,11 @@
 #!/bin/bash
+# arguments: [ ceylon executable ] [ repository ]
 failed=0
 total=0
 for dir in *; do
     ! [[ -d "$dir" ]] && continue
     cd "$dir"
-    ceylon run --rep="${1:-+USER}" --rep=../../modules ceylon.formatter/1.2.3 $(<args)
+    "${1:-ceylon}" run --rep="${2:-+USER}" --rep=../../modules ceylon.formatter/1.2.3 $(<args)
     if diff <(tree result-expected | sed '1s/expected/actual/') <(tree result-actual); then
         # clean up, unless it’s a symlink
         ! [[ -L result-actual ]] && rm -r result-actual
