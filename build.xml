@@ -152,22 +152,55 @@
         </ceylon-test>
     </target>
 
+    <target name="test-formatter-tap-quick" depends="ceylondefs"
+        description="Runs the compiled test module, writing a TAP report to test-formatter.tap">
+        <ceylon-test
+            tap="test-formatter.tap"
+            fork="true">
+            <reposet refid="reposet.run.test"/>
+            <moduleset refid="modules.test"/>
+        </ceylon-test>
+    </target>
+
     <target name="test-formatter" depends="compile,compile-test,test-formatter-quick"
         description="Compiles and runs the test module"/>
+
+    <target name="test-formatter-tap" depends="compile,compile-test,test-formatter-tap-quick"
+        description="Compiles and runs the test module, writing a TAP report to test-formatter.tap"/>
 
     <target name="test-cli-quick"
         description="Tests the formatter's CLI">
         <exec dir="test-cli" executable="./test-cli" failonerror="true">
+            <arg value="-c"/>
             <arg value="${ceylon.executable}"/>
+            <arg value="-r"/>
             <arg value="${ceylon.repo.dir}"/>
+        </exec>
+    </target>
+
+    <target name="test-cli-tap-quick"
+        description="Tests the formatter's CLI, writing a TAP report to test-cli.tap">
+        <exec dir="test-cli" executable="./test-cli" failonerror="true">
+            <arg value="-c"/>
+            <arg value="${ceylon.executable}"/>
+            <arg value="-r"/>
+            <arg value="${ceylon.repo.dir}"/>
+            <arg value="-t"/>
+            <arg value="../test-cli.tap"/>
         </exec>
     </target>
 
     <target name="test-cli" depends="compile,test-cli-quick"
         description="Compiles the formatter and tests the CLI"/>
 
+    <target name="test-cli-tap" depends="compile,test-cli-tap-quick"
+        description="Compiles the formatter and tests the CLI, writing a TAP report to test-cli.tap"/>
+
     <target name="test" depends="test-formatter,test-cli"
         description="Runs all tests"/>
+
+    <target name="test-tap" depends="test-formatter-tap,test-cli-tap"
+        description="Runs all tests, writing TAP reports to test-formatter.tap and test-cli.tap"/>
 
     <target name="doc"  depends="ceylondefs"
             description="Documents the Formatter module">
