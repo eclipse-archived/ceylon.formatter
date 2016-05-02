@@ -8,12 +8,12 @@ A source code formatter for the [Ceylon programming language](http://ceylon-lang
 Current status
 --------------
 
-Version 1.2.0 has been [released][release-1.2.0] and is available on [Herd][herd-1.2.0].
+Version 1.2.2 has been [released][release-1.2.2] and is available on [Herd][herd-1.2.2].
 There are no immediate plans for changes;
 the next release will probably be for bugfixes, or to support new language features, or for a new binary version of Ceylon.
 
-[release-1.2.0]: https://github.com/ceylon/ceylon.formatter/releases/1.2.0
-[herd-1.2.0]: https://modules.ceylon-lang.org/modules/ceylon.formatter/1.2.0
+[release-1.2.2]: https://github.com/ceylon/ceylon.formatter/releases/1.2.2
+[herd-1.2.2]: https://modules.ceylon-lang.org/modules/ceylon.formatter/1.2.2
 
 Building
 --------
