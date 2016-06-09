@@ -1655,6 +1655,7 @@ shared class FormattingVisitor(
     shared actual void visitResourceList(ResourceList that) {
         value context = fWriter.writeToken {
             that.mainToken; // "("
+            indentAfter = 1;
             spaceAfter = false;
         };
         value resources = CeylonIterable(that.resources).sequence();
