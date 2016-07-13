@@ -1060,6 +1060,16 @@ shared class FormattingVisitor(
             spaceAfter = true;
             lineBreaksAfter = noLineBreak;
         };
+        if (exists namespace = that.namespace) {
+            namespace.visit(this);
+            fWriter.writeToken {
+                ":";
+                spaceBefore = false;
+                spaceAfter = false;
+                lineBreaksBefore = noLineBreak;
+                lineBreaksAfter = noLineBreak;
+            };
+        }
         that.importPath?.visit(this); // nullsafe because might be quoted…
         that.quotedLiteral?.visit(this); // …like this
         that.version?.visit(this); // version not mandatory in the grammar
