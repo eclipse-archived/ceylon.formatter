@@ -41,7 +41,7 @@ shared {String*} findTestFiles(Path rootPath = parsePath("test-samples")) {
     for (dir in root.childDirectories()) {
         testFiles.addAll(findTestFiles(dir.path));
     }
-    return testFiles;
+    return sort(testFiles);
 }
 
 
