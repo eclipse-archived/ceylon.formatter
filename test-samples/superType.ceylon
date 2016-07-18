@@ -8,5 +8,5 @@ class Sub() extends Super() {
     }
 }
 
-class Other() extends JavaClass.InnerClass() {
+class Other() extends JavaClass.InnerClass.NestedClass.AnotherClass() {
 }
