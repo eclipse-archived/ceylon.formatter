@@ -35,7 +35,9 @@ import ceylon.formatter.options {
 }
 import ceylon.collection {
     MutableList,
-    ArrayList
+    MutableMap,
+    ArrayList,
+    HashMap
 }
 
 "A [[com.redhat.ceylon.compiler.typechecker.tree::Visitor]] that writes a formatted version of the
@@ -74,6 +76,9 @@ shared class FormattingVisitor(
     """Switch `else`s always get put on their own line,
        not on the same line as the preceding `}` as for `if` `else`s."""
     variable Boolean visitingSwitchElse = false;
+    
+    "Map from alias to actual name, for [#126](https://github.com/ceylon/ceylon.formatter/issues/126)."
+    MutableMap<String, String> importMemberAliases = HashMap<String, String>();
     
     // initialize TokenStream
     if (exists tokens) { tokens.la(1); }
@@ -123,7 +128,7 @@ shared class FormattingVisitor(
         if (is {String*} inlineAnnotations = options.inlineAnnotations) {
             if (is BaseMemberExpression bme = that.primary,
                 exists text = bme.identifier.text,
-                text in inlineAnnotations) {
+                (importMemberAliases[text] else text) in inlineAnnotations) {
                 fWriter.requireAtMostLineBreaks(0);
             } else {
                 fWriter.requireAtLeastLineBreaks(1);
@@ -985,6 +990,13 @@ shared class FormattingVisitor(
         };
         that.visitChildren(this);
         fWriter.requireAtLeastLineBreaks(1);
+    }
+    
+    shared actual void visitImportMember(ImportMember that) {
+        if (exists al = that.\ialias) {
+            importMemberAliases.put(al.identifier.text, that.identifier.text);
+        }
+        that.visitChildren(this);
     }
     
     shared actual void visitImportMemberOrTypeList(ImportMemberOrTypeList that) {
