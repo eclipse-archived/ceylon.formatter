@@ -767,25 +767,6 @@ shared class FormattingVisitor(
         that.visitChildren(this);
     }
     
-    shared actual void visitExpression(Expression that) {
-        if (exists token = that.mainToken) {
-            assert (exists endToken = that.mainEndToken);
-            value context = fWriter.writeToken {
-                token; // "("
-                indentAfter = 1;
-                spaceAfter = false;
-            };
-            that.term.visit(this);
-            fWriter.writeToken {
-                endToken; // ")"
-                context;
-                spaceBefore = false;
-            };
-        } else {
-            that.term.visit(this);
-        }
-    }
-    
     shared actual void visitExpressionList(ExpressionList that) {
         value expressions = CeylonIterable(that.expressions).sequence();
         assert (nonempty expressions);
@@ -1554,6 +1535,20 @@ shared class FormattingVisitor(
             spaceBefore = options.spaceBeforeParamListClosingParen;
             spaceAfter = options.spaceAfterParamListClosingParen then 10 else false;
             context = context;
+        };
+    }
+    
+    shared actual void visitParExpression(ParExpression that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "("
+            indentAfter = 1;
+            spaceAfter = false;
+        };
+        that.term.visit(this);
+        fWriter.writeToken {
+            that.mainEndToken; // ")"
+            context;
+            spaceBefore = false;
         };
     }
     
