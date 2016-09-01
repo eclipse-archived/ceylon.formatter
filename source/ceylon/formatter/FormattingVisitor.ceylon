@@ -994,7 +994,7 @@ shared class FormattingVisitor(
     
     shared actual void visitImportMember(ImportMember that) {
         if (exists al = that.\ialias) {
-            importMemberAliases.put(al.identifier.text, that.identifier.text);
+            importMemberAliases[al.identifier.text] = that.identifier.text;
         }
         that.visitChildren(this);
     }
