@@ -236,32 +236,47 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
      The width of a tab character is [[tabWidth]]."
     object countingWriter satisfies Writer {
         
-        variable Integer m_CurrentWidth = 0; // TODO “don’t ever write code like this in Ceylon”... how else can I hide the setter?
-        shared Integer currentWidth => m_CurrentWidth;
+        see (`value currentWidth`)
+        variable Integer width = 0;
+        "[[true]] if we’re at the start of the line and haven’t written anything other than indentation yet."
+        variable Boolean startOfLine = true;
+        "The current width of the line."
+        shared Integer currentWidth => width;
         
         shared actual void close() => writer.close();
         
         shared actual void flush() => writer.flush();
         
+        "Writes [[level]] levels of indentation,
+         unless we’re not at the start of the line."
+        shared void indent(Integer level) {
+            if (startOfLine) {
+                write(options.indentMode.indent(level));
+                startOfLine = true;
+            }
+        }
+        
         shared actual void write(String string) {
+            startOfLine = false;
             String[] lines = string.lines.sequence();
             writer.write(lines.first else "");
             for (line in lines.rest) {
                 writer.writeLine();
-                m_CurrentWidth = 0;
+                width = 0;
                 writer.write(line);
             }
             if (string.endsWith("\n")) {
                 writer.writeLine();
-                m_CurrentWidth = 0;
+                width = 0;
+                startOfLine = true;
             } else {
                 for (char in (lines.last else "")) {
                     if (char == '\t') {
-                        m_CurrentWidth = (m_CurrentWidth%tabWidth == 0)
-                                then m_CurrentWidth + tabWidth
-                                else ((m_CurrentWidth / tabWidth) + 1) * tabWidth;
+                        width = (width%tabWidth == 0)
+                                then width + tabWidth
+                                else ((width / tabWidth) + 1) * tabWidth;
                     } else {
-                        m_CurrentWidth += 1;
+                        width += 1;
                     }
                 }
             }
@@ -270,7 +285,8 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         shared actual void writeLine(String line) {
             writer.write(line);
             writer.write(options.lineBreak.text);
-            m_CurrentWidth = 0;
+            width = 0;
+            startOfLine = true;
         }
         
         shared actual void writeBytes({Byte*} bytes) {
@@ -1022,10 +1038,10 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         
         if (is OpeningToken firstToken) {
             // explicitly write indentation for just this line – context is pushed on stack below
-            countingWriter.write(options.indentMode.indent(firstToken.indentBefore));
+            countingWriter.indent(firstToken.indentBefore);
         }
          
-        countingWriter.write(options.indentMode.indent(ephemeralIndentation));
+        countingWriter.indent(ephemeralIndentation);
         ephemeralIndentation = 0;
         
         variable Token? previousToken = null;
@@ -1114,17 +1130,9 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         }
     }
     
-    "Write indentation – the sum of all `indent`s on the [[tokenStack]].
-     
-     Unless we’re not at the start of a line, which happens after writing a multi-line token
-     (e. g. multi-line string literals)."
-    void writeIndentation() {
-        if (countingWriter.currentWidth > 0) {
-            return;
-        }
-        Integer indentLevel = tokenStack.fold(0)((partial, elem) => partial + elem.indent);
-        countingWriter.write(options.indentMode.indent(indentLevel));
-    }
+    "Write indentation – the sum of all `indent`s on the [[tokenStack]]."
+    void writeIndentation()
+            => countingWriter.indent(tokenStack.fold(0)((partial, elem) => partial + elem.indent));
     
     "Write a token.
      
