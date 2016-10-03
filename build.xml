@@ -2,7 +2,7 @@
 
     <property file="build.properties" />
     <property name="ceylon.verbosity" value="false"/>
-    <property name="ceylon.executable" value="${dist.bin.dir}/ceylon"/>
+    <property name="ceylon.executable" location="${dist.bin.dir}/ceylon"/>
     <property name="out.repo" location="${basedir}/modules"/>
     
     <property name="osgi" location="${basedir}/osgi" />
@@ -36,7 +36,12 @@
         <property name="ceylondefined" value="true" />
         <typedef resource="com/redhat/ceylon/ant/antlib.xml" classpathref="ant-tasks"/>
     
+        <reposet id="ceylon.repo">
+            <repo url="${ceylon.repo.dir}"/>
+        </reposet>
+
         <reposet id="reposet.run.source-gen">
+            <reposet refid="ceylon.repo"/>
             <repo url="${out.repo}"/>
         </reposet>
 
@@ -46,6 +51,7 @@
         </reposet>
 
         <reposet id="reposet.compile.test">
+            <reposet refid="ceylon.repo"/>
             <repo url="${out.repo}"/>
         </reposet>
     
@@ -89,6 +95,7 @@
             encoding="UTF-8"
             pack200="true"
             fork="true">
+            <reposet refid="ceylon.repo"/>
             <moduleset refid="modules.source-gen"/>
         </ceylon-compile>
     </target>
@@ -101,7 +108,7 @@
         </ceylon-run>
     </target>
 
-    <target name="compile-source" depends="compile-source-gen"
+    <target name="compile-source" depends="ceylondefs"
             description="Compiles the Ceylon Formatter modules without re-generating sources">
         <ceylon-compile
             verbose="${ceylon.verbosity}"
@@ -109,6 +116,7 @@
             pack200="true"
             out="${out.repo}"
             fork="true">
+            <reposet refid="ceylon.repo"/>
             <moduleset refid="modules.source"/>
         </ceylon-compile>
     </target>
@@ -122,7 +130,7 @@
     
     <property name="test-sources" refid="test-sources-path"/>
     
-    <target name="compile-test" depends="compile-source-gen"
+    <target name="compile-test" depends="ceylondefs"
         description="Compiles the test module" >
         <ceylon-compile
             src="${test-sources}"
@@ -135,7 +143,7 @@
         </ceylon-compile>
     </target>
 
-    <target name="test-formatter" depends="compile,compile-test"
+    <target name="test-formatter-quick" depends="ceylondefs"
         description="Runs the compiled test module">
         <ceylon-test
             fork="true">
@@ -144,15 +152,57 @@
         </ceylon-test>
     </target>
 
-    <target name="test-cli" depends="compile"
-        description="Tests the formatter's CLI">
-        <exec dir="test-cli" executable="./test-cli"/>
+    <target name="test-formatter-tap-quick" depends="ceylondefs"
+        description="Runs the compiled test module, writing a TAP report to test-formatter.tap">
+        <ceylon-test
+            tap="test-formatter.tap"
+            fork="true">
+            <reposet refid="reposet.run.test"/>
+            <moduleset refid="modules.test"/>
+        </ceylon-test>
     </target>
+
+    <target name="test-formatter" depends="compile,compile-test,test-formatter-quick"
+        description="Compiles and runs the test module"/>
+
+    <target name="test-formatter-tap" depends="compile,compile-test,test-formatter-tap-quick"
+        description="Compiles and runs the test module, writing a TAP report to test-formatter.tap"/>
+
+    <target name="test-cli-quick"
+        description="Tests the formatter's CLI">
+        <exec dir="test-cli" executable="./test-cli" failonerror="true">
+            <arg value="-c"/>
+            <arg value="${ceylon.executable}"/>
+            <arg value="-r"/>
+            <arg value="${ceylon.repo.dir}"/>
+        </exec>
+    </target>
+
+    <target name="test-cli-tap-quick"
+        description="Tests the formatter's CLI, writing a TAP report to test-cli.tap">
+        <exec dir="test-cli" executable="./test-cli" failonerror="true">
+            <arg value="-c"/>
+            <arg value="${ceylon.executable}"/>
+            <arg value="-r"/>
+            <arg value="${ceylon.repo.dir}"/>
+            <arg value="-t"/>
+            <arg value="../test-cli.tap"/>
+        </exec>
+    </target>
+
+    <target name="test-cli" depends="compile,test-cli-quick"
+        description="Compiles the formatter and tests the CLI"/>
+
+    <target name="test-cli-tap" depends="compile,test-cli-tap-quick"
+        description="Compiles the formatter and tests the CLI, writing a TAP report to test-cli.tap"/>
 
     <target name="test" depends="test-formatter,test-cli"
         description="Runs all tests"/>
 
-    <target name="doc"  depends="compile-source-gen"
+    <target name="test-tap" depends="test-formatter-tap,test-cli-tap"
+        description="Runs all tests, writing TAP reports to test-formatter.tap and test-cli.tap"/>
+
+    <target name="doc"  depends="ceylondefs"
             description="Documents the Formatter module">
         
         <ceylon-doc
@@ -168,10 +218,10 @@
         
     </target>
 
-    <target name="publish" depends="publish-internal">
-    </target>
-    <target name="publish-internal" depends="compile,scripts"
-            description="Copies the Formatter modules to the user's repository">
+    <target name="publish" depends="compile,scripts,publish-quick"
+        description="Copies the formatter modules to the user's repository"/>
+    <target name="publish-quick"
+        description="Compiles and copies the formatter modules to the user's repository">
         <copy todir="${ceylon.repo.dir}" overwrite="true">
             <fileset dir="${out.repo}">
                 <include name="ceylon/formatter/**"/>
@@ -179,7 +229,7 @@
         </copy>
     </target>
 
-    <target name="publish-herd" depends="compile-source-gen">
+    <target name="publish-herd" depends="ceylondefs">
     <fail message="Please specify a target Herd upload repo url with -Dherd.repo=..." unless="herd.repo"/>
     <fail message="Please specify a target Herd user name with -Dherd.user=..." unless="herd.user"/>
     <fail message="Please specify a target Herd password with -Dherd.pass=..." unless="herd.pass"/>
@@ -219,7 +269,7 @@
 
     </target>
 
-    <target name="scripts">
+    <target name="scripts" depends="ceylondefs">
         <ceylon-plugin mode="pack"
             out="${out.repo}"
             fork="true">

@@ -38,7 +38,7 @@ interface Cached<Item> satisfies Correspondence<Integer,Item>
         Integer half = key / 2;
         Item halfItem = get(half);
         Item constructed = halfItem + halfItem + get(key % 2);
-        cache.put(key, constructed);
+        cache[key] = constructed;
         return constructed;
     }
     
@@ -146,7 +146,7 @@ shared class Mixed(tabs, spaces) extends IndentMode() {
         String spacesPart = "".join
             { for (value i in 1 .. (fullWidth % tabs.width)) " " };
         String indent = tabPart + spacesPart;
-        cache.put(level, indent);
+        cache[level] = indent;
         return indent;
     }
     

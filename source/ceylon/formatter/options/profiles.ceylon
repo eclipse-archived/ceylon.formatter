@@ -117,7 +117,7 @@ shared void saveProfile(profile, name = "default", baseDir = ".", relativePath =
             config.setOption("formatter.``optionName``", string);
         }
     }
-    ConfigWriter.write(config, JFile(baseDir, relativePath));
+    ConfigWriter.instance().write(config, JFile(baseDir, relativePath));
 }
 
 "Loads the profile name from the Ceylon configuration

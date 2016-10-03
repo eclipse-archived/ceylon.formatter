@@ -35,7 +35,9 @@ import ceylon.formatter.options {
 }
 import ceylon.collection {
     MutableList,
-    ArrayList
+    MutableMap,
+    ArrayList,
+    HashMap
 }
 
 "A [[com.redhat.ceylon.compiler.typechecker.tree::Visitor]] that writes a formatted version of the
@@ -74,6 +76,9 @@ shared class FormattingVisitor(
     """Switch `else`s always get put on their own line,
        not on the same line as the preceding `}` as for `if` `else`s."""
     variable Boolean visitingSwitchElse = false;
+    
+    "Map from alias to actual name, for [#126](https://github.com/ceylon/ceylon.formatter/issues/126)."
+    MutableMap<String, String> importMemberAliases = HashMap<String, String>();
     
     // initialize TokenStream
     if (exists tokens) { tokens.la(1); }
@@ -123,7 +128,7 @@ shared class FormattingVisitor(
         if (is {String*} inlineAnnotations = options.inlineAnnotations) {
             if (is BaseMemberExpression bme = that.primary,
                 exists text = bme.identifier.text,
-                text in inlineAnnotations) {
+                (importMemberAliases[text] else text) in inlineAnnotations) {
                 fWriter.requireAtMostLineBreaks(0);
             } else {
                 fWriter.requireAtLeastLineBreaks(1);
@@ -767,25 +772,6 @@ shared class FormattingVisitor(
         that.visitChildren(this);
     }
     
-    shared actual void visitExpression(Expression that) {
-        if (exists token = that.mainToken) {
-            assert (exists endToken = that.mainEndToken);
-            value context = fWriter.writeToken {
-                token; // "("
-                indentAfter = 1;
-                spaceAfter = false;
-            };
-            that.term.visit(this);
-            fWriter.writeToken {
-                endToken; // ")"
-                context;
-                spaceBefore = false;
-            };
-        } else {
-            that.term.visit(this);
-        }
-    }
-    
     shared actual void visitExpressionList(ExpressionList that) {
         value expressions = CeylonIterable(that.expressions).sequence();
         assert (nonempty expressions);
@@ -1006,6 +992,13 @@ shared class FormattingVisitor(
         fWriter.requireAtLeastLineBreaks(1);
     }
     
+    shared actual void visitImportMember(ImportMember that) {
+        if (exists al = that.\ialias) {
+            importMemberAliases[al.identifier.text] = that.identifier.text;
+        }
+        that.visitChildren(this);
+    }
+    
     shared actual void visitImportMemberOrTypeList(ImportMemberOrTypeList that) {
         value context = fWriter.writeToken {
             that.mainToken; // "{"
@@ -1060,6 +1053,16 @@ shared class FormattingVisitor(
             spaceAfter = true;
             lineBreaksAfter = noLineBreak;
         };
+        if (exists namespace = that.namespace) {
+            namespace.visit(this);
+            fWriter.writeToken {
+                ":";
+                spaceBefore = false;
+                spaceAfter = false;
+                lineBreaksBefore = noLineBreak;
+                lineBreaksAfter = noLineBreak;
+            };
+        }
         that.importPath?.visit(this); // nullsafe because might be quoted…
         that.quotedLiteral?.visit(this); // …like this
         that.version?.visit(this); // version not mandatory in the grammar
@@ -1547,6 +1550,20 @@ shared class FormattingVisitor(
         };
     }
     
+    shared actual void visitParExpression(ParExpression that) {
+        value context = fWriter.writeToken {
+            that.mainToken; // "("
+            indentAfter = 1;
+            spaceAfter = false;
+        };
+        that.term.visit(this);
+        fWriter.writeToken {
+            that.mainEndToken; // ")"
+            context;
+            spaceBefore = false;
+        };
+    }
+    
     shared actual void visitPatternIterator(PatternIterator that) {
         value context = fWriter.writeToken {
             that.mainToken; // "("
@@ -1655,6 +1672,7 @@ shared class FormattingVisitor(
     shared actual void visitResourceList(ResourceList that) {
         value context = fWriter.writeToken {
             that.mainToken; // "("
+            indentAfter = 1;
             spaceAfter = false;
         };
         value resources = CeylonIterable(that.resources).sequence();

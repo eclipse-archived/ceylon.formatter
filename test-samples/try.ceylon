@@ -34,3 +34,11 @@ void testTryWithMultipleResources() {
         print(i);
     }
 }
+
+void testTryWithMultiLineResources() {
+    try (s = String("Hi!"),
+        i = 3) {
+        print(s);
+        print(i);
+    }
+}

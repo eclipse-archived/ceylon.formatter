@@ -172,7 +172,7 @@ VariableOptions variableFormattingFile(String filename, SparseFormattingOptions 
                 if (exists appender = lines[key]) {
                     appender.add(item);
                 } else {
-                    lines.put(key, LinkedList { item });
+                    lines[key] = LinkedList { item };
                 }
             } else {
                 // TODO report the error somewhere?
