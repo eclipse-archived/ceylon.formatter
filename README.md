@@ -3,7 +3,7 @@ Ceylon Formatter
 
 [![Build Status](https://ci-ceylon.rhcloud.com/buildStatus/icon?job=ceylon.formatter)](https://ci-ceylon.rhcloud.com/job/ceylon.formatter)
 
-A source code formatter for the [Ceylon programming language](http://ceylon-lang.org/).
+A source code formatter for the [Ceylon programming language](https://ceylon-lang.org/).
 
 Current status
 --------------
