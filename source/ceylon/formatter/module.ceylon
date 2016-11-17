@@ -92,12 +92,12 @@
 by ("Lucas Werkmeister <mail@lucaswerkmeister.de>")
 license ("https://www.apache.org/licenses/LICENSE-2.0.html")
 native ("jvm")
-module ceylon.formatter "1.3.1-SNAPSHOT" {
+module ceylon.formatter "1.3.1" {
     shared import java.base "7";
-    shared import com.redhat.ceylon.typechecker "1.3.1-SNAPSHOT";
-    shared import com.redhat.ceylon.common "1.3.1-SNAPSHOT";
-    shared import com.redhat.ceylon.cli "1.3.1-SNAPSHOT";
-    shared import ceylon.file "1.3.1-SNAPSHOT";
-    import ceylon.interop.java "1.3.1-SNAPSHOT";
-    import ceylon.collection "1.3.1-SNAPSHOT";
+    shared import com.redhat.ceylon.typechecker "1.3.1";
+    shared import com.redhat.ceylon.common "1.3.1";
+    shared import com.redhat.ceylon.cli "1.3.1";
+    shared import ceylon.file "1.3.1";
+    import ceylon.interop.java "1.3.1";
+    import ceylon.collection "1.3.1";
 }
