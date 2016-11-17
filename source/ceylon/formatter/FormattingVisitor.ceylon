@@ -359,6 +359,7 @@ shared class FormattingVisitor(
     
     shared actual void visitBody(Body that) {
         value statements = CeylonIterable(that.statements).sequence();
+        value multiline = statements.longerThan(1) || that.importList exists;
         value vse_bak = visitingSwitchElse;
         FormattingWriter.FormattingContext? context;
         if (exists token = that.mainToken) {
@@ -374,12 +375,13 @@ shared class FormattingVisitor(
         } else {
             context = null;
         }
+        that.importList?.visit(this);
         for (Statement statement in statements) {
-            if (statements.longerThan(1)) {
+            if (multiline) {
                 fWriter.requireAtLeastLineBreaks(1);
             }
             statement.visit(this);
-            if (statements.longerThan(1)) {
+            if (multiline) {
                 fWriter.requireAtLeastLineBreaks(1);
             }
         }
