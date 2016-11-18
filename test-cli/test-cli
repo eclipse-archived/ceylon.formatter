@@ -54,7 +54,7 @@ for dir in *; do
     ! [[ -d "$dir" ]] && continue
     ((total++))
     cd "$dir"
-    "$ceylon" run --rep="$repo" --rep=../../modules ceylon.formatter/1.3.1-SNAPSHOT $(<args)
+    "$ceylon" run --rep="$repo" --rep=../../modules ceylon.formatter/1.3.2-SNAPSHOT $(<args)
     if diff <(tree result-expected | sed '1s/expected/actual/') <(tree result-actual) &>/dev/$diffout; then
         # clean up, unless it’s a symlink
         ! [[ -L result-actual ]] && rm -r result-actual
