@@ -5,7 +5,7 @@
    Note: if the `ceylon format` plugin wasn’t installed by default
    in your distribution, you can add it by running:
    ~~~sh
-   ceylon plugin install ceylon.formatter/1.3.1
+   ceylon plugin install ceylon.formatter/1.3.2-SNAPSHOT
    ~~~
    
    To format all Ceylon code in the `source` and `test-source` directories:
