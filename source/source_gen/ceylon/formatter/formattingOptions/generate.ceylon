@@ -225,7 +225,7 @@ class Generator() satisfies Destroyable {
                         parseFunction = "if (exists v=parse``innerType``(s)) v";
                     }
                     String comprehension =
-                            "{ for (s in optionValue.split()) ``parseFunction`` }";
+                        "{ for (s in optionValue.split()) ``parseFunction`` }";
                     writer.write(
                         "if (!``comprehension``.empty) {
                                      options.``option.name`` = ``comprehension``;

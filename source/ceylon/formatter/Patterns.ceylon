@@ -175,20 +175,20 @@ Term unwrapExpression(Term term) {
  this is just a helper function for [[useSpacesAroundBinaryOp]]."
 Boolean samePrecedence(Term e1, Term e2)
         => e1 is SumOp|DifferenceOp && e2 is SumOp|DifferenceOp
-        || e1 is ProductOp|QuotientOp|RemainderOp && e2 is ProductOp|QuotientOp|RemainderOp
-        || e1 is PowerOp && e2 is PowerOp
-        || e1 is ScaleOp && e2 is ScaleOp
-        || e1 is IntersectionOp && e2 is IntersectionOp
-        || e1 is UnionOp|ComplementOp && e2 is UnionOp|ComplementOp
-        || e1 is AndOp && e2 is AndOp
-        || e1 is OrOp && e2 is OrOp;
+                || e1 is ProductOp|QuotientOp|RemainderOp && e2 is ProductOp|QuotientOp|RemainderOp
+                || e1 is PowerOp && e2 is PowerOp
+                || e1 is ScaleOp && e2 is ScaleOp
+                || e1 is IntersectionOp && e2 is IntersectionOp
+                || e1 is UnionOp|ComplementOp && e2 is UnionOp|ComplementOp
+                || e1 is AndOp && e2 is AndOp
+                || e1 is OrOp && e2 is OrOp;
 
 Integer operatorLevel(BinaryOperatorExpression e)
         => switch (e)
-    case (is SumOp|DifferenceOp|ProductOp|QuotientOp|RemainderOp|PowerOp|ScaleOp|IntersectionOp|UnionOp|ComplementOp|RangeOp|SegmentOp|EntryOp) 1
-    case (is CompareOp|SmallerOp|SmallAsOp|LargerOp|LargeAsOp|InOp|EqualOp|NotEqualOp|IdenticalOp) 2
-    case (is AndOp|OrOp) 3
-    else 4;
+            case (is SumOp|DifferenceOp|ProductOp|QuotientOp|RemainderOp|PowerOp|ScaleOp|IntersectionOp|UnionOp|ComplementOp|RangeOp|SegmentOp|EntryOp) 1
+            case (is CompareOp|SmallerOp|SmallAsOp|LargerOp|LargeAsOp|InOp|EqualOp|NotEqualOp|IdenticalOp) 2
+            case (is AndOp|OrOp) 3
+            else 4;
 
 "Determines whether there should be spaces around a binary operator or not.
  
@@ -221,18 +221,18 @@ Integer operatorLevel(BinaryOperatorExpression e)
  See [#99](https://github.com/ceylon/ceylon.formatter/issues/99)."
 Boolean useSpacesAroundBinaryOp(BinaryOperatorExpression e, Integer maxLevel)
         => operatorLevel(e) > maxLevel
-        || e is ExpressionWithSpaces
-        || !{ e.leftTerm, e.rightTerm }.map(unwrapExpression).every {
-    function selecting(Term t) {
-        if (t is ExpressionWithoutSpaces) {
-            return true;
-        } else if (is BinaryOperatorExpression t) {
-            return samePrecedence(t, e) && !useSpacesAroundBinaryOp(t, maxLevel);
-        } else {
-            return false;
-        }
-    }
-};
+                || e is ExpressionWithSpaces
+                || !{ e.leftTerm, e.rightTerm }.map(unwrapExpression).every {
+            function selecting(Term t) {
+                if (t is ExpressionWithoutSpaces) {
+                    return true;
+                } else if (is BinaryOperatorExpression t) {
+                    return samePrecedence(t, e) && !useSpacesAroundBinaryOp(t, maxLevel);
+                } else {
+                    return false;
+                }
+            }
+        };
 
 "Terms in string templates might sometimes require spacing to disambiguate the syntax.
  For more information, see

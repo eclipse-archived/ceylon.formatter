@@ -399,8 +399,8 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
              the first initialization is kept."
             shared void initBefore(Boolean firstOfLine) {
                 if (initedIndentBefore == -1) {
-                    if (stackIndentBefore == always ||
-                        stackIndentBefore == ifApplied && firstOfLine) {
+                    if (stackIndentBefore==always ||
+                                stackIndentBefore==ifApplied && firstOfLine) {
                         initedIndentBefore = indentBefore;
                     } else {
                         initedIndentBefore = 0;
@@ -412,8 +412,8 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
              Calling this method multiple times overrides previous calls;
              the last initialization is used."
             shared void initAfter(Boolean lastOfLine) {
-                if (stackIndentAfter == always ||
-                    stackIndentAfter == ifApplied && lastOfLine) {
+                if (stackIndentAfter==always ||
+                            stackIndentAfter==ifApplied && lastOfLine) {
                     initedIndentAfter = indentAfter;
                 } else {
                     initedIndentAfter = 0;
@@ -572,15 +572,15 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         assert (!intersect.decreasing);
         currentlyAllowedLinebreaks
                 = AllowedLineBreaks {
-            range = currentRange.decreasing then intersect.last..intersect.first else intersect;
-            value source {
-                if (other.source == requireAtLeast || other.source == requireAtMost) {
-                    return currentlyAllowedLinebreaks.source;
-                } else {
-                    return other.source;
-                }
-            }
-        };
+                    range = currentRange.decreasing then intersect.last..intersect.first else intersect;
+                    value source {
+                        if (other.source==requireAtLeast || other.source==requireAtMost) {
+                            return currentlyAllowedLinebreaks.source;
+                        } else {
+                            return other.source;
+                        }
+                    }
+                };
     }
     
     "Require at least [[limit]] line breaks between the latest token and the next one to be [[written|writeToken]]."
@@ -825,7 +825,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
         }
         if (exists context) {
             "Token that closes context cannot open its own context and therefore must not introduce indentation"
-            assert (indentBefore == 0 && indentAfter == 0);
+            assert (indentBefore==0 && indentAfter==0);
             // Note: We *could* allow indentation that doesn’t stack. Does anyone need that?
             // (Alternatively, we could allow closing and opening a context simultaneously, but that’s a more major change.)
             
@@ -1040,7 +1040,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
             // explicitly write indentation for just this line – context is pushed on stack below
             countingWriter.indent(firstToken.indentBefore);
         }
-         
+        
         countingWriter.indent(ephemeralIndentation);
         ephemeralIndentation = 0;
         
@@ -1294,18 +1294,18 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
             wantsSpaceBefore = maxDesire - 1;
             wantsSpaceAfter = maxDesire - 1;
             sourceColumn =
-            /*
-             TODO
-             this should just be current.charPositionInLine…
-             … but due to a bug in ANTLR we need a special case for the first token
-             */
-                    current.tokenIndex == 0
-            /*
-             sometimes, the very first token has a charPositionInLine of != 0
-             I have no idea why or when this happens
-             */
-                    then 0
-                    else current.charPositionInLine;
+                /*
+                 TODO
+                 this should just be current.charPositionInLine…
+                 … but due to a bug in ANTLR we need a special case for the first token
+                 */
+                current.tokenIndex == 0
+                /*
+                 sometimes, the very first token has a charPositionInLine of != 0
+                 I have no idea why or when this happens
+                 */
+                        then 0
+                        else current.charPositionInLine;
             targetColumn = () => countingWriter.currentWidth;
         };
         ret.add(token);

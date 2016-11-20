@@ -49,7 +49,7 @@ shared {String*} findTestFiles(Path rootPath = parsePath("test-samples")) {
  If a file `<filename>.ceylon.options` exists, it is used as an options file
  (see [[ceylon.formatter.options::formattingFile]])."
 test
-parameters (`function findTestFiles`) 
+parameters (`function findTestFiles`)
 shared void testFile(String filename) {
     if (is File inputFile = parsePath(filename).resource,
         is File|Nil expectedResource = parsePath(filename + ".formatted").resource) {
@@ -79,9 +79,9 @@ shared void testFile(String filename) {
             options = FormattingOptions();
         }
         try (visitor = FormattingVisitor(BufferedTokenStream(lexer), // don't use CommonTokenStream - we don't want to skip comments
-            output, combinedOptions(options, SparseFormattingOptions {
-                    failFast = true;
-                }))) {
+                output, combinedOptions(options, SparseFormattingOptions {
+                        failFast = true;
+                    }))) {
             cu.visit(visitor);
         }
         variable String actual = output.string;

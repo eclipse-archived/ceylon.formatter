@@ -78,7 +78,7 @@ shared class FormattingVisitor(
     variable Boolean visitingSwitchElse = false;
     
     "Map from alias to actual name, for [#126](https://github.com/ceylon/ceylon.formatter/issues/126)."
-    MutableMap<String, String> importMemberAliases = HashMap<String, String>();
+    MutableMap<String,String> importMemberAliases = HashMap<String,String>();
     
     // initialize TokenStream
     if (exists tokens) { tokens.la(1); }
@@ -641,8 +641,8 @@ shared class FormattingVisitor(
         
         variable Boolean wantsSpaces
                 = !{ lower?.term, upper?.term, length?.term }.coalesced
-            .map(unwrapExpression)
-            .every((term) => term is ExpressionWithoutSpaces);
+                    .map(unwrapExpression)
+                    .every((term) => term is ExpressionWithoutSpaces);
         
         if (exists lower) {
             if (exists length) {

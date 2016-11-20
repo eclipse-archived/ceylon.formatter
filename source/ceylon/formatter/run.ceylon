@@ -214,7 +214,7 @@ shared <String[]->String>[] parseTranslations(String[] arguments) {
 see (`function parseTranslations`)
 [CharStream, Writer(), Anything(Throwable)][] translate([String+] sources, Resource target)
         => let (root = commonRoot(sources.collect(parsePath)))
-    concatenate(for (source in sources) translateSingleSource(source, root, target));
+            concatenate(for (source in sources) translateSingleSource(source, root, target));
 
 "Parses a list of paths from the command line.
  Returns a sequence of tuples of source [[CharStream]], target [[Writer]] and onError callback."

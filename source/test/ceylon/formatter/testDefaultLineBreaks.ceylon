@@ -43,7 +43,7 @@ shared void testDefaultLineBreaksNearStart() {
     for (i in 1:10) {
         w.writeToken {
             "noBreakHere``i``";
-            lineBreaksBefore = 0..(i==1 then 1 else 0);
+            lineBreaksBefore = 0 .. (i == 1 then 1 else 0);
             lineBreaksAfter = 0..1;
             indentBefore = 0;
             indentAfter = 0;

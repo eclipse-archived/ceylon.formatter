@@ -37,8 +37,8 @@ void testLineBreaks(LineBreak option, String lineBreak) {
         }
     }
     try (fWriter = FormattingWriter(null, writer, FormattingOptions {
-            lineBreak = option;
-        })) {
+                lineBreak = option;
+            })) {
         fWriter.writeToken {
             "a";
             lineBreaksAfter = 2..2;
