@@ -1,8 +1,9 @@
-
 [defaults]
 encoding=UTF-8
 
 [compiler]
 source=source
 suppresswarning=ceylonNamespace
+
+[compiler.jvm]
 target=7
