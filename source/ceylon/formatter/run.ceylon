@@ -95,7 +95,9 @@ shared Path commonRoot(
    d/e -> d/e,
    f/g -> m/n/f/g
  ]
- ~~~"
+ ~~~
+ 
+ The special argument `--pipe` corresponds to a translation `[/dev/stdin] -> /dev/stdout`."
 shared <String[]->String>[] parseTranslations(String[] arguments) {
     variable Integer i = 0;
     variable MutableList<String>? currentSources = null;
@@ -126,6 +128,17 @@ shared <String[]->String>[] parseTranslations(String[] arguments) {
             } else {
                 process.writeErrorLine("Missing file or directory after '--to'!");
             }
+        } else if (argument == "--pipe") {
+            if (exists current = currentSources) {
+                if (current.size > 1) {
+                    process.writeErrorLine("Warning: Multiple files or directories collected with '--and', but not redirected with '--to'!");
+                }
+                for (fileOrDir in current.sequence()) {
+                    translations.add([fileOrDir] -> fileOrDir);
+                }
+                currentSources = null;
+            }
+            translations.add(["/dev/stdin"] -> "/dev/stdout");
         } else {
             if (exists current = currentSources) {
                 if (current.size > 1) {
@@ -206,47 +219,42 @@ see (`function parseTranslations`)
 "Parses a list of paths from the command line.
  Returns a sequence of tuples of source [[CharStream]], target [[Writer]] and onError callback."
 [CharStream, Writer(), Anything(Throwable)][] commandLineFiles(String[] arguments) {
-    if (nonempty arguments) {
-        value ret = LinkedList<[CharStream, Writer(), Anything(Throwable)]>();
-        
-        for (translation in parseTranslations(arguments)) {
-            assert (nonempty sources = translation.key);
-            value target = translation.item;
-            value targetResource = parsePath(target).resource.linkedResource;
-            switch (targetResource)
-            case (is File) {
-                if (is File sourceFile = parsePath(sources.first).resource.linkedResource) {
-                    if (sources.size == 1) {
-                        value stream = ANTLRFileStream(sources.first);
-                        ret.add([stream, () => targetResource.Overwriter(), recoveryOnError(stream, targetResource)]);
-                    } else {
-                        process.writeErrorLine("Can’t format more than one source files or directories into a single target file!");
-                        process.writeErrorLine("Skipping directive '``" --and ".join(sources)`` --to ``target``'.");
-                    }
+    value ret = LinkedList<[CharStream, Writer(), Anything(Throwable)]>();
+    
+    for (translation in parseTranslations(arguments)) {
+        assert (nonempty sources = translation.key);
+        value target = translation.item;
+        value targetResource = writableResource(target);
+        if (is Writable targetResource) {
+            // single file to single existing file
+            if (is Readable sourceReadable = readableResource(sources.first)) {
+                if (sources.size == 1) {
+                    value recovery = if (is FileReadable sourceReadable, is FileWritable targetResource) then recoveryOnError(sourceReadable.charStream, targetResource.file) else noop;
+                    ret.add([sourceReadable.charStream, () => targetResource.writer, recovery]);
                 } else {
-                    process.writeErrorLine("Can’t format a source directory into a target file!");
+                    process.writeErrorLine("Can’t format more than one source files or directories into a single target file!");
                     process.writeErrorLine("Skipping directive '``" --and ".join(sources)`` --to ``target``'.");
                 }
+            } else {
+                process.writeErrorLine("Can’t format a source directory into a target file!");
+                process.writeErrorLine("Skipping directive '``" --and ".join(sources)`` --to ``target``'.");
             }
-            case (is Directory) {
+        } else if (is Directory targetResource) {
+            // one or more files to existing directory
+            ret.addAll(translate(sources, targetResource));
+        } else {
+            if (sources.size == 1, is Readable sourceReadable = readableResource(sources.first)) {
+                // single file to single new file
+                value targetFile = targetResource.createFile { includingParentDirectories = true; };
+                value recovery = if (is FileReadable sourceReadable) then recoveryOnError(sourceReadable.charStream, targetFile) else noop;
+                ret.add([sourceReadable.charStream, () => targetFile.Overwriter(), recovery]);
+            } else {
+                // one or more files to new directory
                 ret.addAll(translate(sources, targetResource));
             }
-            case (is Nil) {
-                if (sources.size == 1, is File sourceFile = parsePath(sources.first).resource.linkedResource) {
-                    // single file to single file
-                    value stream = ANTLRFileStream(sources.first);
-                    value targetFile = targetResource.createFile { includingParentDirectories = true; };
-                    ret.add([stream, () => targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
-                } else {
-                    ret.addAll(translate(sources, targetResource));
-                }
-            }
         }
-        return ret.sequence();
-    } else {
-        // no input or output files, pipe mode
-        return [[ANTLRInputStream(sysin), () => stdoutWriter, noop]];
     }
+    return ret.sequence();
 }
 
 "Run the module `ceylon.formatter`."
