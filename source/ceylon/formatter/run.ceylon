@@ -218,8 +218,12 @@ see (`function parseTranslations`)
 
 "Parses a list of paths from the command line.
  Returns a sequence of tuples of source [[CharStream]], target [[Writer]] and onError callback."
-[CharStream, Writer(), Anything(Throwable)][] commandLineFiles(String[] arguments) {
+[CharStream, Writer(), Anything(Throwable)][] commandLineFiles(variable String[] arguments) {
     value ret = LinkedList<[CharStream, Writer(), Anything(Throwable)]>();
+    
+    if (arguments.empty) {
+        arguments = ["--pipe"];
+    }
     
     for (translation in parseTranslations(arguments)) {
         assert (nonempty sources = translation.key);
