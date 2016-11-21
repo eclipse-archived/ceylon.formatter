@@ -222,6 +222,8 @@ see (`function parseTranslations`)
     value ret = LinkedList<[CharStream, Writer(), Anything(Throwable)]>();
     
     if (arguments.empty) {
+        process.writeErrorLine("Warning: reading code from standard input and writing from standard output;
+                                please specify --pipe if this is intended, or press Ctrl+C abort otherwise.");
         arguments = ["--pipe"];
     }
     
