@@ -39,9 +39,11 @@ import ceylon.formatter.options {
     commandLineOptions
 }
 
-void noop(Anything* args) {}
-void recoveryOnError(ANTLRFileStream stream, File file)(Throwable t) {
+void reportError(Throwable t) {
     t.printStackTrace();
+}
+void recoveryOnError(ANTLRFileStream stream, File file)(Throwable t) {
+    reportError(t);
     try (overwriter = file.Overwriter()) {
         overwriter.write(stream.substring(0, stream.size() - 1));
     }
@@ -235,7 +237,7 @@ see (`function parseTranslations`)
             // single file to single existing file
             if (is Readable sourceReadable = readableResource(sources.first)) {
                 if (sources.size == 1) {
-                    value recovery = if (is FileReadable sourceReadable, is FileWritable targetResource) then recoveryOnError(sourceReadable.charStream, targetResource.file) else noop;
+                    value recovery = if (is FileReadable sourceReadable, is FileWritable targetResource) then recoveryOnError(sourceReadable.charStream, targetResource.file) else reportError;
                     ret.add([sourceReadable.charStream, () => targetResource.writer, recovery]);
                 } else {
                     process.writeErrorLine("Can’t format more than one source files or directories into a single target file!");
@@ -252,7 +254,7 @@ see (`function parseTranslations`)
             if (sources.size == 1, is Readable sourceReadable = readableResource(sources.first)) {
                 // single file to single new file
                 value targetFile = targetResource.createFile { includingParentDirectories = true; };
-                value recovery = if (is FileReadable sourceReadable) then recoveryOnError(sourceReadable.charStream, targetFile) else noop;
+                value recovery = if (is FileReadable sourceReadable) then recoveryOnError(sourceReadable.charStream, targetFile) else reportError;
                 ret.add([sourceReadable.charStream, () => targetFile.Overwriter(), recovery]);
             } else {
                 // one or more files to new directory
