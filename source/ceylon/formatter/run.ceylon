@@ -185,7 +185,11 @@ shared <String[]->String>[] parseTranslations(String[] arguments) {
                     targetFile = targetResource;
                 }
                 case (is Nil) {
-                    targetFile = targetResource.createFile { includingParentDirectories = true; };
+                    targetFile = createFile {
+                        target = targetResource;
+                        includingParentDirectories = true;
+                        reference = path.string;
+                    };
                 }
                 case (is Directory) {
                     process.writeErrorLine("Can’t format file '``source``' to target directory '``targetResource.path``'!");
@@ -253,7 +257,11 @@ see (`function parseTranslations`)
         } else {
             if (sources.size == 1, is Readable sourceReadable = readableResource(sources.first)) {
                 // single file to single new file
-                value targetFile = targetResource.createFile { includingParentDirectories = true; };
+                value targetFile = createFile {
+                    target = targetResource;
+                    includingParentDirectories = true;
+                    reference = sources.first;
+                };
                 value recovery = if (is FileReadable sourceReadable) then recoveryOnError(sourceReadable.charStream, targetFile) else reportError;
                 ret.add([sourceReadable.charStream, () => targetFile.Overwriter(), recovery]);
             } else {
