@@ -2,7 +2,6 @@ import ceylon.file {
     Directory,
     File,
     Nil,
-    Path,
     Writer,
     parsePath
 }
@@ -52,7 +51,7 @@ object stdout satisfies Writable {
 }
 
 "Parse a path into a resource for reading.
- `/dev/stdin` means [[standard input|stdin]], everything else resolves to [[resource]] (after resolving symlinks)."
+ `/dev/stdin` means [[standard input|stdin]], everything else resolves to a regular resource (after resolving symlinks)."
 Readable|Directory|Nil readableResource(String path) {
     if (path == "/dev/stdin") { return stdin; }
     switch (res = parsePath(path).resource.linkedResource)
@@ -60,7 +59,7 @@ Readable|Directory|Nil readableResource(String path) {
     else { return res; }
 }
 "Parse a path into a resource for writing.
- `/dev/stdout` means [[standard output|stdout]], everything else resolves to [[resource]] (after resolving symlinks)."
+ `/dev/stdout` means [[standard output|stdout]], everything else resolves to a regular resource (after resolving symlinks)."
 Writable|Directory|Nil writableResource(String path) {
     if (path == "/dev/stdout") { return stdout; }
     switch (res = parsePath(path).resource.linkedResource)

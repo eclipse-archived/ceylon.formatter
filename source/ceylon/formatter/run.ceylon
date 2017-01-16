@@ -1,11 +1,6 @@
 import java.io {
     ...
 }
-import java.lang {
-    System {
-        sysin=\iin
-    }
-}
 import com.redhat.ceylon.compiler.typechecker.parser {
     CeylonLexer,
     CeylonParser
@@ -13,7 +8,6 @@ import com.redhat.ceylon.compiler.typechecker.parser {
 import org.antlr.runtime {
     CharStream,
     ANTLRFileStream,
-    ANTLRInputStream,
     CommonTokenStream,
     BufferedTokenStream
 }
