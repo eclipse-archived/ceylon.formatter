@@ -1330,6 +1330,28 @@ shared class FormattingVisitor(
             lineBreaksAfter = noLineBreak;
         };
         that.importPath.visit(this);
+        if (exists ins = that.namespace) {
+            ins.visit(this);
+            fWriter.writeToken {
+                ":";
+                spaceBefore = false;
+                spaceAfter = false;
+                lineBreaksBefore = noLineBreak;
+                lineBreaksAfter = noLineBreak;
+            };
+            that.groupQuotedLiteral?.visit(this);
+            that.groupImportPath?.visit(this);
+            if (exists artifact = that.artifact) {
+                fWriter.writeToken {
+                    ":";
+                    spaceBefore = false;
+                    spaceAfter = false;
+                    lineBreaksBefore = noLineBreak;
+                    lineBreaksAfter = noLineBreak;
+                };
+                artifact.visit(this);
+            }
+        }
         that.version.visit(this);
         that.importModuleList.visit(this);
     }
