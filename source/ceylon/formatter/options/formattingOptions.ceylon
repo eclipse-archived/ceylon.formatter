@@ -254,7 +254,7 @@ void parseLegacyFormattingOption(String optionName, String optionValue, Variable
 shared Range<Integer>? parseIntegerRange(String string) {
     value parts = string.split('.'.equals).sequence();
     if (parts.size == 2,
-        exists first = parseInteger(parts[0] else "invalid"),
+        exists first = parseInteger(parts[0]),
         exists last = parseInteger(parts[1] else "invalid")) {
         return first..last;
     }

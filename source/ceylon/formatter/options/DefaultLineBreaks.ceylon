@@ -31,7 +31,7 @@ class DefaultLineBreaks() extends LineBreakStrategy() {
             currentLength = currentLength.magnitude;
             if (exists token = tokens[tokenIndex]) {
                 value lines = token.text.lines.sequence();
-                if (nonempty lines, lines.size > 1) {
+                if (lines.size > 1) {
                     // multi-line literal
                     currentLength += lines.first.size;
                     if (exists previousToken = tokens[tokenIndex - 1],
