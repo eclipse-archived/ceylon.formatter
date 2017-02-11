@@ -7,7 +7,7 @@ import ceylon.formatter {
 
 test
 shared void testParseTranslations() {
-    value testCases = {
+    {<String->{<String[]->String>+}>+} testCases = {
         "source" -> { ["source"] -> "source" },
         "source --to source-formatted" -> { ["source"] -> "source-formatted" },
         "source --to source-formatted otherSource" -> { ["source"] -> "source-formatted", ["otherSource"] -> "otherSource" },
