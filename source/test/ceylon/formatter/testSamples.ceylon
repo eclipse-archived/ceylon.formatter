@@ -69,7 +69,7 @@ shared void testFile(String filename) {
                 throw AssertionError("Can’t write bytes");
             }
         }
-        CeylonLexer lexer = CeylonLexer(ANTLRFileStream(filename));
+        CeylonLexer lexer = CeylonLexer(ANTLRFileStream(filename, "UTF-8"));
         CompilationUnit cu = CeylonParser(CommonTokenStream(lexer)).compilationUnit();
         lexer.reset(); // FormattingVisitor needs to read the tokens again
         FormattingOptions options;
