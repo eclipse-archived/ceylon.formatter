@@ -35,7 +35,7 @@ shared void testIssue71() {
     assert (is Nil n = parsePath("testIssue71.ceylon").resource);
     File f = n.createFile();
     try {
-        try (w = f.Overwriter()) {
+        try (w = f.Overwriter("UTF-8")) {
             w.write(
                 "/*
                   a
@@ -44,7 +44,7 @@ shared void testIssue71() {
                  void testIssue71() {
                  }".replace("\n", "\r\n"));
         }
-        value stream = ANTLRFileStream(f.path.string);
+        value stream = ANTLRFileStream(f.path.string, "UTF-8");
         CeylonLexer lexer = CeylonLexer(stream);
         Tree.CompilationUnit cu = CeylonParser(CommonTokenStream(lexer)).compilationUnit();
         lexer.reset();

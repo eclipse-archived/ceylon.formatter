@@ -18,6 +18,9 @@ import java.nio.file {
 import java.nio.file.attribute {
     PosixFileAttributeView
 }
+import com.redhat.ceylon.common.config {
+    DefaultToolOptions
+}
 import org.antlr.runtime {
     ANTLRFileStream,
     ANTLRInputStream,
@@ -30,7 +33,7 @@ interface Readable {
 }
 "A real file on the file system."
 class FileReadable(File file) satisfies Readable {
-    shared actual ANTLRFileStream charStream => ANTLRFileStream(file.path.string);
+    shared actual ANTLRFileStream charStream => ANTLRFileStream(file.path.string, DefaultToolOptions.defaultEncoding);
 }
 "Standard input."
 object stdin satisfies Readable {
@@ -43,7 +46,7 @@ interface Writable {
 "A real file on the file system.
  The backing [[file]] may be accessed directly."
 class FileWritable(shared File file) satisfies Writable {
-    writer => file.Overwriter();
+    writer => file.Overwriter(DefaultToolOptions.defaultEncoding);
 }
 "Standard output."
 object stdout satisfies Writable {

@@ -14,6 +14,9 @@ import org.antlr.runtime {
 import com.redhat.ceylon.compiler.typechecker.tree {
     Tree
 }
+import com.redhat.ceylon.common.config {
+    DefaultToolOptions
+}
 import ceylon.file {
     Writer,
     Path,
@@ -38,7 +41,7 @@ void reportError(Throwable t) {
 }
 void recoveryOnError(ANTLRFileStream stream, File file)(Throwable t) {
     reportError(t);
-    try (overwriter = file.Overwriter()) {
+    try (overwriter = file.Overwriter(DefaultToolOptions.defaultEncoding)) {
         overwriter.write(stream.substring(0, stream.size() - 1));
     }
 }
@@ -189,8 +192,8 @@ shared <String[]->String>[] parseTranslations(String[] arguments) {
                     process.writeErrorLine("Can’t format file '``source``' to target directory '``targetResource.path``'!");
                     return;
                 }
-                value stream = ANTLRFileStream(file.path.string);
-                ret.add([stream, () => targetFile.Overwriter(), recoveryOnError(stream, targetFile)]);
+                value stream = ANTLRFileStream(file.path.string, DefaultToolOptions.defaultEncoding);
+                ret.add([stream, () => targetFile.Overwriter(DefaultToolOptions.defaultEncoding), recoveryOnError(stream, targetFile)]);
             }
         }
     }
@@ -257,7 +260,7 @@ see (`function parseTranslations`)
                     reference = sources.first;
                 };
                 value recovery = if (is FileReadable sourceReadable) then recoveryOnError(sourceReadable.charStream, targetFile) else reportError;
-                ret.add([sourceReadable.charStream, () => targetFile.Overwriter(), recovery]);
+                ret.add([sourceReadable.charStream, () => targetFile.Overwriter(DefaultToolOptions.defaultEncoding), recovery]);
             } else {
                 // one or more files to new directory
                 ret.addAll(translate(sources, targetResource));
