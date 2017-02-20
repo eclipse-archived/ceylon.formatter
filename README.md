@@ -30,7 +30,7 @@ The buildfile assumes that `ceylon-dist` (including the Ceylon ant files) is a s
 
 ### With the IDE
 
-1. Install the Ceylon IDE, following [these instructions](http://ceylon-lang.org/documentation/current/ide/install/)
+1. Install the Ceylon IDE, following [these instructions](https://ceylon-lang.org/documentation/current/ide/eclipse/install/)
 2. Clone the repository locally
 3. In Eclipse, go to File -> Import... -> Existing Projects into Workspace, then choose the location of the `ceylon.formatter` repository and import the `ceylon.formatter` project
 4. Run `source_gen.ceylon.formatter.run()` from the `source-gen` source folder  (ignore the warning that the project has build errors, that’s exactly what this is going to fix)
@@ -39,7 +39,7 @@ The buildfile assumes that `ceylon-dist` (including the Ceylon ant files) is a s
 Usage
 -----
 
-The formatter is part of the [Ceylon IDE](http://ceylon-lang.org/documentation/current/ide/). You can format any source file by hitting Ctrl+Shift+F, or selecting Source > Format from the menu.
+The formatter is part of the [Ceylon IDE](https://ceylon-lang.org/documentation/current/ide/eclipse/). You can format any source file by hitting Ctrl+Shift+F, or selecting Source > Format from the menu.
 
 You can also run the formatter from the command line:
 
