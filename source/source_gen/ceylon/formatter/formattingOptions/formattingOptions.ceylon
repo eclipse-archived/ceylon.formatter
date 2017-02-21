@@ -329,6 +329,25 @@
          If you don’t like the look of `a==b`, consider setting this option to a lower level, like `1`.
          You can also turn it off completely, enforcing spaces around all operators, with the value `0`.";
         "Integer"; "spaceOptionalAroundOperatorLevel"; /* = */ "3";
+    },
+    FormattingOption {
+        "Decide whether comprehension clauses should be indented by one level or not.
+         For example:
+         
+             Integer.sum {
+                 for (employee in employees)
+                     if (employee.level < manager)
+                         employee.salary
+             }
+         
+         vs.
+         
+             Integer.sum {
+                 for (employee in employees)
+                 if (employee.level < manager)
+                 employee.salary
+             }";
+         "Boolean"; "indentComprehensionClauses"; /* = */ "true";
     }
 };
 

@@ -826,7 +826,7 @@ shared class FormattingVisitor(
             lineBreaksAfter = noLineBreak;
         };
         that.forIterator.visit(this);
-        value context = fWriter.openContext(1);
+        value context = fWriter.openContext(options.indentComprehensionClauses then 1 else 0);
         that.comprehensionClause.visit(this);
         fWriter.closeContext(context);
     }
@@ -950,7 +950,7 @@ shared class FormattingVisitor(
             spaceAfter = options.spaceAfterControlStructureKeyword;
         };
         that.conditionList.visit(this);
-        value context = fWriter.openContext(1);
+        value context = fWriter.openContext(options.indentComprehensionClauses then 1 else 0);
         that.comprehensionClause.visit(this);
         fWriter.closeContext(context);
     }
