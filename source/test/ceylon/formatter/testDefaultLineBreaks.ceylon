@@ -16,7 +16,9 @@ import ceylon.file {
 }
 
 class StringBuilderWriter(StringBuilder sb) satisfies Writer {
-    void fail() { assert (false); }
+    void fail() {
+        assert (false);
+    }
     close() => noop();
     flush() => noop();
     write(String string) => sb.append(string);

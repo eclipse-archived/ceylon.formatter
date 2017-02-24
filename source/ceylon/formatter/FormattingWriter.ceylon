@@ -56,13 +56,19 @@ shared Integer desire(Boolean|Integer desire) {
 shared Range<Integer> noLineBreak = 0..0;
 
 "Used in [[FormattingWriter.fastForward]]."
-abstract class Stop() of stopAndConsume | stopAndDontConsume { shared formal Boolean consume; }
+abstract class Stop() of stopAndConsume | stopAndDontConsume {
+    shared formal Boolean consume;
+}
 "Stop fast-forwarding and [[consume|org.antlr.runtime::IntStream.consume]] the current token."
 see (`value stopAndDontConsume`)
-object stopAndConsume extends Stop() { consume = true; }
+object stopAndConsume extends Stop() {
+    consume = true;
+}
 "Stop fast-forwarding and *don’t* consume the current token."
 see (`value stopAndConsume`)
-object stopAndDontConsume extends Stop() { consume = false; }
+object stopAndDontConsume extends Stop() {
+    consume = false;
+}
 
 see (`value AllowedLineBreaks.source`)
 abstract class AllowedLineBreaksSource(shared actual String string)
@@ -88,13 +94,19 @@ class AllowedLineBreaks(range, source) {
 "A condition that dictates when a token’s indentation stacks."
 shared abstract class StackCondition() of never | ifApplied | always {}
 "Indicates that an indentation should never be stacked."
-shared object never extends StackCondition() { string => "never"; }
+shared object never extends StackCondition() {
+    string => "never";
+}
 "Indicates that an indentation should always be stacked."
-shared object always extends StackCondition() { string => "always"; }
+shared object always extends StackCondition() {
+    string => "always";
+}
 "Indicates that an indentation should be stacked if and only if it was applied, that is:
  - for the indentation before a token: if that token is the first of its line;
  - for the indentation after a token: if that token is the last of its line."
-shared object ifApplied extends StackCondition() { string => "ifApplied"; }
+shared object ifApplied extends StackCondition() {
+    string => "ifApplied";
+}
 
 "Writes tokens to an underlying [[writer]], respecting certain formatting settings and a maximum line width.
  

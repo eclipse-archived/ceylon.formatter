@@ -347,7 +347,7 @@
                  if (employee.level < manager)
                  employee.salary
              }";
-         "Boolean"; "indentComprehensionClauses"; /* = */ "true";
+        "Boolean"; "indentComprehensionClauses"; /* = */ "true";
     }
 };
 

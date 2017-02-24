@@ -750,19 +750,19 @@ shared class FormattingVisitor(
                  * else { baz(); }
                  */
                 that in switchElseNodes ||
-                /*
-                 * Allow
-                 * 
-                 * if (foo) {
-                 *     // ...
-                 * } else if (bar) {
-                 *     // ...
-                 * }
-                 * 
-                 * without forcing a line-break into the `else if`
-                 * (the `else` has a pseudo-block with no brace tokens
-                 * and the `if` as only child).
-                 */
+                        /*
+                         * Allow
+                         * 
+                         * if (foo) {
+                         *     // ...
+                         * } else if (bar) {
+                         *     // ...
+                         * }
+                         * 
+                         * without forcing a line-break into the `else if`
+                         * (the `else` has a pseudo-block with no brace tokens
+                         * and the `if` as only child).
+                         */
                 !block.mainToken exists) {
                 singleLineNodes.add(block);
             }

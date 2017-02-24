@@ -55,7 +55,9 @@ shared void testIssue71() {
             shared actual void write(String string) {
                 b1.append(string);
             }
-            shared actual void writeLine(String line) { assert (false); }
+            shared actual void writeLine(String line) {
+                assert (false);
+            }
             shared actual void writeBytes({Byte*} bytes) {
                 throw AssertionError("Can’t write bytes");
             }
@@ -70,7 +72,9 @@ shared void testIssue71() {
             shared actual void write(String string) {
                 b2.append(string);
             }
-            shared actual void writeLine(String line) { assert (false); }
+            shared actual void writeLine(String line) {
+                assert (false);
+            }
             shared actual void writeBytes({Byte*} bytes) {
                 throw AssertionError("Can’t write bytes");
             }
