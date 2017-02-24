@@ -36,8 +36,10 @@ import ceylon.formatter.options {
 import ceylon.collection {
     MutableList,
     MutableMap,
+    MutableSet,
     ArrayList,
-    HashMap
+    HashMap,
+    HashSet
 }
 
 "A [[com.redhat.ceylon.compiler.typechecker.tree::Visitor]] that writes a formatted version of the
@@ -73,12 +75,16 @@ shared class FormattingVisitor(
        other type specifiers (class aliases etc.) are always spaced."""
     variable Boolean visitingDefaultTypeArgument = false;
     
-    """Switch `else`s always get put on their own line,
-       not on the same line as the preceding `}` as for `if` `else`s."""
-    variable Boolean visitingSwitchElse = false;
+    "Set of nodes that are a `switch`’s `else`,
+     which are always put on their own line,
+     not on the same line as the preceding `}` as for `if`’s `else`s."
+    MutableSet<Node> switchElseNodes = HashSet<Node>();
     
     "Map from alias to actual name, for [#126](https://github.com/ceylon/ceylon.formatter/issues/126)."
     MutableMap<String,String> importMemberAliases = HashMap<String,String>();
+    
+    "Set of nodes that may be condensed into a single line under certain conditions."
+    MutableSet<Node> singleLineNodes = HashSet<Node>();
     
     // initialize TokenStream
     if (exists tokens) { tokens.la(1); }
@@ -261,7 +267,10 @@ shared class FormattingVisitor(
             expr.visit(this);
             writeSemicolon(fWriter, that.mainEndToken, context);
         } else {
+            // single-line assign foo { secretFoo = foo; } is allowed
+            singleLineNodes.add(that.block);
             that.block.visit(this);
+            singleLineNodes.remove(that.block);
             fWriter.closeContext(context);
         }
     }
@@ -359,8 +368,8 @@ shared class FormattingVisitor(
     
     shared actual void visitBody(Body that) {
         value statements = CeylonIterable(that.statements).sequence();
-        value multiline = statements.longerThan(1) || that.importList exists;
-        value vse_bak = visitingSwitchElse;
+        // any block with more than one statement or an import list must be multi-line
+        value multiline = !that in singleLineNodes || statements.longerThan(1) || that.importList exists;
         FormattingWriter.FormattingContext? context;
         if (exists token = that.mainToken) {
             context = fWriter.writeToken {
@@ -371,7 +380,6 @@ shared class FormattingVisitor(
                 spaceBefore = 10;
                 spaceAfter = statements nonempty;
             };
-            visitingSwitchElse = false;
         } else {
             context = null;
         }
@@ -379,10 +387,32 @@ shared class FormattingVisitor(
         for (Statement statement in statements) {
             if (multiline) {
                 fWriter.requireAtLeastLineBreaks(1);
+            } else {
+                /*
+                 * Propagate single-line-ness and switch-else-ness for:
+                 * 
+                 * switch (something)
+                 * case (whatever) {}
+                 * else if (condition1) { oneStatement(); }
+                 * else if (condition2) { singleLine(); }
+                 * else { otherwise(); }
+                 * 
+                 * Those two `if`s have a pseudo-block with no brace tokens around them
+                 * and need to know that they can be single-line and their elses are case elses (new line).
+                 */
+                if (that in singleLineNodes) {
+                    singleLineNodes.add(statement);
+                }
+                if (that in switchElseNodes) {
+                    switchElseNodes.add(statement);
+                }
             }
             statement.visit(this);
             if (multiline) {
                 fWriter.requireAtLeastLineBreaks(1);
+            } else {
+                singleLineNodes.remove(statement);
+                switchElseNodes.remove(statement);
             }
         }
         if (exists token = that.mainEndToken) {
@@ -395,7 +425,6 @@ shared class FormattingVisitor(
                 context;
             };
         }
-        visitingSwitchElse = vse_bak;
     }
     
     shared actual void visitBreak(Break that) {
@@ -431,7 +460,12 @@ shared class FormattingVisitor(
             spaceBefore = false; // TODO option
             lineBreaksBefore = noLineBreak;
         };
-        that.block?.visit(this);
+        if (exists block = that.block) {
+            // allow single-line case (something) { action(); }
+            singleLineNodes.add(block);
+            block.visit(this);
+            singleLineNodes.remove(block);
+        }
         if (exists expr = that.expression) {
             value exprContext = fWriter.openContext(1);
             expr.visit(this);
@@ -620,7 +654,10 @@ shared class FormattingVisitor(
     
     shared actual void visitDynamicClause(DynamicClause that) {
         writeModifier(fWriter, that.mainToken); // "dynamic"
+        // allow single-line dynamic { eval("dark magic"); }
+        singleLineNodes.add(that.block);
         that.block.visit(this);
+        singleLineNodes.remove(that.block);
     }
     
     shared actual void visitDynamicModifier(DynamicModifier that)
@@ -695,7 +732,7 @@ shared class FormattingVisitor(
             value lineBreaksBefore {
                 if (that.expression exists) {
                     return 0..1; // allow inline switch/case/else expressions
-                } else if (options.elseOnOwnLine || visitingSwitchElse) {
+                } else if (options.elseOnOwnLine || that in switchElseNodes) {
                     return 1..1;
                 } else {
                     return 0..0;
@@ -703,7 +740,50 @@ shared class FormattingVisitor(
             }
             spaceAfter = true;
         };
-        that.block?.visit(this);
+        if (exists block = that.block) {
+            if (
+                /*
+                 * Allow
+                 * 
+                 * switch (foo)
+                 * case (bar) {}
+                 * else { baz(); }
+                 */
+                that in switchElseNodes ||
+                /*
+                 * Allow
+                 * 
+                 * if (foo) {
+                 *     // ...
+                 * } else if (bar) {
+                 *     // ...
+                 * }
+                 * 
+                 * without forcing a line-break into the `else if`
+                 * (the `else` has a pseudo-block with no brace tokens
+                 * and the `if` as only child).
+                 */
+                !block.mainToken exists) {
+                singleLineNodes.add(block);
+            }
+            if (that in switchElseNodes && !block.mainToken exists) {
+                /*
+                 * In
+                 * 
+                 * switch (foo)
+                 * case (bar) {}
+                 * else if (baz) {}
+                 * else {}
+                 * 
+                 * the switch-else-ness must be propagated
+                 * from the `else if`-`else` to the final `else`.
+                 */
+                switchElseNodes.add(block);
+            }
+            block.visit(this);
+            singleLineNodes.remove(block);
+            switchElseNodes.remove(block);
+        }
         if (exists expr = that.expression) {
             value exprContext = fWriter.openContext(1);
             expr.visit(this);
@@ -940,7 +1020,12 @@ shared class FormattingVisitor(
             lineBreaksAfter = noLineBreak;
             spaceAfter = options.spaceAfterControlStructureKeyword;
         };
+        // propagate single-line-ness to block, where the single-line decision is actually made
+        if (that in singleLineNodes) {
+            singleLineNodes.add(that.block);
+        }
         that.visitChildren(this);
+        singleLineNodes.remove(that.block);
     }
     
     shared actual void visitIfComprehensionClause(IfComprehensionClause that) {
@@ -980,6 +1065,31 @@ shared class FormattingVisitor(
         assert (exists elseContext);
         that.elseClause.expression.visit(this);
         fWriter.closeContext(elseContext);
+    }
+    
+    shared actual void visitIfStatement(IfStatement that) {
+        if (exists elseClause = that.elseClause) {
+            // an if statement with an else clause is only eligible for being a single line
+            // if it’s part of a switch else (else if),
+            // in which case that information must be propagated to the inner else (else if ... else)
+            if (that in switchElseNodes) {
+                singleLineNodes.add(that);
+                switchElseNodes.add(elseClause);
+            }
+        } else {
+            // an if statement without an else clause is always eligible for being in a single line
+            // (but usually won’t make the cut, when visitBody discovers it has more than one statement)
+            singleLineNodes.add(that);
+        }
+        if (that in singleLineNodes) {
+            // and now, actually propagate the decision made in either of the blocks above to the child clause
+            singleLineNodes.add(that.ifClause);
+        }
+        that.visitChildren(this);
+        singleLineNodes.remove(that.ifClause);
+        if (exists elseClause = that.elseClause) {
+            switchElseNodes.remove(elseClause);
+        }
     }
     
     shared actual void visitImport(Import that) {
@@ -1993,10 +2103,10 @@ shared class FormattingVisitor(
             visitCaseClause(caseClause);
         }
         if (exists elseClause = that.elseClause) {
-            value vse_bak = visitingSwitchElse;
-            visitingSwitchElse = true;
+            // a switch else starts on its own line, not on the one of the preceding closing brace
+            switchElseNodes.add(elseClause);
             elseClause.visit(this);
-            visitingSwitchElse = vse_bak;
+            switchElseNodes.remove(elseClause);
         }
     }
     

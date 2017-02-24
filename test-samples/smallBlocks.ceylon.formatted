@@ -1,3 +1,5 @@
 void noop() {}
 
-void expensiveNoop() { process.write(""); }
+void expensiveNoop() {
+    process.write("");
+}
