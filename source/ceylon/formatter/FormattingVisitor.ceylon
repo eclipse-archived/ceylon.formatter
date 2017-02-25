@@ -1075,6 +1075,9 @@ shared class FormattingVisitor(
             if (that in switchElseNodes) {
                 singleLineNodes.add(that);
                 switchElseNodes.add(elseClause);
+            } else {
+                // otherwise, explicitly make this node not eligible for being a single line
+                singleLineNodes.remove(that);
             }
         } else {
             // an if statement without an else clause is always eligible for being in a single line
