@@ -5,7 +5,7 @@
    Note: if the `ceylon format` plugin wasn’t installed by default
    in your distribution, you can add it by running:
    ~~~sh
-   ceylon plugin install ceylon.formatter/1.3.2-SNAPSHOT
+   ceylon plugin install ceylon.formatter/1.3.2
    ~~~
    
    To format all Ceylon code in the `source` and `test-source` directories:
@@ -91,12 +91,12 @@
    ~~~"""
 by ("Lucas Werkmeister <mail@lucaswerkmeister.de>")
 license ("https://www.apache.org/licenses/LICENSE-2.0.html")
-native ("jvm") module ceylon.formatter "1.3.2-SNAPSHOT" {
+native ("jvm") module ceylon.formatter "1.3.2" {
     shared import java.base "7";
-    shared import com.redhat.ceylon.typechecker "1.3.2-SNAPSHOT";
-    shared import com.redhat.ceylon.common "1.3.2-SNAPSHOT";
-    shared import com.redhat.ceylon.cli "1.3.2-SNAPSHOT";
-    shared import ceylon.file "1.3.2-SNAPSHOT";
-    import ceylon.interop.java "1.3.2-SNAPSHOT";
-    import ceylon.collection "1.3.2-SNAPSHOT";
+    shared import com.redhat.ceylon.typechecker "1.3.2";
+    shared import com.redhat.ceylon.common "1.3.2";
+    shared import com.redhat.ceylon.cli "1.3.2";
+    shared import ceylon.file "1.3.2";
+    import ceylon.interop.java "1.3.2";
+    import ceylon.collection "1.3.2";
 }
