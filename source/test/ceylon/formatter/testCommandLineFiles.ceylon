@@ -19,7 +19,7 @@ shared void testCommandLineFiles() {
         [{ "a/b/c/d/e", "a/b/c/d/f", "a/b/x/d/e" }, "a/b"]
     };
     for (testCase in testCases) {
-        assert (nonempty paths = testCase[0].collect(parsePath));
+        value paths = testCase[0].collect(parsePath);
         value actual = commonRoot(paths);
         value expected = parsePath(testCase[1]);
         assertEquals(actual, expected, testCase.string);

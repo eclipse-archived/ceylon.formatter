@@ -10,9 +10,6 @@ import com.redhat.ceylon.compiler.typechecker.tree {
 import ceylon.formatter.options {
     FormattingOptions
 }
-import ceylon.interop.java {
-    CeylonIterable
-}
 
 FormattingWriter.FormattingContext writeBacktickOpening(FormattingWriter writer, Token backtick) {
     value context = writer.writeToken {
@@ -131,10 +128,10 @@ void writeTypeArgumentOrParameterList(FormattingWriter writer, Visitor visitor, 
     [Type|TypeParameterDeclaration*] params;
     Boolean spaceAfterComma;
     if (is TypeArgumentList list) {
-        params = CeylonIterable(list.types).sequence();
+        params = [*list.types];
         spaceAfterComma = options.spaceAfterTypeArgListComma;
     } else {
-        params = CeylonIterable(list.typeParameterDeclarations).sequence();
+        params = [*list.typeParameterDeclarations];
         spaceAfterComma = options.spaceAfterTypeParamListComma;
     }
     if (nonempty params) {

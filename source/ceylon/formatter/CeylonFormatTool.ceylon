@@ -11,15 +11,13 @@ import com.redhat.ceylon.common.tool {
 import com.redhat.ceylon.common.tools {
     CeylonTool
 }
+
 import java.lang {
     JString=String
 }
 import java.util {
-    List
-}
-import ceylon.interop.java {
-    CeylonList,
-    JavaList
+    List,
+    Collections
 }
 
 summary ("Formats Ceylon source code")
@@ -53,7 +51,7 @@ remainingSections ("## Other options
 shared class CeylonFormatTool() satisfies Tool {
     
     rest__SETTER
-    shared variable List<JString> args = JavaList<JString>([]);
+    shared variable List<JString> args = Collections.emptyList<JString>();
     
     option__SETTER { longName = "help"; }
     optionArgument__SETTER { longName = "help"; }
@@ -67,7 +65,7 @@ shared class CeylonFormatTool() satisfies Tool {
     shared variable Boolean version = false;
     
     shared actual void run() => package.run(concatenate(
-            CeylonList(args).collect(JString.string),
+            {*args}.collect(JString.string),
             emptyOrSingleton(
                 switch (help?.string)
                     case (null) null

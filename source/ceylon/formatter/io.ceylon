@@ -5,9 +5,6 @@ import ceylon.file {
     Writer,
     parsePath
 }
-import ceylon.interop.java {
-    javaClass
-}
 import java.lang {
     System
 }
@@ -117,8 +114,8 @@ void copyOwnership(String target, String? reference) {
             if (targetOwner != referenceOwner) {
                 Files.setOwner(targetPath, referenceOwner);
             }
-            if (exists targetView = Files.getFileAttributeView(targetPath, javaClass<PosixFileAttributeView>()),
-                exists referenceView = Files.getFileAttributeView(referencePath, javaClass<PosixFileAttributeView>())) {
+            if (exists targetView = Files.getFileAttributeView(targetPath, `PosixFileAttributeView`),
+                exists referenceView = Files.getFileAttributeView(referencePath, `PosixFileAttributeView`)) {
                 // copy group
                 value targetAttributes = targetView.readAttributes();
                 value referenceAttributes = referenceView.readAttributes();

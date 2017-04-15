@@ -26,10 +26,6 @@ import org.antlr.runtime {
 import ceylon.file {
     Writer
 }
-import ceylon.interop.java {
-    CeylonIterable,
-    javaString
-}
 import ceylon.formatter.options {
     FormattingOptions
 }
@@ -40,6 +36,9 @@ import ceylon.collection {
     ArrayList,
     HashMap,
     HashSet
+}
+import java.lang {
+    Types
 }
 
 "A [[com.redhat.ceylon.compiler.typechecker.tree::Visitor]] that writes a formatted version of the
@@ -208,7 +207,7 @@ shared class FormattingVisitor(
         that.type.visit(this);
         that.identifier.visit(this);
         that.typeParameterList?.visit(this);
-        for (ParameterList list in CeylonIterable(that.parameterLists)) {
+        for (ParameterList list in that.parameterLists) {
             list.visit(this);
         }
         that.typeConstraintList?.visit(this);
@@ -367,7 +366,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitBody(Body that) {
-        value statements = CeylonIterable(that.statements).sequence();
+        value statements = [*that.statements];
         // any block with more than one statement or an import list must be multi-line
         value multiline = !that in singleLineNodes || statements.longerThan(1) || that.importList exists;
         FormattingWriter.FormattingContext? context;
@@ -484,8 +483,8 @@ shared class FormattingVisitor(
         assert (exists context);
         // TODO replace casesList with ceylon-spec#947’s solution
         MutableList<StaticType|StaticMemberOrTypeExpression> casesList = ArrayList<StaticType|StaticMemberOrTypeExpression>();
-        casesList.addAll(CeylonIterable(that.types));
-        casesList.addAll(CeylonIterable(that.baseMemberExpressions));
+        casesList.addAll { *that.types };
+        casesList.addAll { *that.baseMemberExpressions };
         assert (nonempty cases = casesList.sort(byIncreasing(compose(Token.tokenIndex, Node.token))));
         cases.first.visit(this);
         for (item in cases.rest) {
@@ -541,11 +540,11 @@ shared class FormattingVisitor(
     
     shared actual void visitCompilationUnit(CompilationUnit compilationUnit) {
         compilationUnit.importList.visit(this);
-        if (nonempty decs = concatenate(*{
-                    compilationUnit.moduleDescriptors,
-                    compilationUnit.packageDescriptors,
-                    compilationUnit.declarations
-                }.map(CeylonIterable))) {
+        if (nonempty decs = concatenate(
+                    {*compilationUnit.moduleDescriptors},
+                    {*compilationUnit.packageDescriptors},
+                    {*compilationUnit.declarations}
+                )) {
             if (!compilationUnit.importList.imports.empty) {
                 fWriter.requireAtLeastLineBreaks(2);
             }
@@ -564,7 +563,7 @@ shared class FormattingVisitor(
             indentAfter = 1;
             spaceAfter = false;
         };
-        value conditions = CeylonIterable(that.conditions).sequence();
+        value conditions = [*that.conditions];
         "Empty condition list not allowed"
         assert (exists first = conditions.first);
         variable value innerContext = fWriter.openContext();
@@ -855,7 +854,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitExpressionList(ExpressionList that) {
-        value expressions = CeylonIterable(that.expressions).sequence();
+        value expressions = [*that.expressions];
         assert (nonempty expressions);
         expressions.first.visit(this);
         for (expression in expressions.rest) {
@@ -914,7 +913,7 @@ shared class FormattingVisitor(
     shared actual void visitFunctionArgument(FunctionArgument that) {
         that.type?.visit(this);
         that.typeParameterList?.visit(this);
-        for (list in CeylonIterable(that.parameterLists)) {
+        for (list in that.parameterLists) {
             visitParameterListAnonymous(list);
         }
         that.typeConstraintList?.visit(this);
@@ -953,7 +952,7 @@ shared class FormattingVisitor(
             lineBreaksBefore = noLineBreak;
             indentAfter = 1;
         };
-        value argumentTypes = CeylonIterable(that.argumentTypes).sequence();
+        value argumentTypes = [*that.argumentTypes];
         if (nonempty argumentTypes) {
             argumentTypes.first.visit(this);
             for (argumentType in argumentTypes.rest) {
@@ -992,7 +991,7 @@ shared class FormattingVisitor(
     shared actual void visitIdentifier(Identifier that) {
         String tokenText;
         assert (is CommonToken token = that.mainToken); // need CommonToken’s start and stop fields
-        value diff = token.stopIndex - token.startIndex - javaString(token.text).length() + 1;
+        value diff = token.stopIndex - token.startIndex - Types.nativeString(token.text).length() + 1;
         if (diff == 0) {
             // normal identifier
             tokenText = token.text;
@@ -1123,7 +1122,8 @@ shared class FormattingVisitor(
             spaceBefore = true;
             spaceAfter = true;
         };
-        if (exists membersOrTypes = that.importMemberOrTypes, nonempty elements = CeylonIterable(membersOrTypes).sequence()) {
+        if (exists membersOrTypes = that.importMemberOrTypes, 
+            nonempty elements = [*membersOrTypes]) {
             variable value innerContext = fWriter.openContext();
             void writeCommaAndVisitNext(Node node) {
                 fWriter.writeToken {
@@ -1193,7 +1193,7 @@ shared class FormattingVisitor(
             lineBreaksAfter = 1..2;
             indentAfter = 1;
         };
-        for (importModule in CeylonIterable(that.importModules)) {
+        for (importModule in that.importModules) {
             importModule.visit(this);
         }
         fWriter.writeToken {
@@ -1204,7 +1204,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitImportPath(ImportPath that) {
-        value identifiers = CeylonIterable(that.identifiers).sequence();
+        value identifiers = [*that.identifiers];
         "Import can’t have empty import path"
         assert (nonempty identifiers);
         identifiers.first.visit(this);
@@ -1251,7 +1251,7 @@ shared class FormattingVisitor(
     
     shared actual void visitIntersectionType(IntersectionType that) {
         that.typeVariance?.visit(this);
-        value types = CeylonIterable(that.staticTypes).sequence();
+        value types = [*that.staticTypes];
         "Empty union type not allowed"
         assert (nonempty types);
         types.first.visit(this);
@@ -1354,7 +1354,7 @@ shared class FormattingVisitor(
             indentAfter = 1;
             spaceAfter = false;
         };
-        value variables = CeylonIterable(that.variables).sequence();
+        value variables = [*that.variables];
         "Empty variable list not allowed"
         assert (exists first = variables.first);
         variable value innerContext = fWriter.openContext();
@@ -1405,7 +1405,7 @@ shared class FormattingVisitor(
         that.type.visit(this);
         that.identifier.visit(this);
         that.typeParameterList?.visit(this);
-        for (paramList in CeylonIterable(that.parameterLists)) {
+        for (paramList in that.parameterLists) {
             paramList.visit(this);
         }
         if (exists block = that.block) {
@@ -1480,7 +1480,7 @@ shared class FormattingVisitor(
             indentAfter = 1;
             indentBefore = 1; // see #38
         };
-        for (arg in CeylonIterable(that.namedArguments)) {
+        for (arg in that.namedArguments) {
             arg.visit(this);
         }
         that.sequencedArgument?.visit(this);
@@ -1664,7 +1664,7 @@ shared class FormattingVisitor(
         };
         
         variable FormattingWriter.FormattingContext? previousContext = null;
-        for (Parameter parameter in CeylonIterable(that.parameters)) {
+        for (Parameter parameter in that.parameters) {
             if (exists c = previousContext) {
                 fWriter.writeToken {
                     ",";
@@ -1731,7 +1731,7 @@ shared class FormattingVisitor(
                 spaceAfter = false;
             };
             variable FormattingWriter.FormattingContext? previousContext = null;
-            for (PositionalArgument argument in CeylonIterable(that.positionalArguments).sequence()) {
+            for (PositionalArgument argument in that.positionalArguments) {
                 if (exists c = previousContext) {
                     fWriter.writeToken {
                         ",";
@@ -1812,7 +1812,7 @@ shared class FormattingVisitor(
             indentAfter = 1;
             spaceAfter = false;
         };
-        value resources = CeylonIterable(that.resources).sequence();
+        value resources = [*that.resources];
         if (nonempty resources) { // grammar allows empty resource list
             variable Resource lastResource = resources.first;
             lastResource.visit(this);
@@ -1861,7 +1861,7 @@ shared class FormattingVisitor(
         };
         assert (exists context);
         value typesContext = fWriter.openContext(2 * options.indentBeforeTypeInfo);
-        value types = CeylonIterable(that.types).sequence();
+        value types = [*that.types];
         "Must satisfy at least one type"
         assert (nonempty types);
         types.first.visit(this);
@@ -1897,7 +1897,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitSequencedArgument(SequencedArgument that) {
-        value elements = CeylonIterable(that.positionalArguments).sequence();
+        value elements = [*that.positionalArguments];
         "Empty sequenced argument not allowed"
         assert (nonempty elements);
         elements.first.visit(this);
@@ -1950,7 +1950,7 @@ shared class FormattingVisitor(
                     else false;
             indentAfter = 1;
         };
-        CeylonIterable(that.statements)*.visit(this); // usually empty
+        that.statements*.visit(this); // usually empty
         that.sequencedArgument?.visit(this);
         fWriter.writeToken {
             that.mainEndToken; // "}"
@@ -2058,8 +2058,8 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitStringTemplate(StringTemplate that) {
-        value literals = CeylonIterable(that.stringLiterals).sequence();
-        value expressions = CeylonIterable(that.expressions).sequence();
+        value literals = [*that.stringLiterals];
+        value expressions = [*that.expressions];
         "String template must have at least one string literal"
         assert (nonempty literals);
         "String template must have exactly one more string literal than expressions"
@@ -2102,7 +2102,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitSwitchCaseList(SwitchCaseList that) {
-        for (caseClause in CeylonIterable(that.caseClauses)) {
+        for (caseClause in that.caseClauses) {
             visitCaseClause(caseClause);
         }
         if (exists elseClause = that.elseClause) {
@@ -2195,7 +2195,7 @@ shared class FormattingVisitor(
             spaceAfter = -1000;
             indentAfter = 1;
         };
-        value patterns = CeylonIterable(that.patterns).sequence();
+        value patterns = [*that.patterns];
         if (exists firstPattern = patterns.first) {
             firstPattern.visit(this);
             for (pattern in patterns.rest) {
@@ -2222,7 +2222,7 @@ shared class FormattingVisitor(
             lineBreaksAfter = noLineBreak;
             spaceAfter = false;
         };
-        value elements = CeylonIterable(that.elementTypes).sequence();
+        value elements = [*that.elementTypes];
         if (exists first = elements.first) {
             variable value innerContext = fWriter.openContext();
             first.visit(this);
@@ -2284,7 +2284,7 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitTypeConstraintList(TypeConstraintList that) {
-        CeylonIterable(that.typeConstraints)*.visit(this);
+        that.typeConstraints*.visit(this);
     }
     
     shared actual void visitTypeConstructor(TypeConstructor that) {
@@ -2359,7 +2359,7 @@ shared class FormattingVisitor(
     
     shared actual void visitUnionType(UnionType that) {
         that.typeVariance?.visit(this);
-        value types = CeylonIterable(that.staticTypes).sequence();
+        value types = [*that.staticTypes];
         "Empty union type not allowed"
         assert (nonempty types);
         types.first.visit(this);
@@ -2411,7 +2411,7 @@ shared class FormattingVisitor(
         that.annotationList?.visit(this);
         that.type.visit(this);
         that.identifier.visit(this);
-        for (list in CeylonIterable(that.parameterLists)) {
+        for (list in that.parameterLists) {
             list.visit(this);
         }
         if (exists t = that.specifierExpression?.mainToken) {

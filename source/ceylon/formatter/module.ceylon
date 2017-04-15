@@ -97,6 +97,5 @@ native ("jvm") module ceylon.formatter "1.3.3-SNAPSHOT" {
     shared import com.redhat.ceylon.common "1.3.3-SNAPSHOT";
     shared import com.redhat.ceylon.cli "1.3.3-SNAPSHOT";
     shared import ceylon.file "1.3.3-SNAPSHOT";
-    import ceylon.interop.java "1.3.3-SNAPSHOT";
     import ceylon.collection "1.3.3-SNAPSHOT";
 }
