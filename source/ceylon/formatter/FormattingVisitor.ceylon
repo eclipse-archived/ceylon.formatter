@@ -1180,6 +1180,16 @@ shared class FormattingVisitor(
         }
         that.importPath?.visit(this); // nullsafe because might be quoted…
         that.quotedLiteral?.visit(this); // …like this
+        if (exists artifact = that.artifact) {
+            fWriter.writeToken {
+                ":";
+                spaceBefore = false;
+                spaceAfter = false;
+                lineBreaksBefore = noLineBreak;
+                lineBreaksAfter = noLineBreak;
+            };
+            artifact.visit(this);
+        }
         that.version?.visit(this); // version not mandatory in the grammar
         writeSemicolon(fWriter, that.mainEndToken, context);
     }
