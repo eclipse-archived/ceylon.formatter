@@ -648,7 +648,30 @@ shared class FormattingVisitor(
     
     shared actual void visitDynamic(Dynamic that) {
         writeModifier(fWriter, that.mainToken); // "dynamic"
-        that.namedArgumentList.visit(this);
+        if (exists namedArgumentList = that.namedArgumentList) {
+            namedArgumentList.visit(this);
+        } else {
+            // empty dynamic array
+            fWriter.writeToken {
+                "[";
+                lineBreaksBefore = noLineBreak;
+                lineBreaksAfter = noLineBreak;
+                spaceBefore = true;
+                spaceAfter = false;
+            };
+            fWriter.writeToken {
+                ",";
+                lineBreaksBefore = noLineBreak;
+                lineBreaksAfter = noLineBreak;
+                spaceBefore = false;
+                spaceAfter = false;
+            };
+            fWriter.writeToken {
+                that.mainEndToken; // "]"
+                lineBreaksBefore = noLineBreak;
+                spaceBefore = false;
+            };
+        }
     }
     
     shared actual void visitDynamicClause(DynamicClause that) {
