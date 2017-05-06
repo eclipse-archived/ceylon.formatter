@@ -6,5 +6,10 @@ void run() {
         dynamic b = dynamic [
             prototype = "wat";
         ];
+        dynamic e = dynamic [,];
+        dynamic ee = dynamic [
+            dynamic [,],
+            dynamic [,]
+        ];
     }
 }
