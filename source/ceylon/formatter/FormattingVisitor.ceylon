@@ -1212,6 +1212,16 @@ shared class FormattingVisitor(
                 lineBreaksAfter = noLineBreak;
             };
             artifact.visit(this);
+            if (exists classifier = that.classifier) {
+                fWriter.writeToken {
+                    ":";
+                    spaceBefore = false;
+                    spaceAfter = false;
+                    lineBreaksBefore = noLineBreak;
+                    lineBreaksAfter = noLineBreak;
+                };
+                classifier.visit(this);
+            }
         }
         that.version?.visit(this); // version not mandatory in the grammar
         writeSemicolon(fWriter, that.mainEndToken, context);
@@ -1496,6 +1506,16 @@ shared class FormattingVisitor(
                     lineBreaksAfter = noLineBreak;
                 };
                 artifact.visit(this);
+                if (exists classifier = that.classifier) {
+                    fWriter.writeToken {
+                        ":";
+                        spaceBefore = false;
+                        spaceAfter = false;
+                        lineBreaksBefore = noLineBreak;
+                        lineBreaksAfter = noLineBreak;
+                    };
+                    classifier.visit(this);
+                }
             }
         }
         that.version.visit(this);
