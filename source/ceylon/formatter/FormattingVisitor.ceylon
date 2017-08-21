@@ -1223,7 +1223,8 @@ shared class FormattingVisitor(
                 classifier.visit(this);
             }
         }
-        that.version?.visit(this); // version not mandatory in the grammar
+        that.version?.visit(this); // nullsafe because it might be a constant…
+        that.constantVersion?.visit(this); // …like this (or totally absent, it’s optional in the grammar)
         writeSemicolon(fWriter, that.mainEndToken, context);
     }
     
@@ -1236,9 +1237,17 @@ shared class FormattingVisitor(
             lineBreaksAfter = 1..2;
             indentAfter = 1;
         };
-        for (importModule in that.importModules) {
-            importModule.visit(this);
+        
+        // constants and importModules can be interleaved, but are stored in two lists,
+        // so we have to mix them and sort by token index (cf. casesList in visitCaseTypes)
+        MutableList<AnyAttribute|ImportModule> contentsList = ArrayList<AnyAttribute|ImportModule>();
+        contentsList.addAll { *that.constants };
+        contentsList.addAll { *that.importModules };
+        assert (nonempty contents = contentsList.sort(byIncreasing(compose(Token.tokenIndex, Node.token))));
+        for (content in contents ) {
+            content.visit(this);
         }
+        
         fWriter.writeToken {
             that.mainEndToken; // "}"
             context;
