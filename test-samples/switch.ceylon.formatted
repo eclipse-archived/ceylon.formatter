@@ -50,3 +50,11 @@ void testSwitchWithElseIf() {
     else if (process.arguments.first?.equals("bar") else false) { print("first argument is bar"); }
     else { print("first argument is neither foo nor bar"); }
 }
+
+void testSwitchWithElseCase() {
+    switch (process.arguments)
+    case (is []) { print("no arguments"); }
+    else case (is []) { print("also no arguments"); }
+    case (is [String+]) { print("arguments"); }
+    else case (is String[]) { print("any arguments"); }
+}
