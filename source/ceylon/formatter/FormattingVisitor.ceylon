@@ -437,11 +437,21 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitCaseClause(CaseClause that) {
+        value lineBreaksBefore = that.block exists then 1..1 else 0..1; // allow inline switch/case/else expressions
+        if (that.overlapping) {
+            fWriter.writeToken {
+                "else";
+                spaceBefore = true;
+                spaceAfter = true;
+                lineBreaksBefore = lineBreaksBefore;
+                lineBreaksAfter = noLineBreak;
+            };
+        }
         fWriter.writeToken {
             that.mainToken; // "case"
             spaceBefore = true;
             spaceAfter = options.spaceAfterControlStructureKeyword;
-            lineBreaksBefore = that.block exists then 1..1 else 0..1; // allow inline switch/case/else expressions
+            lineBreaksBefore = that.overlapping then noLineBreak else lineBreaksBefore;
             lineBreaksAfter = noLineBreak;
         };
         value context = fWriter.writeToken {
