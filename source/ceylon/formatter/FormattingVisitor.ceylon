@@ -1253,7 +1253,7 @@ shared class FormattingVisitor(
         MutableList<AnyAttribute|ImportModule> contentsList = ArrayList<AnyAttribute|ImportModule>();
         contentsList.addAll { *that.constants };
         contentsList.addAll { *that.importModules };
-        assert (nonempty contents = contentsList.sort(byIncreasing(compose(Token.tokenIndex, Node.token))));
+        value contents = contentsList.sort(byIncreasing(compose(Token.tokenIndex, Node.token)));
         for (content in contents ) {
             content.visit(this);
         }
