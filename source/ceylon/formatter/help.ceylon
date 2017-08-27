@@ -108,7 +108,7 @@ String formatType(Type<Anything> type) {
 
 String[] collectPartialTypes(Type<Anything> type) {
     if (is UnionType<Anything> type) {
-        return concatenate(*type.caseTypes.collect(collectPartialTypes));
+        return expand(type.caseTypes.collect(collectPartialTypes)).sequence();
     } else if (type.exactly(`Integer`)) {
         return ["Integer"];
     } else if (type.exactly(`Range<Integer>`)) {

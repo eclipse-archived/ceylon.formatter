@@ -79,12 +79,13 @@ shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = pro
         process.exit(0);
     }
     
-    String[] splitArguments = concatenate(*arguments.map((String s) {
+    String[] splitArguments = expand(arguments.map((String s) {
                 if (exists index = s.firstIndexWhere('='.equals)) {
                     return [s[... index-1], s[index+1 ...]];
                 }
                 return [s];
-            }));
+            }))
+            .sequence();
     
     String? profileName;
     if (exists profileArgumentIndex = splitArguments.firstIndexWhere("--profile".equals)) {
