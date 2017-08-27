@@ -551,10 +551,10 @@ shared class FormattingVisitor(
     shared actual void visitCompilationUnit(CompilationUnit compilationUnit) {
         compilationUnit.importList.visit(this);
         if (nonempty decs = concatenate(
-                    {*compilationUnit.moduleDescriptors},
-                    {*compilationUnit.packageDescriptors},
-                    {*compilationUnit.declarations}
-                )) {
+                { *compilationUnit.moduleDescriptors },
+                { *compilationUnit.packageDescriptors },
+                { *compilationUnit.declarations }
+            )) {
             if (!compilationUnit.importList.imports.empty) {
                 fWriter.requireAtLeastLineBreaks(2);
             }
@@ -1155,7 +1155,7 @@ shared class FormattingVisitor(
             spaceBefore = true;
             spaceAfter = true;
         };
-        if (exists membersOrTypes = that.importMemberOrTypes, 
+        if (exists membersOrTypes = that.importMemberOrTypes,
             nonempty elements = [*membersOrTypes]) {
             variable value innerContext = fWriter.openContext();
             void writeCommaAndVisitNext(Node node) {
@@ -1254,7 +1254,7 @@ shared class FormattingVisitor(
         contentsList.addAll { *that.constants };
         contentsList.addAll { *that.importModules };
         value contents = contentsList.sort(byIncreasing(compose(Token.tokenIndex, Node.token)));
-        for (content in contents ) {
+        for (content in contents) {
             content.visit(this);
         }
         

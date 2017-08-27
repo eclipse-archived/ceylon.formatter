@@ -65,7 +65,7 @@ shared class CeylonFormatTool() satisfies Tool {
     shared variable Boolean version = false;
     
     shared actual void run() => package.run(concatenate(
-            {*args}.collect(JString.string),
+            { *args }.collect(JString.string),
             emptyOrSingleton(
                 switch (help?.string)
                     case (null) null
