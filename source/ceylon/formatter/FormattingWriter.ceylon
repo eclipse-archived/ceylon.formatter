@@ -958,10 +958,10 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                 o += ephemeralIndentation;
                 offset = -o;
             }
-            value [i, lb] = options.lineBreakStrategy.lineBreakLocation(
+            let ([i, lb] = options.lineBreakStrategy.lineBreakLocation(
                 tokenQueue.sequence(),
                 offset,
-                length);
+                length));
             index = i;
             addLineBreak = lb;
         } else {
