@@ -959,9 +959,9 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                 offset = -o;
             }
             let ([i, lb] = options.lineBreakStrategy.lineBreakLocation(
-                tokenQueue.sequence(),
-                offset,
-                length));
+                    tokenQueue.sequence(),
+                    offset,
+                    length));
             index = i;
             addLineBreak = lb;
         } else {

@@ -85,7 +85,7 @@ shared [FormattingOptions, String[]] commandLineOptions(String[] arguments = pro
                 }
                 return [s];
             }))
-            .sequence();
+        .sequence();
     
     String? profileName;
     if (exists profileArgumentIndex = splitArguments.firstIndexWhere("--profile".equals)) {
