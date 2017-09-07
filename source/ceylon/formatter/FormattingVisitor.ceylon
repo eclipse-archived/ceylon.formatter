@@ -13,7 +13,8 @@ import com.redhat.ceylon.compiler.typechecker.parser {
         uidentifier=\iUIDENTIFIER,
         lidentifier=\iLIDENTIFIER,
         aidentifier=\iAIDENTIFIER,
-        pidentifier=\iPIDENTIFIER
+        pidentifier=\iPIDENTIFIER,
+        valueModifier=\iVALUE_MODIFIER
     }
 }
 import org.antlr.runtime {
@@ -1442,6 +1443,42 @@ shared class FormattingVisitor(
         value context = fWriter.openContext(1);
         that.expression.visit(this);
         fWriter.closeContext(context);
+    }
+    
+    shared actual void visitLetStatement(LetStatement that) {
+        if (that.mainToken.type == valueModifier) {
+            // old syntax: value [x] = [1];
+            assert (exists context = writeModifier(fWriter, that.mainToken)); // "value"
+            that.visitChildren(this);
+            writeSemicolon(fWriter, that.mainEndToken, context);
+        } else {
+            // new syntax: let ([x] = [1]);
+            assert (exists context = writeModifier(fWriter, that.mainToken)); // "let"
+            value parenContext = fWriter.writeToken {
+                "(";
+                spaceAfter = false;
+                indentAfter = 1;
+                lineBreaksBefore = noLineBreak;
+            };
+            assert (nonempty variables = [*that.variables]);
+            variables.first.visit(this);
+            for (variable in variables.rest) {
+                fWriter.writeToken {
+                    ",";
+                    lineBreaksBefore = noLineBreak;
+                    spaceBefore = false;
+                    spaceAfter = true;
+                };
+                variable.visit(this);
+            }
+            fWriter.writeToken {
+                ")";
+                spaceBefore = false;
+                lineBreaksBefore = 0..1;
+                context = parenContext;
+            };
+            writeSemicolon(fWriter, that.mainEndToken, context);
+        }
     }
     
     shared actual void visitLiteral(Literal that) {
