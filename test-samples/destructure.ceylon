@@ -1,4 +1,4 @@
-void testDestructureStatements() {
+void testDestructureStatementsValue() {
     value [a, b, c] = [1, 2.0, '3'];
     value [Integer x, Float y, Character z] = [a, b, c];
     value [init, *others] = [0, *(1..runtime.maxIntegerValue)];
@@ -7,6 +7,19 @@ void testDestructureStatements() {
     value Boolean o -> String p = m->n;
     value [e, [f, g], h->i, *j] = [0, [1, 2], 3->4];
     value [q, [Integer r, Integer s], Integer t -> Integer u, *v] = [0, [1, 2], 3->4];
+}
+void testDestructureStatementsLet() {
+    let (var = 1);
+    let (
+        [a, b, c] = [1, 2.0, '3'],
+        [Integer x, Float y, Character z] = [a, b, c],
+        [init, *others] = [0, *(1..runtime.maxIntegerValue)],
+        [String first, String *rest] = ["executableName", *process.arguments],
+        m->n = true->"true",
+        Boolean o -> String p = m->n,
+        [e, [f, g], h->i, *j] = [0, [1, 2], 3->4],
+        [q, [Integer r, Integer s], Integer t -> Integer u, *v] = [0, [1, 2], 3->4]
+    );
 }
 void testDestructureFor() {
     for ([a, b, c] in [[1, 2.0, '3']]) {
