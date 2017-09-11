@@ -950,7 +950,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
                 // the offset is just indentation: stacked indents plus potential indentBefore plus ephemeral indent;
                 // signal this to the line break strategy by passing a negative argument
                 variable Integer o = options.indentMode.indent(
-                    tokenStack.fold(0)((partial, elem) => partial + elem.indent)
+                    tokenStack.fold(0, (partial, elem) => partial + elem.indent)
                 ).size;
                 if (is Token firstToken = tokenQueue.find((QueueElement elem) => elem is Token)) {
                     o += firstToken.indentBefore;
@@ -1144,7 +1144,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
     
     "Write indentation – the sum of all `indent`s on the [[tokenStack]]."
     void writeIndentation()
-            => countingWriter.indent(tokenStack.fold(0)((partial, elem) => partial + elem.indent));
+            => countingWriter.indent(tokenStack.fold(0, (partial, elem) => partial + elem.indent));
     
     "Write a token.
      
