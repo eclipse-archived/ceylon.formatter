@@ -34,7 +34,7 @@ description ("    ceylon format source
               which will recreate the `source` and `test-source` folders inside the new `formatted` folder.")
 remainingSections ("## Other options
                     
-                    --${option name}=${option value}
+                    --\${option name}=\${option value}
                     
                         Set a formatting option. The most useful ones are:
                         
