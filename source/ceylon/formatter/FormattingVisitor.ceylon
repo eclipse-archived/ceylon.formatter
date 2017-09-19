@@ -1032,25 +1032,8 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitIdentifier(Identifier that) {
-        String tokenText;
-        assert (is CommonToken token = that.mainToken); // need CommonToken’s start and stop fields
-        value diff = token.stopIndex - token.startIndex - Types.nativeString(token.text).length() + 1;
-        if (diff == 0) {
-            // normal identifier
-            tokenText = token.text;
-        } else {
-            // \iidentifier or \Iidentifier
-            assert (diff == 2);
-            if (token.type == uidentifier) {
-                tokenText = "\\I" + token.text;
-            } else if (token.type in { lidentifier, aidentifier, pidentifier }) {
-                tokenText = "\\i" + token.text;
-            } else {
-                throw Exception("Unexpected token type on identifier token!");
-            }
-        }
         fWriter.writeToken {
-            tokenText;
+            that.text;
             tokenInStream = that.mainToken;
             lineBreaksBefore = 0..2;
         };
