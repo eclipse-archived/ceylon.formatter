@@ -88,6 +88,15 @@ shared class FormattingVisitor(
     
     // initialize TokenStream
     if (exists tokens) { tokens.la(1); }
+
+    String identifierText(Identifier identifier) {
+        assert (exists text = identifier.text);
+        if (text.startsWith("""\i""") || text.startsWith("""\I""")) {
+            return text[2...];
+        } else {
+            return text;
+        }
+    }
     
     shared actual void handleException(Exception? e, Node that) {
         // set breakpoint here
@@ -133,7 +142,7 @@ shared class FormattingVisitor(
         visitingAnnotation = false;
         if (is {String*} inlineAnnotations = options.inlineAnnotations) {
             if (is BaseMemberExpression bme = that.primary,
-                exists text = bme.identifier.text,
+                exists text = identifierText(bme.identifier) of String?, // simulated `let` inside condition :)
                 (importMemberAliases[text] else text) in inlineAnnotations) {
                 fWriter.requireAtMostLineBreaks(0);
             } else {
@@ -1142,7 +1151,7 @@ shared class FormattingVisitor(
     
     shared actual void visitImportMember(ImportMember that) {
         if (exists al = that.\ialias) {
-            importMemberAliases[al.identifier.text] = that.identifier.text;
+            importMemberAliases[identifierText(al.identifier)] = identifierText(that.identifier);
         }
         that.visitChildren(this);
     }
