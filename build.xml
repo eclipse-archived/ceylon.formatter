@@ -74,10 +74,12 @@
     </target>
     
     <target name="clean"
-        description="Deletes the test-modules and modules directories">
+        description="Deletes all build artifacts">
         <delete dir="${out.repo}"/>
         <delete dir="${osgi.dist}"/>
         <delete dir="${osgi.build}"/>
+        <delete file="test-formatter.tap"/>
+        <delete file="test-cli.tap"/>
         <if>
           <available file="source/ceylon/formatter/options/.gitignore"/>
           <then>
