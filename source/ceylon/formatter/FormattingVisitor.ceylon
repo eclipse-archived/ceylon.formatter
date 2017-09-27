@@ -1,4 +1,4 @@
-import com.redhat.ceylon.compiler.typechecker.tree {
+import org.eclipse.ceylon.compiler.typechecker.tree {
     Tree {
         ...
     },
@@ -8,7 +8,7 @@ import com.redhat.ceylon.compiler.typechecker.tree {
     Node,
     VisitorAdaptor
 }
-import com.redhat.ceylon.compiler.typechecker.parser {
+import org.eclipse.ceylon.compiler.typechecker.parser {
     CeylonLexer {
         uidentifier=\iUIDENTIFIER,
         lidentifier=\iLIDENTIFIER,
@@ -42,8 +42,8 @@ import java.lang {
     Types
 }
 
-"A [[com.redhat.ceylon.compiler.typechecker.tree::Visitor]] that writes a formatted version of the
- element (typically a [[com.redhat.ceylon.compiler.typechecker.tree::Tree.CompilationUnit]]) to a
+"A [[org.eclipse.ceylon.compiler.typechecker.tree::Visitor]] that writes a formatted version of the
+ element (typically a [[org.eclipse.ceylon.compiler.typechecker.tree::Tree.CompilationUnit]]) to a
  [[Writer]]."
 shared class FormattingVisitor(
     "The [[TokenStream]] from which the element was parsed;

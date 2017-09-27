@@ -7,12 +7,12 @@ import ceylon.test {
 import ceylon.file {
     ...
 }
-import com.redhat.ceylon.compiler.typechecker.tree {
+import org.eclipse.ceylon.compiler.typechecker.tree {
     Tree {
         CompilationUnit
     }
 }
-import com.redhat.ceylon.compiler.typechecker.parser {
+import org.eclipse.ceylon.compiler.typechecker.parser {
     CeylonLexer,
     CeylonParser
 }

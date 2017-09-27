@@ -1,4 +1,4 @@
-import com.redhat.ceylon.common.tool {
+import org.eclipse.ceylon.common.tool {
     Tool,
     description,
     description__SETTER,
@@ -8,7 +8,7 @@ import com.redhat.ceylon.common.tool {
     remainingSections,
     summary
 }
-import com.redhat.ceylon.common.tools {
+import org.eclipse.ceylon.common.tools {
     CeylonTool
 }
 

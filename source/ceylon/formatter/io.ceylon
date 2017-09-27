@@ -15,7 +15,7 @@ import java.nio.file {
 import java.nio.file.attribute {
     PosixFileAttributeView
 }
-import com.redhat.ceylon.common.config {
+import org.eclipse.ceylon.common.config {
     DefaultToolOptions
 }
 import org.antlr.runtime {

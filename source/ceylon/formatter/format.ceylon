@@ -1,7 +1,7 @@
 import ceylon.formatter.options {
     FormattingOptions
 }
-import com.redhat.ceylon.compiler.typechecker.tree {
+import org.eclipse.ceylon.compiler.typechecker.tree {
     Node
 }
 import org.antlr.runtime {
@@ -25,11 +25,11 @@ object stdoutWriter satisfies Writer {
     }
 }
 
-"Format the given [[CompilationUnit|com.redhat.ceylon.compiler.typechecker.tree::Tree.CompilationUnit]]
+"Format the given [[CompilationUnit|org.eclipse.ceylon.compiler.typechecker.tree::Tree.CompilationUnit]]
  and write it to the given [[Writer]]."
 shared void format(
     "A node that you want to format,
-     e. g. a [[CompilationUnit|com.redhat.ceylon.compiler.typechecker.tree::Tree.CompilationUnit]]
+     e. g. a [[CompilationUnit|org.eclipse.ceylon.compiler.typechecker.tree::Tree.CompilationUnit]]
      from the Ceylon compiler."
     Node node,
     "The options for the formatter. These dictate the line breaking strategy,

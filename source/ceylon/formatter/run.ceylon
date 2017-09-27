@@ -1,7 +1,7 @@
 import java.io {
     ...
 }
-import com.redhat.ceylon.compiler.typechecker.parser {
+import org.eclipse.ceylon.compiler.typechecker.parser {
     CeylonLexer,
     CeylonParser
 }
@@ -11,10 +11,10 @@ import org.antlr.runtime {
     CommonTokenStream,
     BufferedTokenStream
 }
-import com.redhat.ceylon.compiler.typechecker.tree {
+import org.eclipse.ceylon.compiler.typechecker.tree {
     Tree
 }
-import com.redhat.ceylon.common.config {
+import org.eclipse.ceylon.common.config {
     DefaultToolOptions
 }
 import ceylon.file {

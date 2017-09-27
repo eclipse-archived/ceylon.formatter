@@ -12,7 +12,7 @@ import ceylon.file {
     Nil,
     Writer
 }
-import com.redhat.ceylon.compiler.typechecker.tree {
+import org.eclipse.ceylon.compiler.typechecker.tree {
     Tree
 }
 import org.antlr.runtime {
@@ -20,7 +20,7 @@ import org.antlr.runtime {
     BufferedTokenStream,
     CommonTokenStream
 }
-import com.redhat.ceylon.compiler.typechecker.parser {
+import org.eclipse.ceylon.compiler.typechecker.parser {
     CeylonLexer,
     CeylonParser
 }

@@ -9,7 +9,7 @@ import org.antlr.runtime {
     AntlrToken=Token,
     TokenStream
 }
-import com.redhat.ceylon.compiler.typechecker.parser {
+import org.eclipse.ceylon.compiler.typechecker.parser {
     CeylonLexer {
         lineComment=\iLINE_COMMENT,
         multiComment=\iMULTI_COMMENT,

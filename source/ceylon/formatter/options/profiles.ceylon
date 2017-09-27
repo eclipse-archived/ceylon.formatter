@@ -1,7 +1,7 @@
 import java.lang {
     JString=String
 }
-import com.redhat.ceylon.common.config {
+import org.eclipse.ceylon.common.config {
     CeylonConfig,
     ConfigFinder,
     ConfigWriter

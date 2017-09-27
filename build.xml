@@ -34,7 +34,7 @@
     
     <target name="ceylondefs" unless="ceylondefined">
         <property name="ceylondefined" value="true" />
-        <typedef resource="com/redhat/ceylon/ant/antlib.xml" classpathref="ant-tasks"/>
+        <typedef resource="org/eclipse/ceylon/ant/antlib.xml" classpathref="ant-tasks"/>
     
         <reposet id="ceylon.repo">
             <repo url="${ceylon.repo.dir}"/>
