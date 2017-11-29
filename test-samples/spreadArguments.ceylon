@@ -1,0 +1,4 @@
+void testSpreadArguments() {
+    value v1 = { * process.arguments};
+    value v2 = [ * process.arguments];
+}

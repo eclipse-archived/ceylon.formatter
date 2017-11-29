@@ -1,0 +1,5 @@
+void positiveNegativeOp() {
+    value i = -
+            6;
+    value j = +  10;
+}

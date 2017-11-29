@@ -1,0 +1,84 @@
+#!/bin/bash
+
+function usage {
+    cat << EOF
+Usage: $0 [-c CEYLON] [-r REPO] [-t FILE] [-h]
+
+Options:
+  -c CEYLON    Use CEYLON as ceylon program. Default: ceylon
+  -r REPO      Use REPO as ceylon repository. Default: +USER
+  -t FILE      Write a Test Anything Protocol v13 report to FILE.
+  -h           Print this help.
+EOF
+}
+
+if ! hash tree &>/dev/null; then
+    cat >&2 <<EOF
+$0: error: tree command is not available, aborting
+EOF
+    exit 2
+fi
+
+ceylon=ceylon
+repo=+USER
+tap=false
+while getopts "c:r:t:h" opt; do
+    case "$opt" in
+        c)
+            ceylon="$OPTARG"
+            ;;
+        r)
+            repo="$OPTARG"
+            ;;
+        t)
+            tap=true
+            printf '' >| "$OPTARG" # truncate file
+            exec 3>>"$OPTARG" # and set up file descriptor 3 to append to it
+            ;;
+        h)
+            usage
+            exit 0
+            ;;
+        \?)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+failed=0
+total=0
+$tap && echo 'TAP version 13' >&3
+$tap && diffout=null || diffout=stdout
+for dir in *; do
+    ! [[ -d "$dir" ]] && continue
+    ((total++))
+    cd "$dir"
+    "$ceylon" run --rep="$repo" --rep=../../modules ceylon.formatter/1.3.4-SNAPSHOT $(<args)
+    if diff <(tree result-expected | sed '1s/expected/actual/') <(tree result-actual) &>/dev/$diffout; then
+        # clean up, unless it’s a symlink
+        ! [[ -L result-actual ]] && rm -r result-actual
+        $tap && printf 'ok %d %s\n' "$total" "$dir" >&3
+    else
+        # don’t clean up, we might want to investigate that
+        # but record the failure
+        ((failed++))
+        $tap && {
+            printf 'not ok %d %s\n' "$total" "$dir"
+            printf '  ---\n'
+            printf '  actual: |\n'
+            tree result-actual | sed 's/^/    /'
+            printf '  expected: |\n'
+            tree result-expected | sed '1s/expected/actual/; s/^/    /'
+            printf '  ...\n'
+        } >&3
+    fi
+    cd ..
+done
+if $tap; then
+    printf '1..%d\n' "$total" >&3
+else
+    tput -T "${TERM:-mach}" setaf $((failed == 0 ? 2 : 1))
+    echo "$total total, $((total-failed)) success, $failed failed$(tput -T "${TERM:-mach}" sgr0)"
+fi
+exit $failed

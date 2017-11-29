@@ -1,0 +1,483 @@
+<project name="Ceylon Formatter" default="test">
+
+    <property file="build.properties" />
+    <property name="ceylon.verbosity" value="false"/>
+    <property name="ceylon.executable" location="${dist.bin.dir}/ceylon"/>
+    <property name="out.repo" location="${basedir}/modules"/>
+    
+    <property name="osgi" location="${basedir}/osgi" />
+    <property name="osgi.p2" location="${osgi}/p2" />
+    <property name="osgi.dist" location="${osgi}/dist" />
+    <property name="osgi.build" location="${osgi}/build" />
+    <property name="osgi.dist.plugins" location="${osgi.dist}/plugins" />
+    <property name="eclipse.project.path" location="${basedir}/../ceylon-ide-eclipse"/>
+    
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+        <classpath>
+            <pathelement location="${ceylon.libs.dir}/ant-contrib-1.0b3.jar"/>
+        </classpath>
+    </taskdef>
+
+    <taskdef resource="taskdef.properties">
+        <classpath>
+            <pathelement path="${ceylon.libs.dir}/org.osgi.impl.bundle.repoindex.ant-2.1.2.jar" />
+        </classpath>
+    </taskdef>
+
+    
+    <!-- Local repository -->
+    <property name="ceylon.repo.dir" location="${user.home}/.ceylon/repo" />
+    
+    <path id="ant-tasks">
+        <pathelement location="${dist.libs.dir}/ceylon-ant.jar"/>
+    </path>
+    
+    <target name="ceylondefs" unless="ceylondefined">
+        <property name="ceylondefined" value="true" />
+        <typedef resource="org/eclipse/ceylon/ant/antlib.xml" classpathref="ant-tasks"/>
+    
+        <reposet id="ceylon.repo">
+            <repo url="${ceylon.repo.dir}"/>
+        </reposet>
+
+        <reposet id="reposet.run.source-gen">
+            <reposet refid="ceylon.repo"/>
+            <repo url="${out.repo}"/>
+        </reposet>
+
+        <reposet id="reposet.compile.source">
+            <reposet refid="reposet.run.source-gen"/>
+            <repo url="${out.repo}"/>
+        </reposet>
+
+        <reposet id="reposet.compile.test">
+            <reposet refid="ceylon.repo"/>
+            <repo url="${out.repo}"/>
+        </reposet>
+    
+        <reposet id="reposet.run.test">
+            <reposet refid="reposet.compile.test"/>
+            <repo url="${out.repo}"/>
+        </reposet>
+    
+        <moduleset id="modules.source-gen">
+            <module name="source_gen.ceylon.formatter"/>
+        </moduleset>
+    
+        <moduleset id="modules.source">
+            <module name="ceylon.formatter"/>
+        </moduleset>
+    
+        <moduleset id="modules.test">
+            <module name="test.ceylon.formatter"/>
+        </moduleset>
+    </target>
+    
+    <target name="clean"
+        description="Deletes all build artifacts">
+        <delete dir="${out.repo}"/>
+        <delete dir="${osgi.dist}"/>
+        <delete dir="${osgi.build}"/>
+        <delete file="test-formatter.tap"/>
+        <delete file="test-cli.tap"/>
+        <if>
+          <available file="source/ceylon/formatter/options/.gitignore"/>
+          <then>
+            <delete dir="source/ceylon/formatter/options" includesfile="source/ceylon/formatter/options/.gitignore"/>
+            <delete file="source/ceylon/formatter/options/.gitignore"/> <!-- the .gitignore includes itself, but ant doesn't delete it -->
+          </then>
+        </if>
+    </target>
+    
+    <target name="compile-source-gen" depends="ceylondefs">
+        <ceylon-compile
+            src="source"
+            out="${out.repo}"
+            verbose="${ceylon.verbosity}"
+            encoding="UTF-8"
+            pack200="true"
+            fork="true">
+            <reposet refid="ceylon.repo"/>
+            <moduleset refid="modules.source-gen"/>
+        </ceylon-compile>
+    </target>
+
+    <target name="generate-source" depends="compile-source-gen">
+        <ceylon-run
+            module="source_gen.ceylon.formatter"
+            fork="true">
+            <reposet refid="reposet.run.source-gen"/> 
+        </ceylon-run>
+    </target>
+
+    <target name="compile-source" depends="ceylondefs"
+            description="Compiles the Ceylon Formatter modules without re-generating sources">
+        <ceylon-compile
+            verbose="${ceylon.verbosity}"
+            encoding="UTF-8"
+            pack200="true"
+            out="${out.repo}"
+            fork="true">
+            <reposet refid="ceylon.repo"/>
+            <moduleset refid="modules.source"/>
+        </ceylon-compile>
+    </target>
+
+    <target name="compile" depends="generate-source,compile-source"
+            description="Compiles the Ceylon Formatter module to the 'modules' repository" />
+
+    <path id="test-sources-path">
+        <pathelement location="source"/>
+    </path>
+    
+    <property name="test-sources" refid="test-sources-path"/>
+    
+    <target name="compile-test" depends="ceylondefs"
+        description="Compiles the test module" >
+        <ceylon-compile
+            src="${test-sources}"
+            out="${out.repo}"
+            verbose="${ceylon.verbosity}"
+            encoding="UTF-8"
+            fork="true">
+            <reposet refid="reposet.compile.test"/> 
+            <moduleset refid="modules.test"/>
+        </ceylon-compile>
+    </target>
+
+    <target name="test-formatter-quick" depends="ceylondefs"
+        description="Runs the compiled test module">
+        <ceylon-test
+            fork="true">
+            <reposet refid="reposet.run.test"/>
+            <moduleset refid="modules.test"/>
+        </ceylon-test>
+    </target>
+
+    <target name="test-formatter-tap-quick" depends="ceylondefs"
+        description="Runs the compiled test module, writing a TAP report to test-formatter.tap">
+        <ceylon-test
+            tap="test-formatter.tap"
+            fork="true">
+            <reposet refid="reposet.run.test"/>
+            <moduleset refid="modules.test"/>
+        </ceylon-test>
+    </target>
+
+    <target name="test-formatter" depends="compile,compile-test,test-formatter-quick"
+        description="Compiles and runs the test module"/>
+
+    <target name="test-formatter-tap" depends="compile,compile-test,test-formatter-tap-quick"
+        description="Compiles and runs the test module, writing a TAP report to test-formatter.tap"/>
+
+    <target name="test-cli-quick"
+        description="Tests the formatter's CLI">
+        <exec dir="test-cli" executable="./test-cli" failonerror="true">
+            <arg value="-c"/>
+            <arg value="${ceylon.executable}"/>
+            <arg value="-r"/>
+            <arg value="${ceylon.repo.dir}"/>
+        </exec>
+    </target>
+
+    <target name="test-cli-tap-quick"
+        description="Tests the formatter's CLI, writing a TAP report to test-cli.tap">
+        <exec dir="test-cli" executable="./test-cli" failonerror="true">
+            <arg value="-c"/>
+            <arg value="${ceylon.executable}"/>
+            <arg value="-r"/>
+            <arg value="${ceylon.repo.dir}"/>
+            <arg value="-t"/>
+            <arg value="../test-cli.tap"/>
+        </exec>
+    </target>
+
+    <target name="test-cli" depends="compile,test-cli-quick"
+        description="Compiles the formatter and tests the CLI"/>
+
+    <target name="test-cli-tap" depends="compile,test-cli-tap-quick"
+        description="Compiles the formatter and tests the CLI, writing a TAP report to test-cli.tap"/>
+
+    <target name="test" depends="test-formatter,test-cli"
+        description="Runs all tests"/>
+
+    <target name="test-tap" depends="test-formatter-tap,test-cli-tap"
+        description="Runs all tests, writing TAP reports to test-formatter.tap and test-cli.tap"/>
+
+    <target name="doc"  depends="ceylondefs"
+            description="Documents the Formatter module">
+        
+        <ceylon-doc
+            includesourcecode="true"
+            nomtimecheck="true"
+            encoding="UTF-8"
+            fork="true">
+            <moduleset refid="modules.source"/>
+            <linkset>
+                <link pattern="ceylon" url="https://modules.ceylon-lang.org/repo/1/"/>
+            </linkset>
+        </ceylon-doc>
+        
+    </target>
+
+    <target name="publish" depends="compile,scripts,publish-quick"
+        description="Copies the formatter modules to the user's repository"/>
+    <target name="publish-quick"
+        description="Compiles and copies the formatter modules to the user's repository">
+        <copy todir="${ceylon.repo.dir}" overwrite="true">
+            <fileset dir="${out.repo}">
+                <include name="ceylon/formatter/**"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="publish-herd" depends="ceylondefs">
+    <fail message="Please specify a target Herd upload repo url with -Dherd.repo=..." unless="herd.repo"/>
+    <fail message="Please specify a target Herd user name with -Dherd.user=..." unless="herd.user"/>
+    <fail message="Please specify a target Herd password with -Dherd.pass=..." unless="herd.pass"/>
+        
+        <ceylon-compile
+            verbose="${ceylon.verbosity}"
+            out="${herd.repo}"
+            user="${herd.user}"
+            pass="${herd.pass}"
+            encoding="UTF-8"
+            fork="true">
+            <moduleset refid="modules.source"/>
+        </ceylon-compile>
+        
+        <ceylon-doc
+            includesourcecode="true"
+            nomtimecheck="true"
+            out="${herd.repo}"
+            user="${herd.user}"
+            pass="${herd.pass}"
+            encoding="UTF-8"
+            fork="true">
+            <moduleset refid="modules.source"/>
+            <rep url="https://modules.ceylon-lang.org/repo/1/"/>
+            <linkset>
+                <link pattern="ceylon" url="https://modules.ceylon-lang.org/repo/1/"/>
+            </linkset>
+        </ceylon-doc>
+        
+        <ceylon-plugin mode="pack"
+            out="${herd.repo}"
+            user="${herd.user}"
+            pass="${herd.pass}"
+            fork="true">
+            <moduleset refid="modules.source"/>
+        </ceylon-plugin>
+
+    </target>
+
+    <target name="scripts" depends="ceylondefs">
+        <ceylon-plugin mode="pack"
+            out="${out.repo}"
+            fork="true">
+            <moduleset refid="modules.source"/>
+        </ceylon-plugin>
+    </target>
+
+    <target name="install" depends="publish">
+        <ceylon-plugin
+            mode="install" force="true"
+            out="${out.repo}"
+            fork="true">
+            <moduleset refid="modules.source"/>
+        </ceylon-plugin>
+    </target>
+
+    <target name="copyModuleArchiveForOSGI">
+        <loadproperties>
+            <zipentry zipfile="${currentFile}" name="META-INF/MANIFEST.MF"/>
+             <filterchain>
+                <linecontainsregexp>
+                    <regexp pattern="^(Bundle-SymbolicName|Bundle-Version)"/>
+                </linecontainsregexp>
+                 <replaceregex pattern="\s+$" replace=""/>
+                 <replaceregex pattern="^\s+" replace=""/>
+              </filterchain>
+        </loadproperties>
+        <if>
+            <isset property="Bundle-SymbolicName"/>
+            <then>
+                <copy file="${currentFile}" 
+                    tofile="${osgi.dist.plugins}/${Bundle-SymbolicName}_${Bundle-Version}.jar" 
+                    overwrite="true"/>
+            </then>
+        </if>
+    </target>
+    
+    <target name="osgi-quick">
+        <mkdir dir="${osgi.dist.plugins}" />
+        <foreach target="copyModuleArchiveForOSGI" param="currentFile">
+            <path>
+                <fileset dir="${out.repo}" includes="**/*.car"/>
+            </path>
+        </foreach>
+        <makeurl property="rootUrl" file="${osgi.dist}"/>
+        <repoindex name="Ceylon Distribution Bundles"
+            out="${osgi.dist}/repository.xml" 
+            compressed="false"
+            rooturl="${rootUrl}">
+            <fileset dir="${osgi.dist.plugins}" includes="*.jar"/>
+        </repoindex>
+    </target>
+
+    <!-- Rule to setup a plugins directory with required bundles -->
+    <target name="osgi-p2-quick" depends="osgi-quick,ceylondefs">
+        <makeurl property="destinationRepository" file="${osgi.dist}"/>
+        <makeurl property="categoryDefinition" file="${osgi.p2}/category.xml"/>
+        <mkdir dir="${osgi.build}"/>
+        <touch file="${osgi.build}/bundles.info"/>
+        <makeurl property="bundlesInfoUrl" file="${osgi.build}/bundles.info"/>
+        <loadfile srcfile="${basedir}/../ceylon/dist/osgi/p2/bundlesToStart" property="bundlesToStart">
+          <filterchain>
+              <striplinebreaks/>
+          </filterchain>
+        </loadfile>
+        <ceylon-p2
+            offline="true"
+            verbose="${ceylon.verbosity}"
+            nodefaultrepositories="true"
+            out="${osgi.dist}"
+            repositoryName="Ceylon SDK Bundles"
+            categoryPrefix="ceylon.sdk"
+            categories="${osgi.p2}/category.xml"
+            fork="true">
+            <moduleset refid="modules.source"/>
+            <rep url="${basedir}/modules"/>
+        </ceylon-p2>
+<!--
+        <exec dir="${basedir}" executable="eclipse" failonerror="true">
+            <arg value="-noSplash"/>
+            <arg value="-clean"/>
+            <arg value="-console"/>
+            <arg value="-consolelog"/>
+            <arg value="- -launcher.suppressErrors"/>
+            <arg value="-application"/>
+            <arg value="org.eclipse.equinox.p2.publisher.FeaturesAndBundlesPublisher"/>
+            <arg value="-metadataRepositoryName"/>
+            <arg value="Ceylon SDK Bundles"/>
+            <arg value="-metadataRepository"/>
+            <arg value="${destinationRepository}"/>
+            <arg value="-artifactRepositoryName"/>
+            <arg value="Ceylon SDK Bundles"/>
+            <arg value="-artifactRepository"/>
+            <arg value="${destinationRepository}"/>
+            <arg value="-source"/>
+            <arg file="${osgi.dist}"/>
+            <arg value="-publishArtifacts"/>
+            <arg value="-append"/>
+            <arg value="-vmargs"/>
+            <arg value="-Dorg.eclipse.equinox.simpleconfigurator.configUrl=${bundlesInfoUrl}"/>
+            <arg value="-Dosgi.bundles=${bundlesToStart}"/>
+        </exec>
+        <exec dir="${basedir}" executable="eclipse">
+            <arg value="-noSplash"/>
+            <arg value="-clean"/>
+            <arg value="-console"/>
+            <arg value="-consolelog"/>
+            <arg value="- -launcher.suppressErrors"/>
+            <arg value="-application"/>
+            <arg value="org.eclipse.equinox.p2.publisher.CategoryPublisher"/>
+            <arg value="-metadataRepository"/>
+            <arg value="${destinationRepository}"/>
+            <arg value="-categoryDefinition"/>
+            <arg value="${categoryDefinition}"/>
+            <arg value="-categoryQualifier"/>
+            <arg value="ceylon.sdk"/>
+            <arg value="-vmargs"/>
+            <arg value="-Dorg.eclipse.equinox.simpleconfigurator.configUrl=${bundlesInfoUrl}"/>
+            <arg value="-Dosgi.bundles=${bundlesToStart}"/>
+        </exec>
+-->
+    </target>
+
+    <target name="osgi" depends="compile,osgi-quick"/>
+    <target name="osgi-p2" depends="compile,osgi-p2-quick"/>
+
+    <target name="bundle-proxy">
+        <basename file="${archivePath}" property="archiveFileName"/>
+        <property name="proxy-project" value="${eclipse.project.path}/required-bundle-proxies/${archiveFileName}"/>
+        <mkdir dir="${proxy-project}"/>
+        <delete failonerror="false" dir="${proxy-project}/META-INF"/>
+        <copy toDir="${proxy-project}" overwrite="true">
+            <zipfileset src="${archivePath}" includes="META-INF/**"/>
+            <fileset file="${archivePath}"/>
+        </copy>
+        <manifest file="${proxy-project}/META-INF/MANIFEST.MF" mode="update">
+            <attribute name="Bundle-Classpath" value="${archiveFileName}"/>
+        </manifest>
+        <echo file="${proxy-project}/.project"><![CDATA[<projectDescription>
+    <name>${archiveFileName}</name>
+    <comment></comment>
+    <projects>
+    </projects>
+    <buildSpec>
+        <buildCommand>
+            <name>org.eclipse.jdt.core.javabuilder</name>
+            <arguments>
+            </arguments>
+        </buildCommand>
+        <buildCommand>
+            <name>org.eclipse.pde.ManifestBuilder</name>
+            <arguments>
+            </arguments>
+        </buildCommand>
+        <buildCommand>
+            <name>org.eclipse.pde.SchemaBuilder</name>
+            <arguments>
+            </arguments>
+        </buildCommand>
+    </buildSpec>
+    <natures>
+        <nature>org.eclipse.pde.PluginNature</nature>
+        <nature>org.eclipse.jdt.core.javanature</nature>
+    </natures>
+    <linkedResources>
+        <link>
+            <name>project</name>
+            <type>2</type>
+            <locationURI>PARENT-3-PROJECT_LOC/ceylon.formatter</locationURI>
+        </link>
+    </linkedResources>
+</projectDescription>]]></echo>     
+        <echo file="${proxy-project}/.classpath"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+    <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+    <classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+    <classpathentry exported="true" kind="lib" path="${archiveFileName}" sourcepath="project"/>
+    <classpathentry kind="output" path="bin"/>
+</classpath>]]></echo>     
+        <echo file="${proxy-project}/.gitignore"><![CDATA[/META-INF
+/${archiveFileName}
+/.classpath
+/.project
+/.gitignore
+/bin/]]></echo>     
+    </target>
+
+	<target name="ide" depends="osgi-p2"/>
+	<target name="ide-quick" depends="osgi-p2-quick">
+		<property name="archivePath" 
+            value="${out.repo}/ceylon/formatter/${module.ceylon.formatter.version}/ceylon.formatter-${module.ceylon.formatter.version}.car"/>
+        <antcall target="bundle-proxy">
+            <param name="archivePath" value="${archivePath}"/>
+        </antcall>
+    </target>
+    
+    <target name="format" depends="compile"
+            description="formats the formatter with itself">
+        <ceylon-run
+            module="ceylon.formatter"
+            fork="true">
+            <reposet refid="reposet.compile.source"/>
+            <arg value="source"/>
+        </ceylon-run>
+    </target>
+	
+	<target name="update" depends="publish,ide"
+	        description="Publish to repository and IDE"/>
+</project>

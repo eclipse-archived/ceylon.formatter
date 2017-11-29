@@ -1,0 +1,30 @@
+import ceylon.language {
+    print
+}
+import ceylon.language {
+    String
+}
+
+"Doc
+ 
+ doc
+ 
+ docedy doc"
+shared class C() {
+    
+    "Doccity doc"
+    shared String s1 = "";
+    
+    "More doc. In the land of more doc, where the shadows lie. Look, I just need to get this line long enough, I don’t care how cheesy you think these puns are, okay?
+     
+     Also, we need multiple lines apparently, for some reason."
+    shared String s2 = "";
+}
+
+throws (`class AssertionError`, "Always. But especially if there’s a new moon, or on friday the 13th. But also at any other time.")
+throws (`class Exception`, "Never ever ever does this throw an [[Exception]]. Doesn’t happen. Yadda yadda >100chars.
+                            And a new line because that’s why we have a second annotation.
+                            Wouldn’t be very interesting to have the same test case twice. Also let’s bring this >100chars too, there we go.")
+void die() {
+    assert (false);
+}

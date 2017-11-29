@@ -1,0 +1,3 @@
+void testNot() {
+    assert (!false);
+}
