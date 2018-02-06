@@ -36,6 +36,14 @@ The buildfile assumes that `ceylon-dist` (including the Ceylon ant files) is a s
 4. Run `source_gen.ceylon.formatter.run()` from the `source-gen` source folder  (ignore the warning that the project has build errors, that’s exactly what this is going to fix)
 5. Right-click the `test.ceylon.formatter` module and choose Run As -> Ceylon Test to test if everything works
 
+### Restoring pre-1.3.3 history
+
+Optionally, you can run the following command in your clone of the repository to restore older Git history:
+
+```sh
+git fetch origin 'refs/replace/*:refs/replace/*'
+```
+
 Usage
 -----
 
