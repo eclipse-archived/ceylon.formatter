@@ -224,7 +224,7 @@ Integer operatorLevel(BinaryOperatorExpression e)
      value regular = start..end;
      value shifted = start+offset .. end+offset;
  
- See [#99](https://github.com/ceylon/ceylon.formatter/issues/99)."
+ See [#99](https://github.com/eclipse/ceylon.formatter/issues/99)."
 Boolean useSpacesAroundBinaryOp(BinaryOperatorExpression e, Integer maxLevel)
         => operatorLevel(e) > maxLevel
                 || e is ExpressionWithSpaces
@@ -242,9 +242,9 @@ Boolean useSpacesAroundBinaryOp(BinaryOperatorExpression e, Integer maxLevel)
 
 "Terms in string templates might sometimes require spacing to disambiguate the syntax.
  For more information, see
- [#47](https://github.com/ceylon/ceylon.formatter/issues/47),
- [ceylon-spec#959](https://github.com/ceylon/ceylon-spec/issues/959), and/or
- [ceylon-spec#686](https://github.com/ceylon/ceylon-spec/issues/686)."
+ [#47](https://github.com/eclipse/ceylon.formatter/issues/47),
+ [ceylon#4065](https://github.com/eclipse/ceylon/issues/4065), and/or
+ [ceylon#3792](https://github.com/eclipse/ceylon/issues/3792)."
 Boolean wantsSpacesInStringTemplate(Term term) {
     variable Boolean startsWithBacktick = false;
     object startsWithBacktickVisitor extends GoLeftVisitor() {

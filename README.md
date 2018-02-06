@@ -12,7 +12,7 @@ Version 1.3.3 has been [released][release-1.3.3] and is available on [Herd][herd
 There are no immediate plans for changes;
 the next release will probably be for bugfixes, or to support new language features, or for a new binary version of Ceylon.
 
-[release-1.3.3]: https://github.com/ceylon/ceylon.formatter/releases/1.3.3
+[release-1.3.3]: https://github.com/eclipse/ceylon.formatter/releases/1.3.3
 [herd-1.3.3]: https://modules.ceylon-lang.org/modules/ceylon.formatter/1.3.3
 
 Building
@@ -21,7 +21,7 @@ Building
 ### With `ant`
 
 ```bash
-git clone https://github.com/ceylon/ceylon.formatter
+git clone https://github.com/eclipse/ceylon.formatter
 cd ceylon.formatter
 ant install
 ```
@@ -55,7 +55,7 @@ ceylon format source --and test-source --to formatted # to format all Ceylon cod
 Contact
 -------
 
-If you have found a bug or want to suggest a feature, [create an issue](https://github.com/ceylon/ceylon.formatter/issues/new). You can also send me an e-mail (address is on my Github page).
+If you have found a bug or want to suggest a feature, [create an issue](https://github.com/eclipse/ceylon.formatter/issues/new). You can also send me an e-mail (address is on my Github page).
 
 License
 -------

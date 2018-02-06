@@ -89,7 +89,7 @@ shared class FormattingVisitor(
      not on the same line as the preceding `}` as for `if`’s `else`s."
     MutableSet<Node> switchElseNodes = HashSet<Node>();
     
-    "Map from alias to actual name, for [#126](https://github.com/ceylon/ceylon.formatter/issues/126)."
+    "Map from alias to actual name, for [#126](https://github.com/eclipse/ceylon.formatter/issues/126)."
     MutableMap<String,String> importMemberAliases = HashMap<String,String>();
     
     "Set of nodes that may be condensed into a single line under certain conditions."
