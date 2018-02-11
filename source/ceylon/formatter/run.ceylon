@@ -12,7 +12,8 @@ import java.io {
 }
 import org.eclipse.ceylon.compiler.typechecker.parser {
     CeylonLexer,
-    CeylonParser
+    CeylonParser,
+    CeylonInterpolatingLexer
 }
 import org.antlr.runtime {
     CharStream,
@@ -295,11 +296,11 @@ shared void run(String[] arguments = process.arguments) {
     for ([CharStream, Writer(), Anything(Throwable)] file in files) {
         value t1 = system.milliseconds;
         CeylonLexer lexer = CeylonLexer(file[0]);
-        Tree.CompilationUnit cu = CeylonParser(CommonTokenStream(lexer)).compilationUnit();
+        Tree.CompilationUnit cu = CeylonParser(CommonTokenStream(CeylonInterpolatingLexer(lexer))).compilationUnit();
         value t2 = system.milliseconds;
         lexer.reset(); // FormattingVisitor needs to read the tokens again
         try {
-            format(cu, options[0], file[1](), BufferedTokenStream(lexer));
+            format(cu, options[0], file[1](), BufferedTokenStream(CeylonInterpolatingLexer(lexer)));
         } catch (Throwable t) {
             file[2](t);
         }
