@@ -56,7 +56,14 @@ FormattingWriter.FormattingContext writeSpecifierMainToken(FormattingWriter writ
    or `` `process` `` (where [[start]] would be [[null]])."""
 see (`function writeMetaLiteralStart`)
 void writeMetaLiteral(FormattingWriter writer, FormattingVisitor visitor, MetaLiteral that, String? start) {
-    value context = writeBacktickOpening(writer, that.mainToken);
+    FormattingWriter.FormattingContext? context;
+    if (that.mainEndToken exists) {
+        // mainToken and mainEndToken are the surrounding backticks
+        context = writeBacktickOpening(writer, that.mainToken);
+    } else {
+        // meta literal without backticks, mainToken belongs to start instead
+        context = null;
+    }
     if (exists start) {
         writeMetaLiteralStart(writer, start);
     }
@@ -81,7 +88,9 @@ void writeMetaLiteral(FormattingWriter writer, FormattingVisitor visitor, MetaLi
         assert (is PackageLiteral that);
         that.importPath?.visit(visitor);
     }
-    writeBacktickClosing(writer, that.mainEndToken, context);
+    if (exists context) {
+        writeBacktickClosing(writer, that.mainEndToken, context);
+    }
 }
 
 """Writes the start of a meta literal, for example the `class` or `module`
