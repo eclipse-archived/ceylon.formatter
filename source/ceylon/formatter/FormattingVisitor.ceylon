@@ -972,7 +972,7 @@ shared class FormattingVisitor(
         if (exists expr = that.expression) {
             fWriter.writeToken {
                 "=>";
-                spaceBefore = true;
+                spaceBefore = !that.parameterLists.empty then true else 0;
                 spaceAfter = true;
                 lineBreaksBefore = noLineBreak;
                 indentAfter = 1;
