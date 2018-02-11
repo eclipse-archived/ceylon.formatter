@@ -32,3 +32,8 @@ void testFunctionArgumentsWithModifier() {
             return s == j.string;
         });
 }
+
+void testFunctionArgumentsWithoutParameterLists() {
+    "abC".any(=> element.integerValue > 10);
+    "abc".fold("", => partial + element.uppercased.string);
+}
