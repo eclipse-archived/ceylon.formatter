@@ -897,6 +897,7 @@ shared class FormattingVisitor(
         that.visitChildren(this);
     }
     
+    see (`function visitMatchList`)
     shared actual void visitExpressionList(ExpressionList that) {
         value expressions = [*that.expressions];
         assert (nonempty expressions);
@@ -904,7 +905,7 @@ shared class FormattingVisitor(
         for (expression in expressions.rest) {
             fWriter.writeToken {
                 "|"; // not in the AST
-                spaceBefore = true; // TODO options!
+                spaceBefore = true; // TODO options! same as in visitMatchList
                 spaceAfter = true;
                 lineBreaksBefore = noLineBreak;
             };
@@ -1484,7 +1485,24 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitMatchCase(MatchCase that)
-            => that.visitChildren(this);
+            => that.expressionList.visit(this);
+    
+    shared actual void visitMatchList(MatchList that) {
+        MutableList<Type|Expression> matchesList = ArrayList<Type|Expression>();
+        matchesList.addAll { *that.types };
+        matchesList.addAll { *that.expressions };
+        assert (nonempty matches = matchesList.sort(byIncreasing(compose(Token.tokenIndex, Node.token))));
+        matches.first.visit(this);
+        for (item in matches.rest) {
+            fWriter.writeToken {
+                "|"; // not in the AST
+                spaceBefore = true; // TODO options! same as in visitExpressionList
+                spaceAfter = true;
+                lineBreaksBefore = noLineBreak;
+            };
+            item.visit(this);
+        }
+    }
     
     shared actual void visitMemberOp(MemberOp that)
             => writeSomeMemberOp(fWriter, that.mainToken);
