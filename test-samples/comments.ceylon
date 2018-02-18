@@ -24,5 +24,17 @@ void testComments() { // tests comments
    also, note how this comment as a whole isn’t indented enough.
    */
     
+    print("yet another statement");
+    Boolean b = true ||
+    true || // should be indented by two levels...
+    true ||
+    // still indented by two levels...
+    true ||
+    // still indented
+    // by two levels...
+    true ||
+    /* still indented by two levels... */
+    true;
+    
     print("okay, done"); /* yup */
 }
