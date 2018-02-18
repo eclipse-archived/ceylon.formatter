@@ -19,10 +19,6 @@ import org.eclipse.ceylon.compiler.typechecker.tree {
 }
 import org.eclipse.ceylon.compiler.typechecker.parser {
     CeylonLexer {
-        uidentifier=\iUIDENTIFIER,
-        lidentifier=\iLIDENTIFIER,
-        aidentifier=\iAIDENTIFIER,
-        pidentifier=\iPIDENTIFIER,
         valueModifier=\iVALUE_MODIFIER
     }
 }
@@ -30,8 +26,7 @@ import org.antlr.runtime {
     TokenStream {
         la=\iLA
     },
-    Token,
-    CommonToken
+    Token
 }
 import ceylon.file {
     Writer
@@ -46,9 +41,6 @@ import ceylon.collection {
     ArrayList,
     HashMap,
     HashSet
-}
-import java.lang {
-    Types
 }
 
 "A [[org.eclipse.ceylon.compiler.typechecker.tree::Visitor]] that writes a formatted version of the
