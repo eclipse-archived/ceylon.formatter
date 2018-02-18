@@ -60,3 +60,15 @@ void testSwitchWithElseCase() {
     case
     (is String[]) { print("any arguments"); }
 }
+
+void testSwitchWithMixedValueTypeCase() {
+    switch (process.arguments.first)
+    case ("" | Null) { print("no arguments"); }
+    else { print("arguments"); }
+    
+    String|Integer|T? foo = null;
+    switch (foo)
+    case (1 | String | t1) { print("one"); }
+    case (2 | "2" | Null) { print("two?"); }
+    else { print("other"); }
+}
