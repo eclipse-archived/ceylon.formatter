@@ -89,7 +89,7 @@ shared class FormattingVisitor(
     
     // initialize TokenStream
     if (exists tokens) { tokens.la(1); }
-
+    
     String identifierText(Identifier identifier) {
         assert (exists text = identifier.text);
         if (text.startsWith("""\i""") || text.startsWith("""\I""")) {
