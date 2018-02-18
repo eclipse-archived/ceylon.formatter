@@ -1309,7 +1309,7 @@ shared class FormattingWriter(shared TokenStream? tokens, Writer writer, Formatt
             allowLineBreakBefore = true;
             allowLineBreakAfter = true;
             indentBefore = 0;
-            indentAfter = 0;
+            indentAfter = ephemeralIndentation;
             stackIndentBefore = never;
             stackIndentAfter = never;
             wantsSpaceBefore = maxDesire - 1;
