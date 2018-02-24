@@ -62,6 +62,11 @@ shared class CeylonFormatTool() satisfies Tool {
     rest__SETTER
     shared variable List<JString> args = Collections.emptyList<JString>();
     
+    option__SETTER { longName = "pipe"; }
+    description__SETTER ("Read code from standard input and write formatted code to standard output.
+                          Equivalent to `/dev/stdin --to /dev/stdout`.")
+    shared variable Boolean pipe = false;
+    
     option__SETTER { longName = "help"; }
     optionArgument__SETTER { longName = "help"; }
     description__SETTER ("Print this help message.
@@ -75,6 +80,7 @@ shared class CeylonFormatTool() satisfies Tool {
     
     shared actual void run() => package.run(concatenate(
             { *args }.collect(JString.string),
+            emptyOrSingleton(pipe then "--pipe"),
             emptyOrSingleton(
                 switch (help?.string)
                     case (null) null

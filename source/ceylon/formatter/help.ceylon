@@ -62,6 +62,10 @@ shared String? help(topic) {
                  in the format that ‘ceylon run’ understands (“ceylon.formatter/x.y.z”), which might be
                  useful for scripts.
              
+             --pipe
+                 Read code from standard input and write formatted code to standard output.
+                 Equivalent to `/dev/stdin --to /dev/stdout`.
+             
              --\${option name}=\${option value}
                  Set a formatting option. The most useful ones are:
                  
