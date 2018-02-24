@@ -55,7 +55,7 @@ shared String? help(topic) {
              
              --help
                  Print this help message.
-                 (--help=options prints help for the various options.)
+                 (--help=options prints help for the various formatting options.)
              
              --version
                  Print version information. The first line is always just the module name and version
@@ -74,7 +74,7 @@ shared String? help(topic) {
                  --lineBreak
                      “lf”, “crlf”, or “os” for the operating system’s native line breaks.
                  
-                 For a full list of options, see the output from ‘--help=options’
+                 For a full list of formatting options, see the output from ‘--help=options’
                  or the documentation of the FormattingOptions class.";
     }
     case ("options") {

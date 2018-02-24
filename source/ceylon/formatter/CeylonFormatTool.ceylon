@@ -56,7 +56,7 @@ remainingSections ("## Other options
                         --lineBreak
                             `lf`, `crlf`, or `os` for the operating system's native line breaks.
                         
-                        For a full list of options, see the output from `--help=options` or the documentation of the FormattingOptions class.")
+                        For a full list of formatting options, see the output from `--help=options` or the documentation of the FormattingOptions class.")
 shared class CeylonFormatTool() satisfies Tool {
     
     rest__SETTER
@@ -65,7 +65,7 @@ shared class CeylonFormatTool() satisfies Tool {
     option__SETTER { longName = "help"; }
     optionArgument__SETTER { longName = "help"; }
     description__SETTER ("Print this help message.
-                          (--help=options prints help for the various options.)")
+                          (--help=options prints help for the various formatting options.)")
     shared variable JString? help = null;
     
     option__SETTER { longName = "version"; }
