@@ -270,3 +270,15 @@ Boolean wantsSpacesInStringTemplate(Term term) {
     term.visit(startsWithBacktickVisitor);
     return startsWithBacktick || !term is Primary;
 }
+
+void writeBinaryOperator(FormattingWriter writer, Token token) {
+    writer.writeToken {
+        token;
+        spaceBefore = true;
+        spaceAfter = true;
+        indentBefore = 2;
+        stackIndentBefore = never;
+        indentAfter = 2;
+        stackIndentAfter = never;
+    };
+}

@@ -19,6 +19,8 @@ import org.eclipse.ceylon.compiler.typechecker.tree {
 }
 import org.eclipse.ceylon.compiler.typechecker.parser {
     CeylonLexer {
+        fish=\iFISH,
+        pipe=\iPIPE,
         valueModifier=\iVALUE_MODIFIER
     }
 }
@@ -934,6 +936,14 @@ shared class FormattingVisitor(
         that.block.visit(this);
     }
     
+    "Visit an [[InvocationExpression]] which the parser synthesized
+     when desugaring a fish expression (`lhs >|> rhs`)."
+    shared void visitFishExpression(InvocationExpression that) {
+        that.positionalArgumentList.positionalArguments.get(1).visit(this);
+        writeBinaryOperator(that.mainToken); // ">|>"
+        that.positionalArgumentList.positionalArguments.get(0).visit(this);
+    }
+    
     shared actual void visitForClause(ForClause that) {
         fWriter.writeToken {
             that.mainToken; // "for"
@@ -1325,6 +1335,17 @@ shared class FormattingVisitor(
     }
     
     shared actual void visitInvocationExpression(InvocationExpression that) {
+        if (exists mainToken = that.mainToken,
+            mainToken.type == pipe) {
+            visitPipeExpression(that);
+            return;
+        }
+        if (exists mainToken = that.mainToken,
+            mainToken.type == fish) {
+            visitFishExpression(that);
+            return;
+        }
+        
         that.primary.visit(this);
         if (exists PositionalArgumentList list = that.positionalArgumentList) {
             list.visit(this);
@@ -1835,6 +1856,14 @@ shared class FormattingVisitor(
             spaceBefore = options.spaceBeforeValueIteratorClosingParenthesis;
             lineBreaksBefore = noLineBreak;
         };
+    }
+    
+    "Visit an [[InvocationExpression]] which the parser synthesized
+     when desugaring a pipe expression (`lhs |> rhs`)."
+    shared void visitPipeExpression(InvocationExpression that) {
+        that.positionalArgumentList.positionalArguments.get(0).visit(this);
+        writeBinaryOperator(that.mainToken); // "|>"
+        that.primary.visit(this);
     }
     
     shared actual void visitPositionalArgumentList(PositionalArgumentList that) {
