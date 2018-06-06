@@ -8,3 +8,11 @@ Boolean testBasicLogic() {
     value b5 = b4 && h in t;
     return b4 == true;
 }
+
+void testPipelines() {
+    value shout = String.uppercased >|> String.trimmed >|> print;
+    "Hello, World!"
+            |> String.size
+            |> ((Integer i) => Integer.format(i, 16))
+            |> shout;
+}
