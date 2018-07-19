@@ -331,15 +331,7 @@ shared class FormattingVisitor(
             visitBinaryOperatorExpressionChild(left);
         }
         
-        fWriter.writeToken {
-            that.mainToken;
-            spaceBefore = true;
-            spaceAfter = true;
-            indentBefore = 2;
-            stackIndentBefore = never;
-            indentAfter = 2;
-            stackIndentAfter = never;
-        };
+        writeBinaryOperator(fWriter, that.mainToken);
         
         if (samePrecedence(right, that)) {
             right.visit(this);
@@ -940,7 +932,7 @@ shared class FormattingVisitor(
      when desugaring a fish expression (`lhs >|> rhs`)."
     shared void visitFishExpression(InvocationExpression that) {
         that.positionalArgumentList.positionalArguments.get(1).visit(this);
-        writeBinaryOperator(that.mainToken); // ">|>"
+        writeBinaryOperator(fWriter, that.mainToken); // ">|>"
         that.positionalArgumentList.positionalArguments.get(0).visit(this);
     }
     
@@ -1862,7 +1854,7 @@ shared class FormattingVisitor(
      when desugaring a pipe expression (`lhs |> rhs`)."
     shared void visitPipeExpression(InvocationExpression that) {
         that.positionalArgumentList.positionalArguments.get(0).visit(this);
-        writeBinaryOperator(that.mainToken); // "|>"
+        writeBinaryOperator(fWriter, that.mainToken); // "|>"
         that.primary.visit(this);
     }
     
